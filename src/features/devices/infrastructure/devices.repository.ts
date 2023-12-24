@@ -14,6 +14,9 @@ export class DevicesRepository {
     ip: string,
     userAgent: string,
   ): Promise<number> {
+    const iatDate = new Date(decodedToken.iat * 1000).toISOString();
+    const expDate = new Date(decodedToken.exp * 1000).toISOString();
+
     const device = await this.dataSource.query(
       `INSERT INTO public.devices
                 ("userId", "deviceId", ip, title, "lastActiveDate", "expirationDate")
@@ -24,8 +27,8 @@ export class DevicesRepository {
         decodedToken.deviceId,
         ip,
         userAgent,
-        decodedToken.iat,
-        decodedToken.exp,
+        iatDate,
+        expDate,
       ],
     );
     return device[0].id;

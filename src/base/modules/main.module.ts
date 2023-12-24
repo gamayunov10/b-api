@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { DevicesController } from 'src/features/devices/api/devices.controller';
@@ -30,8 +30,14 @@ import { BasicStrategy } from '../../features/auth/strategies/basic.strategy';
 import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.strategy';
 import { JwtRefreshTokenStrategy } from '../../features/auth/strategies/jwt-refresh.strategy';
 import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
+import { PublicAuthController } from '../../features/auth/api/public/public.auth.controller';
 
-const controllers = [UsersController, DevicesController, TestingController];
+const controllers = [
+  UsersController,
+  DevicesController,
+  TestingController,
+  PublicAuthController,
+];
 
 const services = [JwtService, AuthService];
 

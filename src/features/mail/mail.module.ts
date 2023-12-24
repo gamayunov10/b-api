@@ -2,6 +2,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import * as process from 'process';
 
 import { SendPasswordRecoveryUseCase } from './application/usecases/send-pass-recovery-mail.usecase';
 import { SendRegistrationMailUseCase } from './application/usecases/send-registration-mail.usecase';

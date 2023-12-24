@@ -19,7 +19,6 @@ export class TerminateSessionUseCase
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
     const device = await this.devicesRepository.findDevice(command.deviceId);
-
     if (!device) {
       return {
         data: false,

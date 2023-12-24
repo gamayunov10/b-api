@@ -1,5 +1,5 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { UserInputModel } from 'src/features/users/api/models/input/user-input-model';
 

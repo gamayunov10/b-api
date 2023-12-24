@@ -83,7 +83,7 @@ export class UsersRepository {
 
   async findUserByEmail(email: string): Promise<User | null> {
     const users = await this.dataSource.query(
-      `SELECT id
+      `SELECT id, login, email 
        FROM public.users
        WHERE email = $1`,
       [email],
@@ -93,7 +93,7 @@ export class UsersRepository {
       return null;
     }
 
-    return users;
+    return users[0];
   }
 
   async findPasswordRecoveryRecord(
@@ -180,8 +180,8 @@ export class UsersRepository {
     const result = await this.dataSource.query(
       `INSERT INTO public.user_password_recovery
                 ("userId", "recoveryCode", "expirationDate")
-               VALUES ($1, $2, CURRENT_TIMESTAMP + interval '3 hours'
-               RETURNING id`,
+               VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 hours')
+               RETURNING id;`,
       [userId, recoveryCode],
     );
     return result[0].id;
@@ -226,7 +226,7 @@ export class UsersRepository {
       const result = await this.dataSource.query(
         `DELETE
                 FROM public.user_password_recovery
-                WHERE "userId = $1";`,
+                WHERE "userId" = $1;`,
         [userId],
       );
       return result[1] === 1;

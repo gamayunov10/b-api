@@ -38,6 +38,7 @@ import { EmailInputModel } from '../../models/email-input.model';
 import { NewPasswordModel } from '../../models/new-password.model';
 import { exceptionHandler } from '../../../../infrastructure/exception-filters/exception.handler';
 import { LoginDeviceCommand } from '../../../devices/application/usecases/login-device.usecase';
+import { LoginInputModel } from '../../models/login-input.model';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -176,7 +177,7 @@ export class PublicAuthController {
   @HttpCode(200)
   async login(
     @Ip() ip: string,
-    @Body() body,
+    @Body() body: LoginInputModel,
     @Headers() headers: string,
     @Response() res,
   ) {
@@ -221,7 +222,8 @@ export class PublicAuthController {
     @RefreshToken() refreshToken: string,
     @Response() res,
   ): Promise<void> {
-    const userAgent = headers['userAgent'] || 'unknown';
+    console.log('refreshToken', 'check');
+    const userAgent = headers['user-agent'] || 'unknown';
     const decodedToken: any = this.jwtService.decode(refreshToken);
     const deviceId = decodedToken.deviceId;
     const tokens = await this.commandBus.execute(

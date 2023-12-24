@@ -5,18 +5,21 @@ export class Device {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'device_id', type: 'uuid' })
+  @Column({ name: 'deviceId', type: 'string' })
   deviceId: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'character varying' })
   ip: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'character varying' })
   title: string;
 
-  @Column({ name: 'last_active_date', type: 'bigint' })
-  lastActiveDate: number;
+  @Column({ name: 'lastActiveDate', type: 'timestamp with time zone' })
+  lastActiveDate: string;
 
-  @Column({ name: 'expiration_date', type: 'bigint' })
-  expirationDate: number;
+  @Column({ name: 'expirationDate', type: 'timestamp with time zone' })
+  expirationDate: string;
+
+  @Column({ name: 'userId', type: 'integer' })
+  userId: number;
 }
