@@ -1,0 +1,13 @@
+services:
+  - name: b-api
+    type: web
+    buildCommand: pnpm run build
+    startCommand: pnpm start
+    env:
+      - key: ENV
+        value: DEVELOPMENT
+routes:
+  - path: '/api/*'
+    service: b-api
+  - path: '/*'
+    service: b-api
