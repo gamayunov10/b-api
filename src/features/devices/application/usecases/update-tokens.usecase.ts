@@ -1,0 +1,31 @@
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
+import { DevicesRepository } from '../../infrastructure/devices.repository';
+
+export class UpdateTokensCommand {
+  constructor(public token: any, public ip: string, public userAgent: string) {}
+}
+
+@CommandHandler(UpdateTokensCommand)
+export class UpdateTokensUseCase
+  implements ICommandHandler<UpdateTokensCommand>
+{
+  constructor(private readonly devicesRepository: DevicesRepository) {}
+
+  async execute(command: UpdateTokensCommand): Promise<boolean> {
+    const device = await this.devicesRepository.findDevice(
+      command.token.deviceId,
+    );
+
+    if (!device) {
+      return null;
+    }
+
+    return this.devicesRepository.updateDevice(
+      +device.deviceId,
+      command.token,
+      command.ip,
+      command.userAgent,
+    );
+  }
+}
