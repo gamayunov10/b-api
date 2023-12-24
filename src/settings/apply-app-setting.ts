@@ -15,7 +15,7 @@ export const applyAppSettings = (app: INestApplication) => {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  setAppPrefix(app);
+  // setAppPrefix(app);
 
   setSwagger(app);
 
@@ -24,9 +24,9 @@ export const applyAppSettings = (app: INestApplication) => {
   setAppExceptionsFilters(app);
 };
 
-const setAppPrefix = (app: INestApplication) => {
-  app.setGlobalPrefix(APP_PREFIX);
-};
+// const setAppPrefix = (app: INestApplication) => {
+//   app.setGlobalPrefix(APP_PREFIX);
+// };
 
 const setSwagger = (app: INestApplication) => {
   if (process.env.ENV !== 'PRODUCTION') {
