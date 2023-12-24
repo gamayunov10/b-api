@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import * as process from 'process';
 
 import { AppModule } from './app.module';
-import { applyAppSettings } from './settings/apply-app-setting';
+import { APP_PREFIX, applyAppSettings } from './settings/apply-app-setting';
 
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 
@@ -12,7 +12,7 @@ async function bootstrap() {
   applyAppSettings(app);
 
   await app.listen(PORT, () => {
-    console.log(`http://localhost:${PORT}`, process.env.ENV);
+    console.log(`http://localhost:${PORT}${APP_PREFIX}`, process.env.ENV);
   });
 }
 

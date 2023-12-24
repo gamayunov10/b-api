@@ -6,7 +6,7 @@ import { customExceptionFactory } from 'src/infrastructure/exception-filters/exc
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/http-exception-filter';
 import { AppModule } from '../app.module';
 
-export const APP_PREFIX = '/api';
+export const APP_PREFIX = '';
 
 export const applyAppSettings = (app: INestApplication) => {
   app.enableCors();
