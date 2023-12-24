@@ -1,8 +1,8 @@
 services:
   - name: b-api
     type: web
-    buildCommand: pnpm run build
-    startCommand: pnpm start
+    buildCommand: npm run build
+    startCommand: npm start
     env:
       - key: ENV
         value: DEVELOPMENT
