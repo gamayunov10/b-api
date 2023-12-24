@@ -28,8 +28,8 @@ export class UsersQueryRepository {
     );
 
     return Paginator.paginate({
-      pageNumber: query.pageNumber,
-      pageSize: query.pageSize,
+      pageNumber: Number(query.pageNumber),
+      pageSize: Number(query.pageSize),
       totalCount: Number(totalCount[0].count),
       items: await this.usersMapping(users),
     });

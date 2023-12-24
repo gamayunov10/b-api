@@ -35,7 +35,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Returns all users. Admins only',
   })
-  // @ApiBasicAuth('Basic')
+  @ApiBasicAuth('Basic')
   @UseGuards(BasicAuthGuard)
   async findUsers(@Query() query: UserQueryModel) {
     return this.usersQueryRepository.findUsers(query);
