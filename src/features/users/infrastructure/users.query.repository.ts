@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { usersFilter } from 'src/base/pagination/users-filter.paginator';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { Paginator } from '../../../base/pagination/_paginator';
@@ -11,40 +12,25 @@ export class UsersQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findUsers(query: UserQueryModel) {
-    const whereConditions = [];
-    const params = [];
-
-    if (query.searchLoginTerm) {
-      whereConditions.push(`u.login ILIKE $${params.length + 1}`);
-      params.push(`%${query.searchLoginTerm}%`);
-    }
-
-    if (query.searchEmailTerm) {
-      whereConditions.push(`u.email ILIKE $${params.length + 1}`);
-      params.push(`%${query.searchEmailTerm}%`);
-    }
-
-    let whereClause = '';
-    if (whereConditions.length > 0) {
-      whereClause = 'WHERE ' + whereConditions.join(' AND ');
-    }
+    const filter = usersFilter(query.searchLoginTerm, query.searchEmailTerm);
 
     const users = await this.dataSource.query(
-      `SELECT u.id, u.login, u.email, u."createdAt"
+      `SELECT u.id,
+              u.login,
+              u.email,
+              u."createdAt"
        FROM public.users u
-       ${whereClause}
+       WHERE (login ILIKE $1 or email ILIKE $2)
        ORDER BY "${query.sortBy}" ${query.sortDirection}
-       LIMIT $${params.length + 1} OFFSET ($${params.length + 2} - 1) * $${
-        params.length + 3
-      }`,
-      [...params, query.pageSize, query.pageNumber, query.pageSize],
+       LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${query.pageSize}`,
+      [filter.login, filter.email],
     );
 
     const totalCount = await this.dataSource.query(
       `SELECT count(*)
-       FROM public.users u
-       ${whereClause}`,
-      params,
+       FROM public.users
+       WHERE (login ILIKE $1 or email ILIKE $2);`,
+      [filter.login, filter.email],
     );
 
     return Paginator.paginate({
