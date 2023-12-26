@@ -4,6 +4,16 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "assets": ["features/mail/templates/**/*"],
-    "watchAssets": true
+    "watchAssets": true,
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "dtoFileNameSuffix": [".model.ts"],
+          "classValidatorShim": true,
+          "introspectComments": true
+        }
+      }
+    ]
   }
 }
