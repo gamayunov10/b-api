@@ -17,6 +17,7 @@ import { UsersRepository } from 'src/features/users/infrastructure/users.reposit
 import { UserInputModel } from 'src/features/users/api/models/input/user-input-model';
 import { TerminateSessionCommand } from 'src/features/devices/application/usecases/terminate-session.usecase';
 import { UpdateTokensCommand } from 'src/features/devices/application/usecases/update-tokens.usecase';
+import { Response as ExpressResponse } from 'express';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import {
@@ -179,7 +180,7 @@ export class PublicAuthController {
     @Ip() ip: string,
     @Body() body: LoginInputModel,
     @Headers() headers: string,
-    @Response() res,
+    @Response({ passthrough: true }) res: ExpressResponse,
   ) {
     const userId = await this.authService.checkCredentials(
       body.loginOrEmail,
@@ -220,9 +221,8 @@ export class PublicAuthController {
     @Ip() ip: string,
     @Headers() headers: string,
     @RefreshToken() refreshToken: string,
-    @Response() res,
+    @Response({ passthrough: true }) res: ExpressResponse,
   ): Promise<void> {
-    console.log('refreshToken', 'check');
     const userAgent = headers['user-agent'] || 'unknown';
     const decodedToken: any = this.jwtService.decode(refreshToken);
     const deviceId = decodedToken.deviceId;
