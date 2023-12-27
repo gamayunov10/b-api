@@ -13,9 +13,9 @@ export const APP_PREFIX = '';
 export const applyAppSettings = (app: INestApplication) => {
   app.enableCors();
   app.use(cookieParser());
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
-
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   setAppPrefix(app);
 
