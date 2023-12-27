@@ -7,7 +7,7 @@ export class QueryModel {
   @IsOptional()
   sortBy = QueryParamsEnum.createdAt;
   @IsOptional()
-  sortDirection: SortDirection.DESC | SortDirection.ASC = SortDirection.DESC;
+  sortDirection = SortDirection.DESC;
   @IsOptional()
   pageNumber = 1;
   @IsOptional()
