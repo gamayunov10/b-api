@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { usersFilter } from 'src/base/pagination/users-filter.paginator';
+import { Paginator } from 'src/base/pagination/_paginator';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
-import { Paginator } from '../../../base/pagination/_paginator';
 import { SuperAdminUserViewModel } from '../api/models/output/user-view.model';
 
 @Injectable()
@@ -13,7 +13,6 @@ export class UsersQueryRepository {
 
   async findUsers(query: UserQueryModel) {
     const filter = usersFilter(query.searchLoginTerm, query.searchEmailTerm);
-
     const users = await this.dataSource.query(
       `SELECT u.id,
               u.login,
@@ -21,8 +20,12 @@ export class UsersQueryRepository {
               u."createdAt"
        FROM public.users u
        WHERE (login ILIKE $1 or email ILIKE $2)
-       ORDER BY "${query.sortBy}" ${query.sortDirection}
-       LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${query.pageSize}`,
+       ORDER BY "${query.sortBy}" ${
+        query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
+      } ${query.sortDirection}
+       LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${
+        query.pageSize
+      }`,
       [filter.login, filter.email],
     );
 
