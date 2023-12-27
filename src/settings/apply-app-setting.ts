@@ -12,7 +12,7 @@ export const APP_PREFIX = '';
 
 export const applyAppSettings = (app: INestApplication) => {
   app.enableCors();
-  app.use(cookieParser());
+  app.use(cookieParser() as any);
   app.useGlobalFilters(new HttpExceptionFilter());
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
