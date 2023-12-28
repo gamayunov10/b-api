@@ -26,24 +26,18 @@ export class DevicesRepository {
 
     const device = await this.dataSource.query(
       `INSERT INTO public.devices
-                ("userId", "deviceId", ip, title, "lastActiveDate", "expirationDate")
-              VALUES ($1, $2, $3, $4, $5, $6)
-              RETURNING id`,
-      [
-        decodedToken.sub,
-        decodedToken.deviceId,
-        ip,
-        userAgent,
-        iatDate,
-        expDate,
-      ],
+                (ip, title, "lastActiveDate", "expirationDate", "deviceId")
+              VALUES ($1, $2, $3, $4, $5)
+              RETURNING id;`,
+      [ip, userAgent, iatDate, expDate, decodedToken.userId],
     );
+
     return device[0].id;
   }
 
-  async findDevice(deviceId: any): Promise<Device | null> {
+  async findDevice(deviceId: number): Promise<Device | null> {
     const devices = await this.dataSource.query(
-      `SELECT id, "userId", "deviceId", "lastActiveDate"
+      `SELECT id, "deviceId", "lastActiveDate"
        FROM public.devices
        WHERE "deviceId" = $1`,
       [deviceId],
@@ -57,7 +51,7 @@ export class DevicesRepository {
   }
 
   async updateDevice(
-    deviceId: string,
+    deviceId: number,
     token: any,
     ip: string,
     userAgent: string,

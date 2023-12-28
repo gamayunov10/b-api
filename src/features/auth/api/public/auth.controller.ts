@@ -51,7 +51,7 @@ import { AuthService } from './application/auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
-export class PublicAuthController {
+export class AuthController {
   constructor(
     private commandBus: CommandBus,
     private readonly jwtService: JwtService,
@@ -60,9 +60,9 @@ export class PublicAuthController {
   ) {}
 
   @Get('me')
+  @UseGuards(JwtBearerGuard)
   @ApiOperation({ summary: 'Get information about current user' })
   @ApiBasicAuth('Bearer')
-  @UseGuards(JwtBearerGuard)
   async getProfile(@UserIdFromGuard() userId: number) {
     const user = await this.usersRepository.findUserById(userId);
 
@@ -108,6 +108,47 @@ export class PublicAuthController {
     }
 
     return result;
+  }
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'Try login user to the system',
+  })
+  @UseGuards(ThrottlerGuard)
+  @Throttle(5, 10)
+  @HttpCode(200)
+  async login(
+    @Ip() ip: string,
+    @Body() body: LoginInputModel,
+    @Headers() headers: string,
+    @Response({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const userId = await this.authService.checkCredentials(
+      body.loginOrEmail,
+      body.password,
+    );
+
+    if (!userId) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const userAgent = headers['user-agent'] || 'unknown';
+
+    const tokens = await this.commandBus.execute(
+      new TokensCreateCommand(userId, userId),
+    );
+
+    await this.commandBus.execute(
+      new LoginDeviceCommand(tokens.refreshToken, ip, userAgent),
+    );
+
+    res
+      .cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: true,
+      })
+      .json({ accessToken: tokens.accessToken });
   }
 
   @Post('registration-email-resending')
@@ -196,46 +237,6 @@ export class PublicAuthController {
 
     await this.commandBus.execute(
       new UpdateTokensCommand(newToken, ip, userAgent),
-    );
-
-    res
-      .cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-      })
-      .json({ accessToken: tokens.accessToken });
-  }
-
-  @Post('login')
-  @ApiOperation({
-    summary: 'Try login user to the system',
-  })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
-  @HttpCode(200)
-  async login(
-    @Ip() ip: string,
-    @Body() body: LoginInputModel,
-    @Headers() headers: string,
-    @Response({ passthrough: true }) res: ExpressResponse,
-  ) {
-    const userId = await this.authService.checkCredentials(
-      body.loginOrEmail,
-      body.password,
-    );
-
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
-
-    const userAgent = headers['user-agent'] || 'unknown';
-    const tokens = await this.commandBus.execute(
-      new TokensCreateCommand(userId),
-    );
-
-    await this.commandBus.execute(
-      new LoginDeviceCommand(tokens.refreshToken, ip, userAgent),
     );
 
     res

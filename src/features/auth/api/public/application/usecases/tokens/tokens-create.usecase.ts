@@ -1,11 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID } from 'crypto';
 
 import { jwtConstants } from '../../../../../config/constants';
 
 export class TokensCreateCommand {
-  constructor(public userId: string, public deviceId = randomUUID()) {}
+  constructor(public userId: string, public deviceId: string) {}
 }
 
 @CommandHandler(TokensCreateCommand)
@@ -15,9 +14,9 @@ export class TokensCreateUseCase
   constructor(private readonly jwtService: JwtService) {}
 
   async execute(command: TokensCreateCommand) {
-    const accessTokenPayload: any = { sub: command.userId };
+    const accessTokenPayload: any = { userId: command.userId };
     const refreshTokenPayload: any = {
-      sub: command.userId,
+      userId: command.userId,
       deviceId: command.deviceId,
     };
 

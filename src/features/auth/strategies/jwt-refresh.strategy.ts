@@ -5,7 +5,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { StrategyType } from 'src/base/enums/strategy-type.enum';
 
 import { jwtConstants } from '../config/constants';
-import { cookieExtractor } from '../../../base/utils/cookie-extractor';
+import { refreshTokenExtractor } from '../../../base/utils/refresh-token-extractor';
 import { ValidateRefreshTokenCommand } from '../api/public/application/usecases/validations/validate-refresh-token.usecase';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(private commandBus: CommandBus) {
     super({
-      jwtFromRequest: cookieExtractor,
+      jwtFromRequest: refreshTokenExtractor,
       ignoreExpiration: false,
       secretOrKey: jwtConstants.refreshTokenSecret,
     });
@@ -31,7 +31,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
     }
 
     return {
-      id: payload.sub,
+      id: payload.deviceId,
     };
   }
 }

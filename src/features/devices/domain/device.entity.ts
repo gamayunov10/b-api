@@ -5,9 +5,6 @@ export class Device {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'deviceId', type: 'string' })
-  deviceId: string;
-
   @Column({ type: 'character varying' })
   ip: string;
 
@@ -20,6 +17,6 @@ export class Device {
   @Column({ name: 'expirationDate', type: 'timestamp with time zone' })
   expirationDate: Date;
 
-  @Column({ name: 'userId', type: 'integer' })
-  userId: number;
+  @Column({ name: 'deviceId', type: 'integer' })
+  deviceId: number;
 }

@@ -45,7 +45,7 @@ export class DevicesController {
     @UserIdFromGuard() userId: string,
   ) {
     const result = await this.commandBus.execute(
-      new TerminateSessionCommand(+deviceId, +userId),
+      new TerminateSessionCommand(deviceId, userId),
     );
 
     if (result.code !== ResultCode.Success) {

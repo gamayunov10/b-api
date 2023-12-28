@@ -29,25 +29,25 @@ import { PasswordRecoveryUseCase } from '../../features/auth/api/public/applicat
 import { PasswordUpdateUseCase } from '../../features/auth/api/public/application/usecases/password/password-update.usecase';
 import { ValidateRefreshTokenUseCase } from '../../features/auth/api/public/application/usecases/validations/validate-refresh-token.usecase';
 import { TokensCreateUseCase } from '../../features/auth/api/public/application/usecases/tokens/tokens-create.usecase';
-import { BasicStrategy } from '../../features/auth/strategies/basic.strategy';
-import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.strategy';
 import { JwtRefreshTokenStrategy } from '../../features/auth/strategies/jwt-refresh.strategy';
-import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
-import { PublicAuthController } from '../../features/auth/api/public/public.auth.controller';
+import { AuthController } from '../../features/auth/api/public/auth.controller';
 import { Device } from '../../features/devices/domain/device.entity';
 import { User } from '../../features/users/domain/user.entity';
+import { BasicStrategy } from '../../features/auth/strategies/basic.strategy';
+import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.strategy';
+import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
 
 const controllers = [
   UsersController,
   DevicesController,
   TestingController,
-  PublicAuthController,
+  AuthController,
 ];
 
 const services = [JwtService, AuthService];
 
 const entities = [Device, User];
-const typeORMRepositories = [Repository<User>];
+const typeORMRepositories = [Repository<User>, Repository<Device>];
 
 const useCases = [
   UserCreateUseCase,
@@ -95,12 +95,12 @@ const strategies = [
   controllers: [...controllers],
   providers: [
     ...services,
-    ...useCases,
     ...repositories,
     ...queryRepositories,
     ...typeORMRepositories,
     ...constraints,
     ...strategies,
+    ...useCases,
   ],
 })
 export class MainModule {}

@@ -1,4 +1,4 @@
-export const cookieExtractor = function (req) {
+export const refreshTokenExtractor = function (req) {
   let token = null;
   if (req && req.cookies) {
     token = req.cookies.refreshToken;
