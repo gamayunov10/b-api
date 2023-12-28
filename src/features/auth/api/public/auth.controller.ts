@@ -110,47 +110,6 @@ export class AuthController {
     return result;
   }
 
-  @Post('login')
-  @ApiOperation({
-    summary: 'Try login user to the system',
-  })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
-  @HttpCode(200)
-  async login(
-    @Ip() ip: string,
-    @Body() body: LoginInputModel,
-    @Headers() headers: string,
-    @Response({ passthrough: true }) res: ExpressResponse,
-  ) {
-    const userId = await this.authService.checkCredentials(
-      body.loginOrEmail,
-      body.password,
-    );
-
-    if (!userId) {
-      res.sendStatus(401);
-      return;
-    }
-
-    const userAgent = headers['user-agent'] || 'unknown';
-
-    const tokens = await this.commandBus.execute(
-      new TokensCreateCommand(userId, userId),
-    );
-
-    await this.commandBus.execute(
-      new LoginDeviceCommand(tokens.refreshToken, ip, userAgent),
-    );
-
-    res
-      .cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-      })
-      .json({ accessToken: tokens.accessToken });
-  }
-
   @Post('registration-email-resending')
   @ApiOperation({
     summary: 'Resend confirmation registration Email if user exists',
@@ -237,6 +196,47 @@ export class AuthController {
 
     await this.commandBus.execute(
       new UpdateTokensCommand(newToken, ip, userAgent),
+    );
+
+    res
+      .cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: true,
+      })
+      .json({ accessToken: tokens.accessToken });
+  }
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'Try login user to the system',
+  })
+  @UseGuards(ThrottlerGuard)
+  @Throttle(5, 10)
+  @HttpCode(200)
+  async login(
+    @Ip() ip: string,
+    @Body() body: LoginInputModel,
+    @Headers() headers: string,
+    @Response({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const userId = await this.authService.checkCredentials(
+      body.loginOrEmail,
+      body.password,
+    );
+
+    if (!userId) {
+      res.sendStatus(401);
+      return;
+    }
+
+    const userAgent = headers['user-agent'] || 'unknown';
+
+    const tokens = await this.commandBus.execute(
+      new TokensCreateCommand(userId),
+    );
+
+    await this.commandBus.execute(
+      new LoginDeviceCommand(tokens.refreshToken, ip, userAgent),
     );
 
     res

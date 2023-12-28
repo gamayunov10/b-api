@@ -26,18 +26,25 @@ export class DevicesRepository {
 
     const device = await this.dataSource.query(
       `INSERT INTO public.devices
-                (ip, title, "lastActiveDate", "expirationDate", "deviceId")
-              VALUES ($1, $2, $3, $4, $5)
+                ("deviceId", ip, title, "lastActiveDate", "expirationDate", "userId")
+              VALUES ($1, $2, $3, $4, $5, $6)
               RETURNING id;`,
-      [ip, userAgent, iatDate, expDate, decodedToken.userId],
+      [
+        decodedToken.deviceId,
+        ip,
+        userAgent,
+        iatDate,
+        expDate,
+        decodedToken.userId,
+      ],
     );
 
     return device[0].id;
   }
 
-  async findDevice(deviceId: number): Promise<Device | null> {
+  async findDevice(deviceId: string): Promise<Device | null> {
     const devices = await this.dataSource.query(
-      `SELECT id, "deviceId", "lastActiveDate"
+      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
        FROM public.devices
        WHERE "deviceId" = $1`,
       [deviceId],
@@ -51,7 +58,7 @@ export class DevicesRepository {
   }
 
   async updateDevice(
-    deviceId: number,
+    deviceId: string,
     token: any,
     ip: string,
     userAgent: string,
@@ -68,7 +75,7 @@ export class DevicesRepository {
     return result[1] === 1;
   }
 
-  async deleteDevice(deviceId: number): Promise<boolean> {
+  async deleteDevice(deviceId: string): Promise<boolean> {
     const result = await this.dataSource.query(
       `DELETE
               FROM public.devices

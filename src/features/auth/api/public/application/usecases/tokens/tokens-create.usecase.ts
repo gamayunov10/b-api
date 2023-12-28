@@ -1,10 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 
 import { jwtConstants } from '../../../../../config/constants';
 
 export class TokensCreateCommand {
-  constructor(public userId: string, public deviceId: string) {}
+  constructor(public userId: string, public deviceId = randomUUID()) {}
 }
 
 @CommandHandler(TokensCreateCommand)
