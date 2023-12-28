@@ -15,10 +15,13 @@ import { UsersRepository } from 'src/features/users/infrastructure/users.reposit
 import { IsEmailAlreadyExistConstraint } from 'src/infrastructure/decorators/unique-email.decorator';
 import { IsLoginAlreadyExistConstraint } from 'src/infrastructure/decorators/unique-login.decorator';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthService } from 'src/features/auth/api/public/application/auth.service';
 import { PassportModule } from '@nestjs/passport';
+import { Repository } from 'typeorm';
+import { LoginAndPasswordValidationUseCase } from 'src/features/auth/api/public/application/usecases/validations/login-password-validation.usecase';
 
 import { TestingController } from '../../testing/testing.controller';
-import { AuthService } from '../../features/auth/api/public/application/usecases/auth.service';
 import { RegistrationUseCase } from '../../features/auth/api/public/application/usecases/registration/registration.usecase';
 import { RegistrationEmailResendUseCase } from '../../features/auth/api/public/application/usecases/registration/registration-email-resend.usecase';
 import { RegistrationConfirmationUseCase } from '../../features/auth/api/public/application/usecases/registration/registration-confirmation.usecase';
@@ -31,6 +34,8 @@ import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.str
 import { JwtRefreshTokenStrategy } from '../../features/auth/strategies/jwt-refresh.strategy';
 import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
 import { PublicAuthController } from '../../features/auth/api/public/public.auth.controller';
+import { Device } from '../../features/devices/domain/device.entity';
+import { User } from '../../features/users/domain/user.entity';
 
 const controllers = [
   UsersController,
@@ -40,6 +45,9 @@ const controllers = [
 ];
 
 const services = [JwtService, AuthService];
+
+const entities = [Device, User];
+const typeORMRepositories = [Repository<User>];
 
 const useCases = [
   UserCreateUseCase,
@@ -55,6 +63,7 @@ const useCases = [
   PasswordUpdateUseCase,
   ValidateRefreshTokenUseCase,
   TokensCreateUseCase,
+  LoginAndPasswordValidationUseCase,
 ];
 
 const repositories = [UsersRepository, DevicesRepository];
@@ -75,11 +84,12 @@ const strategies = [
 
 @Module({
   imports: [
-    CqrsModule,
     ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
     }),
+    TypeOrmModule.forFeature([...entities]),
+    CqrsModule,
     PassportModule,
   ],
   controllers: [...controllers],
@@ -88,6 +98,7 @@ const strategies = [
     ...useCases,
     ...repositories,
     ...queryRepositories,
+    ...typeORMRepositories,
     ...constraints,
     ...strategies,
   ],

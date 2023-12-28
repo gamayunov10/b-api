@@ -19,7 +19,6 @@ export const exceptionHandler = (
       },
     ],
   };
-
   switch (code) {
     case ResultCode.BadRequest: {
       throw new BadRequestException(exceptionObject);

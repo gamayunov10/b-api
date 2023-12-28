@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { isValidUuid } from 'src/base/utils/is-valid-uuid';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 
 import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Device)
+    private readonly devicesRepository: Repository<Device>,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
+
+  async dataSourceSave(entity: Device): Promise<Device> {
+    return this.dataSource.manager.save(entity);
+  }
 
   async createDevice(
     decodedToken: any,
@@ -34,39 +41,36 @@ export class DevicesRepository {
     return device[0].id;
   }
 
-  async findDevice(deviceId: number): Promise<Device | null> {
-    if (!isValidUuid(deviceId)) {
-      return null;
-    }
-
-    const device = await this.dataSource.query(
+  async findDevice(deviceId: any): Promise<Device | null> {
+    const devices = await this.dataSource.query(
       `SELECT id, "userId", "deviceId", "lastActiveDate"
        FROM public.devices
        WHERE "deviceId" = $1`,
       [deviceId],
     );
 
-    if (device.length === 0) {
+    if (devices.length === 0) {
       return null;
     }
 
-    return device[0];
+    return devices[0];
   }
 
   async updateDevice(
-    deviceId: number,
+    deviceId: string,
     token: any,
     ip: string,
     userAgent: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
       `UPDATE public.devices
-              SET "lastActiveDate" = $2,
+              SET "lastActiveDate" = to_timestamp($2),
               ip = $3,
-              title = $4,
-              WHERE "deviceId" = $1`,
+              title = $4
+              WHERE "deviceId" = $1;`,
       [deviceId, token.iat, ip, userAgent],
     );
+
     return result[1] === 1;
   }
 

@@ -22,7 +22,7 @@ export class UpdateTokensUseCase
     }
 
     return this.devicesRepository.updateDevice(
-      +device.deviceId,
+      device.deviceId,
       command.token,
       command.ip,
       command.userAgent,

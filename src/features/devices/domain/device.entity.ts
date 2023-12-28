@@ -15,10 +15,10 @@ export class Device {
   title: string;
 
   @Column({ name: 'lastActiveDate', type: 'timestamp with time zone' })
-  lastActiveDate: string;
+  lastActiveDate: Date;
 
   @Column({ name: 'expirationDate', type: 'timestamp with time zone' })
-  expirationDate: string;
+  expirationDate: Date;
 
   @Column({ name: 'userId', type: 'integer' })
   userId: number;

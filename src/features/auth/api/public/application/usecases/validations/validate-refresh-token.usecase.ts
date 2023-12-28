@@ -17,7 +17,10 @@ export class ValidateRefreshTokenUseCase
       command.payload.deviceId,
     );
 
-    if (!device || command.payload.iat < device.lastActiveDate) {
+    const timestamp = command.payload.iat;
+    const iatTimestamp = new Date(timestamp * 1000);
+
+    if (!device || iatTimestamp < device.lastActiveDate) {
       return null;
     }
 

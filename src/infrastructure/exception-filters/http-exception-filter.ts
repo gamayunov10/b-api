@@ -5,31 +5,32 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-
-import { exceptionResponseType } from '../types/exceptions.types';
+import { Request, Response } from 'express';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const request = ctx.getRequest();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    if (status === HttpStatus.BAD_REQUEST || status === HttpStatus.NOT_FOUND) {
-      const errorsResponse: exceptionResponseType = {
+    if (status === HttpStatus.BAD_REQUEST) {
+      const errorsResponse = {
         errorsMessages: [],
       };
+
       const responseBody: any = exception.getResponse();
 
-      if (typeof responseBody.message !== 'string') {
-        responseBody.message.forEach((m) =>
-          errorsResponse.errorsMessages.push(m),
+      if (Array.isArray(responseBody.message)) {
+        responseBody.message.forEach((e) =>
+          errorsResponse.errorsMessages.push(e),
         );
-        response.status(status).json(errorsResponse);
       } else {
-        response.status(status).json(responseBody.message);
+        errorsResponse.errorsMessages.push(responseBody.message);
       }
+
+      response.status(status).json(errorsResponse);
     } else {
       response.status(status).json({
         statusCode: status,

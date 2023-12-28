@@ -2,6 +2,7 @@ import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import { StrategyType } from 'src/base/enums/strategy-type.enum';
 
 import { jwtConstants } from '../config/constants';
 import { cookieExtractor } from '../../../base/utils/cookie-extractor';
@@ -10,7 +11,7 @@ import { ValidateRefreshTokenCommand } from '../api/public/application/usecases/
 @Injectable()
 export class JwtRefreshTokenStrategy extends PassportStrategy(
   Strategy,
-  'refresh',
+  StrategyType.REFRESH,
 ) {
   constructor(private commandBus: CommandBus) {
     super({

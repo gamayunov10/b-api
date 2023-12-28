@@ -47,7 +47,7 @@ import { PasswordRecoveryCommand } from './application/usecases/password/passwor
 import { RegistrationEmailResendCommand } from './application/usecases/registration/registration-email-resend.usecase';
 import { RegistrationCommand } from './application/usecases/registration/registration.usecase';
 import { RegistrationConfirmationCommand } from './application/usecases/registration/registration-confirmation.usecase';
-import { AuthService } from './application/usecases/auth.service';
+import { AuthService } from './application/auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -58,6 +58,7 @@ export class PublicAuthController {
     private readonly usersRepository: UsersRepository,
     private readonly authService: AuthService,
   ) {}
+
   @Get('me')
   @ApiOperation({ summary: 'Get information about current user' })
   @ApiBasicAuth('Bearer')
@@ -169,6 +170,42 @@ export class PublicAuthController {
     return result;
   }
 
+  @Post('refresh-token')
+  @ApiOperation({
+    summary:
+      'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
+  })
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(200)
+  async refreshTokens(
+    @UserIdFromGuard() userId: string,
+    @Ip() ip: string,
+    @Headers() headers: string,
+    @RefreshToken() refreshToken: string,
+    @Response({ passthrough: true }) res: ExpressResponse,
+  ): Promise<void> {
+    const userAgent = headers['user-agent'] || 'unknown';
+
+    const decodedToken: any = this.jwtService.decode(refreshToken);
+
+    const tokens = await this.commandBus.execute(
+      new TokensCreateCommand(userId, decodedToken.deviceId),
+    );
+
+    const newToken = this.jwtService.decode(tokens.refreshToken);
+
+    await this.commandBus.execute(
+      new UpdateTokensCommand(newToken, ip, userAgent),
+    );
+
+    res
+      .cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: true,
+      })
+      .json({ accessToken: tokens.accessToken });
+  }
+
   @Post('login')
   @ApiOperation({
     summary: 'Try login user to the system',
@@ -209,40 +246,6 @@ export class PublicAuthController {
       .json({ accessToken: tokens.accessToken });
   }
 
-  @Post('refresh-token')
-  @ApiOperation({
-    summary:
-      'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
-  })
-  @UseGuards(JwtRefreshGuard)
-  @HttpCode(200)
-  async refreshTokens(
-    @UserIdFromGuard() userId: string,
-    @Ip() ip: string,
-    @Headers() headers: string,
-    @RefreshToken() refreshToken: string,
-    @Response({ passthrough: true }) res: ExpressResponse,
-  ): Promise<void> {
-    const userAgent = headers['user-agent'] || 'unknown';
-    const decodedToken: any = this.jwtService.decode(refreshToken);
-    const deviceId = decodedToken.deviceId;
-    const tokens = await this.commandBus.execute(
-      new TokensCreateCommand(userId, deviceId),
-    );
-    const newToken = this.jwtService.decode(tokens.refreshToken);
-
-    await this.commandBus.execute(
-      new UpdateTokensCommand(newToken, ip, userAgent),
-    );
-
-    res
-      .cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-      })
-      .json({ accessToken: tokens.accessToken });
-  }
-
   @Post('logout')
   @ApiOperation({
     summary:
@@ -252,11 +255,9 @@ export class PublicAuthController {
   @HttpCode(204)
   async logout(@RefreshToken() refreshToken: string): Promise<boolean> {
     const decodedToken: any = this.jwtService.decode(refreshToken);
-    const deviceId = decodedToken.deviceId;
-    const userId = decodedToken.userId;
 
     return this.commandBus.execute(
-      new TerminateSessionCommand(deviceId, userId),
+      new TerminateSessionCommand(decodedToken.deviceId, decodedToken.userId),
     );
   }
 }
