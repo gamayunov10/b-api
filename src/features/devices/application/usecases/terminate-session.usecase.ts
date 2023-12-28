@@ -19,10 +19,7 @@ export class TerminateSessionUseCase
   async execute(
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
-    const deviceId = +command.deviceId;
-    const userId = +command.userId;
-
-    const device = await this.devicesRepository.findDevice(deviceId);
+    const device = await this.devicesRepository.findDevice(command.deviceId);
 
     if (!device) {
       return {
@@ -33,11 +30,11 @@ export class TerminateSessionUseCase
       };
     }
 
-    if (+device.deviceId !== userId) {
+    if (command.deviceId !== device.deviceId) {
       throw new ForbiddenException();
     }
 
-    await this.devicesRepository.deleteDevice(+command.deviceId);
+    await this.devicesRepository.deleteDevice(command.deviceId);
 
     return {
       data: true,

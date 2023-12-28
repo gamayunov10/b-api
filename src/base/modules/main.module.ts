@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { DevicesController } from 'src/features/devices/api/devices.controller';
@@ -36,6 +41,8 @@ import { User } from '../../features/users/domain/user.entity';
 import { BasicStrategy } from '../../features/auth/strategies/basic.strategy';
 import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.strategy';
 import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
+import { IsDeviceExist } from '../../infrastructure/middlewares/is-device-exist.middleware';
+import { DevicesQueryRepository } from '../../features/devices/infrastructure/devices.query.repository';
 
 const controllers = [
   UsersController,
@@ -68,7 +75,7 @@ const useCases = [
 
 const repositories = [UsersRepository, DevicesRepository];
 
-const queryRepositories = [UsersQueryRepository];
+const queryRepositories = [UsersQueryRepository, DevicesQueryRepository];
 
 const constraints = [
   IsEmailAlreadyExistConstraint,
@@ -103,4 +110,11 @@ const strategies = [
     ...useCases,
   ],
 })
-export class MainModule {}
+export class MainModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(IsDeviceExist).forRoutes({
+      path: 'security/devices/:id',
+      method: RequestMethod.DELETE,
+    });
+  }
+}

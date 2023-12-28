@@ -1,4 +1,11 @@
-import { Controller, Delete, HttpCode, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -10,6 +17,9 @@ import { exceptionHandler } from 'src/infrastructure/exception-filters/exception
 
 import { TerminateOtherSessionsCommand } from '../application/usecases/terminate-other-sessions.usecase';
 import { TerminateSessionCommand } from '../application/usecases/terminate-session.usecase';
+import { DevicesQueryRepository } from '../infrastructure/devices.query.repository';
+
+import { DeviceViewModel } from './models/output/device.view.model';
 
 @ApiTags('security')
 @Controller('security')
@@ -17,7 +27,22 @@ export class DevicesController {
   constructor(
     private commandBus: CommandBus,
     private readonly jwtService: JwtService,
+    private readonly devicesQueryRepository: DevicesQueryRepository,
   ) {}
+  @Get('devices')
+  @ApiOperation({
+    summary: 'Terminate all other (exclude current) devices sessions',
+  })
+  @UseGuards(JwtRefreshGuard)
+  async findActiveDevices(
+    @RefreshToken() refreshToken: string,
+  ): Promise<DeviceViewModel[]> {
+    const decodedToken: any = this.jwtService.decode(refreshToken);
+
+    const userId = decodedToken?.userId;
+
+    return await this.devicesQueryRepository.findActiveDevices(userId);
+  }
 
   @Delete('devices')
   @ApiOperation({
@@ -25,12 +50,14 @@ export class DevicesController {
   })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(204)
-  async deleteOldDevices(@RefreshToken() refreshToken) {
+  async deleteOldDevices(@RefreshToken() refreshToken: string) {
     const decodedToken: any = this.jwtService.decode(refreshToken);
-    const deviceId = decodedToken?.deviceId;
-    const userId = decodedToken?.userId;
+
     return this.commandBus.execute(
-      new TerminateOtherSessionsCommand(deviceId, userId),
+      new TerminateOtherSessionsCommand(
+        decodedToken?.deviceId,
+        decodedToken?.userId,
+      ),
     );
   }
 
