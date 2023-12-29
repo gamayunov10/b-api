@@ -7,6 +7,7 @@ import {
   Ip,
   Post,
   Response,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -182,7 +183,7 @@ export class AuthController {
     @Ip() ip: string,
     @Headers() headers: string,
     @RefreshToken() refreshToken: string,
-    @Response({ passthrough: true }) res: ExpressResponse,
+    @Response() res: ExpressResponse,
   ): Promise<void> {
     const userAgent = headers['user-agent'] || 'unknown';
 
@@ -217,7 +218,7 @@ export class AuthController {
     @Ip() ip: string,
     @Body() body: LoginInputModel,
     @Headers() headers: string,
-    @Response({ passthrough: true }) res: ExpressResponse,
+    @Response() res: ExpressResponse,
   ) {
     const userId = await this.authService.checkCredentials(
       body.loginOrEmail,
@@ -225,8 +226,7 @@ export class AuthController {
     );
 
     if (!userId) {
-      res.sendStatus(401);
-      return;
+      throw new UnauthorizedException();
     }
 
     const userAgent = headers['user-agent'] || 'unknown';
