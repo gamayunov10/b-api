@@ -6,11 +6,12 @@ import {
   HttpCode,
   Ip,
   Post,
-  Response,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -18,7 +19,6 @@ import { UsersRepository } from 'src/features/users/infrastructure/users.reposit
 import { UserInputModel } from 'src/features/users/api/models/input/user-input-model';
 import { TerminateSessionCommand } from 'src/features/devices/application/usecases/terminate-session.usecase';
 import { UpdateTokensCommand } from 'src/features/devices/application/usecases/update-tokens.usecase';
-import { Response as ExpressResponse } from 'express';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import {
@@ -183,7 +183,7 @@ export class AuthController {
     @Ip() ip: string,
     @Headers() headers: string,
     @RefreshToken() refreshToken: string,
-    @Response() res: ExpressResponse,
+    @Res() res: Response,
   ): Promise<void> {
     const userAgent = headers['user-agent'] || 'unknown';
 
@@ -199,7 +199,7 @@ export class AuthController {
       new UpdateTokensCommand(newToken, ip, userAgent),
     );
 
-    res
+    (res as Response)
       .cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: true,
@@ -218,7 +218,7 @@ export class AuthController {
     @Ip() ip: string,
     @Body() body: LoginInputModel,
     @Headers() headers: string,
-    @Response() res: ExpressResponse,
+    @Res() res: Response,
   ) {
     const userId = await this.authService.checkCredentials(
       body.loginOrEmail,
@@ -239,7 +239,7 @@ export class AuthController {
       new LoginDeviceCommand(tokens.refreshToken, ip, userAgent),
     );
 
-    res
+    (res as Response)
       .cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: true,
