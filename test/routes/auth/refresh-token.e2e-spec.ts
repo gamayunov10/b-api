@@ -23,18 +23,18 @@ describe('Auth: auth/refresh-token', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/refresh-token', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should return 401 if refreshToken is missing`, async () => {
       await agent.post(auth_refreshToken_uri).expect(401);
@@ -56,7 +56,7 @@ describe('Auth: auth/refresh-token', () => {
         .get('Set-Cookie')
         .find((cookie) => cookie.startsWith('refreshToken'));
 
-      await waitForIt(20);
+      await waitForIt(22);
 
       await agent
         .post(auth_refreshToken_uri)
@@ -67,8 +67,8 @@ describe('Auth: auth/refresh-token', () => {
 
   describe('positive: auth/refresh-token', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Generate new pair of access and refresh tokens 

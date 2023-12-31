@@ -25,18 +25,18 @@ describe('Auth: auth/new-password', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/new-password', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should return 400 If the inputModel has incorrect value`, async () => {
       await agent
@@ -79,9 +79,9 @@ describe('Auth: auth/new-password', () => {
   });
 
   describe('positive: auth/new-password', () => {
-    it(`should clear db, wait 10s`, async () => {
+    it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Confirm Password recovery`, async () => {

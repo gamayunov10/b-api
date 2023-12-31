@@ -32,18 +32,18 @@ describe('Devices: DELETE all sessions security/devices', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: DELETE security/devices', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should not Terminate all other sessions (exclude current) 
     if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
@@ -92,8 +92,8 @@ describe('Devices: DELETE all sessions security/devices', () => {
 
   describe('positive: DELETE security/devices', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Terminate all other sessions (exclude current)`, async () => {

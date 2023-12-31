@@ -28,18 +28,18 @@ describe('Users: DELETE sa/users/:id', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: delete sa/users/:id', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should not DELETE user specified by id if login is incorrect`, async () => {
       const res = await usersTestManager.createUser(createUserInput);
@@ -103,8 +103,8 @@ describe('Users: DELETE sa/users/:id', () => {
 
   describe('positive: DELETE sa/users/:id', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Delete user specified by id`, async () => {

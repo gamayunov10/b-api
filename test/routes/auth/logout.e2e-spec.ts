@@ -11,9 +11,11 @@ import { waitForIt } from '../../base/utils/functions/wait';
 import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   auth_logout_uri,
+  auth_refreshToken_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
+import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
 
 describe('Auth: auth/logout', () => {
   let app: INestApplication;
@@ -21,18 +23,18 @@ describe('Auth: auth/logout', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/logout', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should return 401 when trying to logout if cookie is incorrect`, async () => {
       await agent
@@ -65,23 +67,33 @@ describe('Auth: auth/logout', () => {
 
   describe('positive: auth/logout', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should logout user`, async () => {
       await usersTestManager.createUser(createUserInput);
-
-      const response = await usersTestManager.login(loginUserInput);
-
-      const refreshTokenCookie = response
-        .get('Set-Cookie')
-        .find((cookie) => cookie.startsWith('refreshToken'));
+      const res = await usersTestManager.login(loginUserInput);
+      const refreshToken = res.headers['set-cookie'][0];
 
       await agent
+        .post(auth_refreshToken_uri)
+        .set('Cookie', refreshToken)
+        .expect(200);
+
+      await agent.post(auth_logout_uri).set('Cookie', refreshToken).expect(204);
+
+      const response = await agent
+        .post(auth_refreshToken_uri)
+        .set('Cookie', refreshToken)
+        .expect(401);
+      expecFilteredMessages(response, 401, auth_refreshToken_uri);
+
+      const response2 = await agent
         .post(auth_logout_uri)
-        .set('Cookie', refreshTokenCookie)
-        .expect(204);
+        .set('Cookie', refreshToken)
+        .expect(401);
+      expecFilteredMessages(response2, 401, auth_logout_uri);
     });
   });
 

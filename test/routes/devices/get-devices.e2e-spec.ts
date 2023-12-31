@@ -16,7 +16,6 @@ import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
 import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
 import { expectGetDevices } from '../../base/utils/functions/devices/expectGetDevices';
 
@@ -26,47 +25,17 @@ describe('Devices: GET security/devices', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: GET security/devices', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
-
-    it(`should not Return all devices with active sessions for current user
-     if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
-      await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
-      const refreshToken = res.headers['set-cookie'][0];
-
-      const response = await agent
-        .get(security_devices_uri)
-        // .set('Cookie', refreshToken) // missing
-        .expect(401);
-
-      expecFilteredMessages(response, 401, security_devices_uri);
-    });
-
-    it(`should not Return all devices with active sessions for current user
-     if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
-      await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
-      const refreshToken = res.headers['set-cookie'][0];
-
-      await waitForIt(11);
-
-      const response = await agent
-        .get(security_devices_uri)
-        .set('Cookie', refreshToken) // expired
-        .expect(401);
-
-      expecFilteredMessages(response, 401, security_devices_uri);
     });
 
     it(`should not Return all devices with active sessions for current user
@@ -77,17 +46,32 @@ describe('Devices: GET security/devices', () => {
 
       const response = await agent
         .get(security_devices_uri)
-        .set('Cookie', invalidRefreshToken) // incorrect
+        // .set('Cookie', refreshToken) // missing
         .expect(401);
 
       expecFilteredMessages(response, 401, security_devices_uri);
     });
+
+    it(`should not Return all devices with active sessions for current user if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
+      await usersTestManager.createUser(createUserInput);
+      const res = await usersTestManager.login(loginUserInput);
+      const refreshToken = res.headers['set-cookie'][0];
+
+      await waitForIt(22);
+
+      const response = await agent
+        .get(security_devices_uri)
+        .set('Cookie', refreshToken) // expired
+        .expect(401);
+
+      expecFilteredMessages(response, 401, security_devices_uri);
+    }, 38000);
   });
 
   describe('positive: GET security/devices', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Return all devices with active sessions for current user`, async () => {

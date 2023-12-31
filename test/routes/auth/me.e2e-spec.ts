@@ -24,18 +24,18 @@ describe('Auth: auth/me', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/me', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should not Get information about current user if accessToken is missing`, async () => {
       await agent.get(auth_me_uri).expect(401);
@@ -72,8 +72,8 @@ describe('Auth: auth/me', () => {
 
   describe('positive: auth/me', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Get information about current user`, async () => {

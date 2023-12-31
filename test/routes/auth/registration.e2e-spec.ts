@@ -35,18 +35,18 @@ describe('Auth: auth/registration', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/registration', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should create 1 user`, async () => {
       await usersTestManager.createUser(createUserInput);
@@ -207,13 +207,11 @@ describe('Auth: auth/registration', () => {
 
   describe('positive: auth/registration', () => {
     it(`should clear db`, async () => {
-      await agent.delete('/testing/all-data/');
-      await waitForIt(10);
+      await waitForIt(11);
+      await agent.delete(testing_allData_uri);
     }, 15000);
 
     it(`should return 204 when trying to Register in the system`, async () => {
-      await waitForIt(10);
-
       await agent
         .post(auth_registration_uri)
         .send({
@@ -222,7 +220,7 @@ describe('Auth: auth/registration', () => {
           email: userEmail02,
         })
         .expect(204);
-    }, 50000);
+    }, 15000);
 
     it(`should return 204 when trying to Register in the system, 
     SendRegistrationMailUseCase should be called`, async () => {
@@ -253,7 +251,7 @@ describe('Auth: auth/registration', () => {
       );
 
       executeSpy.mockClear();
-    });
+    }, 15000);
   });
 
   afterAll(async () => {

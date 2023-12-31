@@ -29,18 +29,18 @@ describe('Auth: auth/registration-email-resending', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
+    await waitForIt(11);
     const result = await initializeApp();
     app = result.app;
     agent = result.agent;
     const usersQueryRepository = app.get(UsersQueryRepository);
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
-  });
+  }, 15000);
 
   describe('negative: auth/registration-email-resending', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
-    }, 15000);
+    });
 
     it(`should return 400 If the inputModel has incorrect values`, async () => {
       const response = await agent
@@ -100,13 +100,11 @@ describe('Auth: auth/registration-email-resending', () => {
 
   describe('positive: auth/registration-email-resending', () => {
     it(`should clear db`, async () => {
+      await waitForIt(11);
       await agent.delete(testing_allData_uri);
-      await waitForIt(10);
     }, 15000);
 
     it(`should Resend confirmation registration Email if user exists`, async () => {
-      await waitForIt(10);
-
       await agent
         .post(auth_registration_uri)
         .send({
@@ -122,7 +120,7 @@ describe('Auth: auth/registration-email-resending', () => {
           email: userEmail02,
         })
         .expect(204);
-    }, 20000);
+    }, 10000);
 
     it(`"should Resend confirmation registration Email, 
     SendRegistrationMailUseCase should be called`, async () => {
