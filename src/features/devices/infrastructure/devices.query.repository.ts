@@ -24,4 +24,19 @@ export class DevicesQueryRepository {
       };
     });
   }
+
+  async findDeviceIdByUserId(userId: string): Promise<string | null> {
+    const devices = await this.dataSource.query(
+      `SELECT "deviceId"
+       FROM public.devices
+       WHERE "userId" = $1;`,
+      [userId],
+    );
+
+    if (devices.length === 0) {
+      return null;
+    }
+
+    return devices[0].deviceId;
+  }
 }

@@ -1,10 +1,14 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { deviceIDField, deviceNotFound } from 'src/base/constants/constants';
-import { ResultCode } from 'src/base/enums/result-code.enum';
-import { ExceptionResultType } from 'src/infrastructure/types/exceptions.types';
 import { ForbiddenException } from '@nestjs/common';
 
 import { DevicesRepository } from '../../infrastructure/devices.repository';
+import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
+import { ResultCode } from '../../../../base/enums/result-code.enum';
+import {
+  deviceIDField,
+  deviceNotFound,
+} from '../../../../base/constants/constants';
+import { DevicesQueryRepository } from '../../infrastructure/devices.query.repository';
 
 export class TerminateSessionCommand {
   constructor(public deviceId: string, public userId: string) {}
@@ -14,14 +18,20 @@ export class TerminateSessionCommand {
 export class TerminateSessionUseCase
   implements ICommandHandler<TerminateSessionCommand>
 {
-  constructor(private readonly devicesRepository: DevicesRepository) {}
+  constructor(
+    private readonly devicesRepository: DevicesRepository,
+    private readonly devicesQueryRepository: DevicesQueryRepository,
+  ) {}
 
   async execute(
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
     const device = await this.devicesRepository.findDevice(command.deviceId);
 
-    if (!device) {
+    const tokenDeviceId =
+      await this.devicesQueryRepository.findDeviceIdByUserId(command.userId);
+
+    if (!device || !tokenDeviceId) {
       return {
         data: false,
         code: ResultCode.NotFound,
@@ -30,7 +40,7 @@ export class TerminateSessionUseCase
       };
     }
 
-    if (command.deviceId !== device.deviceId) {
+    if (tokenDeviceId !== command.deviceId) {
       throw new ForbiddenException();
     }
 

@@ -2,11 +2,11 @@ import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { StrategyType } from 'src/base/enums/strategy-type.enum';
 
 import { jwtConstants } from '../config/constants';
 import { refreshTokenExtractor } from '../../../base/utils/refresh-token-extractor';
 import { ValidateRefreshTokenCommand } from '../api/public/application/usecases/validations/validate-refresh-token.usecase';
+import { StrategyType } from '../../../base/enums/strategy-type.enum';
 
 @Injectable()
 export class JwtRefreshTokenStrategy extends PassportStrategy(
@@ -31,7 +31,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
     }
 
     return {
-      id: payload.deviceId,
+      id: payload.userId,
     };
   }
 }
