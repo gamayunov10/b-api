@@ -1,9 +1,9 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'crypto';
-import { SendPasswordRecoveryMailCommand } from 'src/features/mail/application/usecases/send-pass-recovery-mail.usecase';
 
 import { EmailInputModel } from '../../../../../models/email-input.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
+import { SendPasswordRecoveryMailCommand } from '../../../../../../mail/application/usecases/send-pass-recovery-mail.usecase';
 
 export class PasswordRecoveryCommand {
   constructor(public emailInputModel: EmailInputModel) {}

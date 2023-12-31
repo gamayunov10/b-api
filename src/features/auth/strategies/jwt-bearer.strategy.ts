@@ -1,9 +1,9 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { StrategyType } from 'src/base/enums/strategy-type.enum';
 
 import { jwtConstants } from '../config/constants';
+import { StrategyType } from '../../../base/enums/strategy-type.enum';
 
 @Injectable()
 export class JwtBearerStrategy extends PassportStrategy(

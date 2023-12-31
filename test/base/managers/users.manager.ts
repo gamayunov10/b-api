@@ -68,6 +68,7 @@ export class UsersTestManager {
 
     return user?.emailExpirationDate;
   }
+
   async getPasswordExpirationDate(loginOrEmail: string): Promise<Date | null> {
     const user =
       await this.usersQueryRepository.getUserByLoginOrEmailForTesting(
@@ -75,5 +76,14 @@ export class UsersTestManager {
       );
 
     return user?.passwordExpirationDate;
+  }
+
+  async getDeviceId(loginOrEmail: string): Promise<string | null> {
+    const user =
+      await this.usersQueryRepository.getUserByLoginOrEmailForTesting(
+        loginOrEmail,
+      );
+
+    return user?.deviceId;
   }
 }

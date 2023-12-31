@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as process from 'process';
 
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -9,10 +10,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
   database: process.env.POSTGRES_DATABASE,
   autoLoadEntities: false,
   synchronize: false,
-  ssl: true,
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  // ssl: true,
+  // extra: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
 };

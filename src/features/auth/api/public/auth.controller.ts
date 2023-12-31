@@ -15,10 +15,6 @@ import { Response } from 'express';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
-import { UserInputModel } from 'src/features/users/api/models/input/user-input-model';
-import { TerminateSessionCommand } from 'src/features/devices/application/usecases/terminate-session.usecase';
-import { UpdateTokensCommand } from 'src/features/devices/application/usecases/update-tokens.usecase';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import {
@@ -41,6 +37,10 @@ import { NewPasswordModel } from '../../models/new-password.model';
 import { exceptionHandler } from '../../../../infrastructure/exception-filters/exception.handler';
 import { LoginDeviceCommand } from '../../../devices/application/usecases/login-device.usecase';
 import { LoginInputModel } from '../../models/login-input.model';
+import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { UserInputModel } from '../../../users/api/models/input/user-input-model';
+import { UpdateTokensCommand } from '../../../devices/application/usecases/update-tokens.usecase';
+import { TerminateSessionCommand } from '../../../devices/application/usecases/terminate-session.usecase';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -84,7 +84,7 @@ export class AuthController {
       'Registration in the system. Email with confirmation code will be send to passed email address',
   })
   @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async registerUser(@Body() userInputModel: UserInputModel) {
     return this.commandBus.execute(new RegistrationCommand(userInputModel));

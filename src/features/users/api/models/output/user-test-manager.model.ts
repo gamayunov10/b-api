@@ -3,4 +3,5 @@ export class UserTestManagerModel {
   emailExpirationDate: Date;
   passwordRecoveryCode: string;
   passwordExpirationDate: Date;
+  deviceId: string;
 }

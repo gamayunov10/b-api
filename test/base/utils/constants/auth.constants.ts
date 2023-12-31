@@ -28,5 +28,8 @@ export const registrationInputDto = {
 
 export const invalidAccessToken = `accessToken=${randomUUID()}`;
 export const invalidRefreshToken = `refreshToken=${randomUUID()}`;
-export const invalidConfirmationCode = `refreshToken=${randomUUID()}`;
+export const invalidConfirmationCode = randomUUID();
 export const expiredAccessToken = `accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NTgwMjI1MjA1MmI4ZTJjZGUwNzgxYzIiLCJpYXQiOjE3MDI4OTYyMTAsImV4cCI6MTcwMjg5OTgxMH0.DiIAJgMRXzrVwdWFSBSh2PZzI7L-1HQUJk6F-1w7C1U`;
+
+export const expiredRefreshToken =
+  'refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMzczIiwiZGV2aWNlSWQiOiIyNWJjNGFjOC1kNTM1LTRhYmEtYTI5YS05Y2JmOTMxNjJiN2QiLCJpYXQiOjE3MDQwMDY4NjUsImV4cCI6MTcwNDAwNjg4NX0.jVHZoH9UidOTP1ihNmVTiomZyU3J8k4X6E9cFdxSMbU';

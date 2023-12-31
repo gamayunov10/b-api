@@ -9,15 +9,15 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtRefreshGuard } from 'src/features/auth/guards/jwt-refresh.guard';
-import { UserIdFromGuard } from 'src/features/auth/decorators/user-id-from-guard.guard.decorator';
-import { RefreshToken } from 'src/features/auth/decorators/refresh-token.param.decorator';
-import { ResultCode } from 'src/base/enums/result-code.enum';
-import { exceptionHandler } from 'src/infrastructure/exception-filters/exception.handler';
 
 import { TerminateOtherSessionsCommand } from '../application/usecases/terminate-other-sessions.usecase';
 import { TerminateSessionCommand } from '../application/usecases/terminate-session.usecase';
 import { DevicesQueryRepository } from '../infrastructure/devices.query.repository';
+import { JwtRefreshGuard } from '../../auth/guards/jwt-refresh.guard';
+import { RefreshToken } from '../../auth/decorators/refresh-token.param.decorator';
+import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
+import { ResultCode } from '../../../base/enums/result-code.enum';
+import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 
 import { DeviceViewModel } from './models/output/device.view.model';
 

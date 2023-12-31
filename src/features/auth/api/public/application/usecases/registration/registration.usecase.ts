@@ -1,10 +1,10 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { UserInputModel } from 'src/features/users/api/models/input/user-input-model';
 
 import { SendRegistrationMailCommand } from '../../../../../../mail/application/usecases/send-registration-mail.usecase';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
+import { UserInputModel } from '../../../../../../users/api/models/input/user-input-model';
 
 export class RegistrationCommand {
   constructor(public userInputModel: UserInputModel) {}

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { usersFilter } from 'src/base/pagination/users-filter.paginator';
-import { Paginator } from 'src/base/pagination/_paginator';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { SuperAdminUserViewModel } from '../api/models/output/user-view.model';
+import { UserTestManagerModel } from '../api/models/output/user-test-manager.model';
+import { usersFilter } from '../../../base/pagination/users-filter.paginator';
+import { Paginator } from '../../../base/pagination/_paginator';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -57,6 +58,35 @@ export class UsersQueryRepository {
 
     const mappedUsers = await this.usersMapping(users);
     return mappedUsers[0];
+  }
+
+  async getUserByLoginOrEmailForTesting(
+    loginOrEmail: string,
+  ): Promise<UserTestManagerModel | null> {
+    const users = await this.dataSource.query(
+      `SELECT  
+                e."confirmationCode" as "emailConfirmationCode",
+                e."expirationDate" as "emailExpirationDate", 
+                p."recoveryCode" as "passwordRecoveryCode",
+                p."expirationDate" as "passwordExpirationDate",
+                d."deviceId"
+              FROM public.users u
+              LEFT JOIN public.user_email_confirmation e
+              ON e."userId" = u.id
+              LEFT JOIN public.user_password_recovery p
+              ON p."userId" = u.id
+              LEFT JOIN public.devices d
+              ON d."userId" = u.id
+              WHERE login = $1
+              OR email = $1;`,
+      [loginOrEmail],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0] as UserTestManagerModel;
   }
 
   private async usersMapping(array: any): Promise<SuperAdminUserViewModel[]> {

@@ -69,3 +69,23 @@ export const loginUserInput3 = {
   loginOrEmail: userLogin03,
   password: userPassword,
 };
+
+export const loginUserInput4 = {
+  loginOrEmail: userLogin04,
+  password: userPassword,
+};
+
+export const loginUserInput5 = {
+  loginOrEmail: userLogin05,
+  password: userPassword,
+};
+
+export const loginUserInput6 = {
+  loginOrEmail: userLogin06,
+  password: userPassword,
+};
+
+export const loginUserInput7 = {
+  loginOrEmail: userLogin07,
+  password: userPassword,
+};

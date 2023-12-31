@@ -6,25 +6,10 @@ import {
 } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { DevicesController } from 'src/features/devices/api/devices.controller';
-import { LoginDeviceUseCase } from 'src/features/devices/application/usecases/login-device.usecase';
-import { TerminateOtherSessionsUseCase } from 'src/features/devices/application/usecases/terminate-other-sessions.usecase';
-import { TerminateSessionUseCase } from 'src/features/devices/application/usecases/terminate-session.usecase';
-import { UpdateTokensUseCase } from 'src/features/devices/application/usecases/update-tokens.usecase';
-import { DevicesRepository } from 'src/features/devices/infrastructure/devices.repository';
-import { UsersController } from 'src/features/users/api/users.controller';
-import { UserCreateUseCase } from 'src/features/users/application/usecases/create-user.usecase';
-import { UserDeleteUseCase } from 'src/features/users/application/usecases/delete-user.usecase';
-import { UsersQueryRepository } from 'src/features/users/infrastructure/users.query.repository';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
-import { IsEmailAlreadyExistConstraint } from 'src/infrastructure/decorators/unique-email.decorator';
-import { IsLoginAlreadyExistConstraint } from 'src/infrastructure/decorators/unique-login.decorator';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthService } from 'src/features/auth/api/public/application/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
-import { LoginAndPasswordValidationUseCase } from 'src/features/auth/api/public/application/usecases/validations/login-password-validation.usecase';
 
 import { TestingController } from '../../testing/testing.controller';
 import { RegistrationUseCase } from '../../features/auth/api/public/application/usecases/registration/registration.usecase';
@@ -43,12 +28,27 @@ import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.str
 import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
 import { IsDeviceExist } from '../../infrastructure/middlewares/is-device-exist.middleware';
 import { DevicesQueryRepository } from '../../features/devices/infrastructure/devices.query.repository';
+import { DevicesController } from '../../features/devices/api/devices.controller';
+import { UsersController } from '../../features/users/api/users.controller';
+import { AuthService } from '../../features/auth/api/public/application/auth.service';
+import { UserCreateUseCase } from '../../features/users/application/usecases/create-user.usecase';
+import { UserDeleteUseCase } from '../../features/users/application/usecases/delete-user.usecase';
+import { LoginDeviceUseCase } from '../../features/devices/application/usecases/login-device.usecase';
+import { TerminateOtherSessionsUseCase } from '../../features/devices/application/usecases/terminate-other-sessions.usecase';
+import { TerminateSessionUseCase } from '../../features/devices/application/usecases/terminate-session.usecase';
+import { UpdateTokensUseCase } from '../../features/devices/application/usecases/update-tokens.usecase';
+import { LoginAndPasswordValidationUseCase } from '../../features/auth/api/public/application/usecases/validations/login-password-validation.usecase';
+import { UsersRepository } from '../../features/users/infrastructure/users.repository';
+import { DevicesRepository } from '../../features/devices/infrastructure/devices.repository';
+import { UsersQueryRepository } from '../../features/users/infrastructure/users.query.repository';
+import { IsEmailAlreadyExistConstraint } from '../../infrastructure/decorators/unique-email.decorator';
+import { IsLoginAlreadyExistConstraint } from '../../infrastructure/decorators/unique-login.decorator';
 
 const controllers = [
   UsersController,
   DevicesController,
-  TestingController,
   AuthController,
+  TestingController,
 ];
 
 const services = [JwtService, AuthService];
@@ -102,12 +102,12 @@ const strategies = [
   controllers: [...controllers],
   providers: [
     ...services,
+    ...useCases,
     ...repositories,
+    ...strategies,
     ...queryRepositories,
     ...typeORMRepositories,
     ...constraints,
-    ...strategies,
-    ...useCases,
   ],
 })
 export class MainModule implements NestModule {

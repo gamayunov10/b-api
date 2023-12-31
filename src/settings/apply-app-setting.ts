@@ -1,12 +1,12 @@
 import * as process from 'process';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
-import { customExceptionFactory } from 'src/infrastructure/exception-filters/exception.factory';
 
 import { HttpExceptionFilter } from '../infrastructure/exception-filters/http-exception-filter';
 import { AppModule } from '../app.module';
+import { customExceptionFactory } from '../infrastructure/exception-filters/exception.factory';
 
 export const APP_PREFIX = '';
 

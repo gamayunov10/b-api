@@ -7,6 +7,7 @@ import { User } from '../domain/user.entity';
 import { UserPasswordRecovery } from '../domain/user-password-recovery.entity';
 import { isValidUuid } from '../../../base/utils/is-valid-uuid';
 import { UserEmailConfirmation } from '../domain/user-email-confirmation.entity';
+import { UserTestManagerModel } from '../api/models/output/user-test-manager.model';
 
 @Injectable()
 export class UsersRepository {

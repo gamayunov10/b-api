@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
-import { QueryModel } from 'src/base/models/query.model';
+
+import { QueryModel } from '../../../../../base/models/query.model';
 
 export class UserQueryModel extends QueryModel {
   @ApiProperty({ required: false })
