@@ -10,10 +10,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
   database: process.env.POSTGRES_DATABASE,
   autoLoadEntities: false,
   synchronize: false,
-  // ssl: true,
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 };
