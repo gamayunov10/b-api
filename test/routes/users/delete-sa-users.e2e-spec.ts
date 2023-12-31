@@ -22,7 +22,7 @@ import {
 import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
 import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
 
-describe('Auth: delete sa/users/:id', () => {
+describe('Users: DELETE sa/users/:id', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
   let usersTestManager: UsersTestManager;
@@ -41,7 +41,7 @@ describe('Auth: delete sa/users/:id', () => {
       await waitForIt(10);
     }, 15000);
 
-    it(`should not Delete user specified by id if login is incorrect`, async () => {
+    it(`should not DELETE user specified by id if login is incorrect`, async () => {
       const res = await usersTestManager.createUser(createUserInput);
       const id = res.body.id;
 
@@ -101,7 +101,7 @@ describe('Auth: delete sa/users/:id', () => {
     });
   });
 
-  describe('positive: delete sa/users/:id', () => {
+  describe('positive: DELETE sa/users/:id', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
       await waitForIt(10);

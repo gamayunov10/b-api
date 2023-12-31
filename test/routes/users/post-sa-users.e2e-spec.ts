@@ -23,7 +23,7 @@ import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredM
 import { lorem20, lorem30 } from '../../base/utils/constants/lorems';
 import { expectCreatedUser } from '../../base/utils/functions/users/expectCreatedUser';
 
-describe('Auth: POST sa/users', () => {
+describe('Users: POST sa/users', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
   let usersTestManager: UsersTestManager;

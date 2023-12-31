@@ -41,7 +41,7 @@ import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredM
 import { expectFirstPaginatedUser } from '../../base/utils/functions/users/expectFirstPaginatedUser';
 import { expectPaginatedUsers } from '../../base/utils/functions/users/expectPaginatedUsers';
 
-describe('Auth: get sa/users', () => {
+describe('Users: GET sa/users', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
   let usersTestManager: UsersTestManager;
@@ -54,7 +54,7 @@ describe('Auth: get sa/users', () => {
     usersTestManager = new UsersTestManager(app, usersQueryRepository);
   });
 
-  describe('negative: get sa/users', () => {
+  describe('negative: GET sa/users', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
       await waitForIt(10);
@@ -117,7 +117,7 @@ describe('Auth: get sa/users', () => {
     });
   });
 
-  describe('positive: get sa/users', () => {
+  describe('positive: GET sa/users', () => {
     it(`should clear db`, async () => {
       await agent.delete(testing_allData_uri);
       await waitForIt(10);
