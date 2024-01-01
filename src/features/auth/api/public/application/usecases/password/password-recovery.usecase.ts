@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { EmailInputModel } from '../../../../../models/email-input.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
 import { SendPasswordRecoveryMailCommand } from '../../../../../../mail/application/usecases/send-pass-recovery-mail.usecase';
+import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 
 export class PasswordRecoveryCommand {
   constructor(public emailInputModel: EmailInputModel) {}
@@ -16,10 +17,11 @@ export class PasswordRecoveryUseCase
   constructor(
     private commandBus: CommandBus,
     private readonly usersRepository: UsersRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(command: PasswordRecoveryCommand): Promise<number> {
-    const user = await this.usersRepository.findUserByEmail(
+    const user = await this.usersQueryRepository.findUserByEmail(
       command.emailInputModel.email,
     );
 

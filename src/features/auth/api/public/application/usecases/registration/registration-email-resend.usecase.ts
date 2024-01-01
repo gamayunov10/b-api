@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { EmailInputModel } from '../../../../../models/email-input.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
 import { SendRegistrationMailCommand } from '../../../../../../mail/application/usecases/send-registration-mail.usecase';
+import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 
 export class RegistrationEmailResendCommand {
   constructor(public emailInputModel: EmailInputModel) {}
@@ -16,10 +17,11 @@ export class RegistrationEmailResendUseCase
   constructor(
     private commandBus: CommandBus,
     private readonly usersRepository: UsersRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(command: RegistrationEmailResendCommand): Promise<boolean> {
-    const user = await this.usersRepository.findUserForEmailResending(
+    const user = await this.usersQueryRepository.findUserForEmailResending(
       command.emailInputModel.email,
     );
 

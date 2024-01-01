@@ -7,6 +7,10 @@ import { SuperAdminUserViewModel } from '../api/models/output/user-view.model';
 import { UserTestManagerModel } from '../api/models/output/user-test-manager.model';
 import { usersFilter } from '../../../base/pagination/users-filter.paginator';
 import { Paginator } from '../../../base/pagination/_paginator';
+import { User } from '../domain/user.entity';
+import { UserPasswordRecovery } from '../domain/user-password-recovery.entity';
+import { isValidUuid } from '../../../base/utils/is-valid-uuid';
+import { UserEmailConfirmation } from '../domain/user-email-confirmation.entity';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -58,6 +62,127 @@ export class UsersQueryRepository {
 
     const mappedUsers = await this.usersMapping(users);
     return mappedUsers[0];
+  }
+
+  // async findUserById(userId: number): Promise<User | null> {
+  //   const users = await this.dataSource.query(
+  //     `SELECT id, login, email
+  //      FROM public.users
+  //      WHERE id = $1`,
+  //     [userId],
+  //   );
+  //
+  //   if (users.length === 0) {
+  //     return null;
+  //   }
+  //
+  //   return users[0];
+  // }
+  async findUserByLogin(login: string): Promise<User[] | null> {
+    const users = await this.dataSource.query(
+      `SELECT id
+       FROM public.users
+       WHERE login = $1`,
+      [login],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users;
+  }
+
+  async findUserByEmail(email: string): Promise<User | null> {
+    const users = await this.dataSource.query(
+      `SELECT id, login, email 
+       FROM public.users
+       WHERE email = $1`,
+      [email],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0];
+  }
+
+  async findPasswordRecoveryRecord(
+    code: string,
+  ): Promise<UserPasswordRecovery> {
+    if (!isValidUuid(code)) {
+      return null;
+    }
+
+    const users = await this.dataSource.query(
+      `SELECT *
+       FROM user_password_recovery
+       WHERE "recoveryCode" = $1`,
+      [code],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0];
+  }
+
+  async findUserForEmailResending(email: string): Promise<User | null> {
+    const users = await this.dataSource.query(
+      `SELECT u.id, u.login, u, email, u."isConfirmed", e."confirmationCode"
+              FROM public.users u
+              LEFT JOIN public.user_email_confirmation e
+              ON u.id = e."userId"
+              WHERE email = $1;`,
+      [email],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0];
+  }
+
+  async findUserByEmailConfirmationCode(
+    code: string,
+  ): Promise<(User & UserEmailConfirmation) | null> {
+    if (!isValidUuid(code)) {
+      return null;
+    }
+
+    const users = await this.dataSource.query(
+      `SELECT u.id, u."isConfirmed", e."confirmationCode", e."expirationDate"
+              FROM public.users u
+              LEFT JOIN public.user_email_confirmation e
+              ON u.id = e."userId"
+              WHERE e."confirmationCode" = $1;`,
+      [code],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0];
+  }
+
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<User | null> {
+    const users = await this.dataSource.query(
+      `SELECT id, "passwordHash", "isConfirmed"
+              FROM public.users
+              WHERE login = $1
+              OR email = $1;`,
+      [loginOrEmail],
+    );
+
+    if (users.length === 0) {
+      return null;
+    }
+
+    return users[0];
   }
 
   async getUserByLoginOrEmailForTesting(

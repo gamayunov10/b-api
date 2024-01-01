@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { DevicesRepository } from '../../infrastructure/devices.repository';
+import { DevicesQueryRepository } from '../../infrastructure/devices.query.repository';
 
 export class UpdateTokensCommand {
   constructor(public token: any, public ip: string, public userAgent: string) {}
@@ -10,10 +11,13 @@ export class UpdateTokensCommand {
 export class UpdateTokensUseCase
   implements ICommandHandler<UpdateTokensCommand>
 {
-  constructor(private readonly devicesRepository: DevicesRepository) {}
+  constructor(
+    private readonly devicesRepository: DevicesRepository,
+    private readonly devicesQueryRepository: DevicesQueryRepository,
+  ) {}
 
   async execute(command: UpdateTokensCommand): Promise<boolean> {
-    const device = await this.devicesRepository.findDevice(
+    const device = await this.devicesQueryRepository.findDeviceByDeviceId(
       command.token.deviceId,
     );
 

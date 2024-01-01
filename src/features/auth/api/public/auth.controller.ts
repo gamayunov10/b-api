@@ -37,9 +37,9 @@ import { NewPasswordModel } from '../../models/new-password.model';
 import { exceptionHandler } from '../../../../infrastructure/exception-filters/exception.handler';
 import { LoginDeviceCommand } from '../../../devices/application/usecases/login-device.usecase';
 import { LoginInputModel } from '../../models/login-input.model';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { UserInputModel } from '../../../users/api/models/input/user-input-model';
 import { UpdateTokensCommand } from '../../../devices/application/usecases/update-tokens.usecase';
+import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -56,7 +56,7 @@ export class AuthController {
   constructor(
     private commandBus: CommandBus,
     private readonly jwtService: JwtService,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
     private readonly authService: AuthService,
   ) {}
 
@@ -65,7 +65,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get information about current user' })
   @ApiBasicAuth('Bearer')
   async getProfile(@UserIdFromGuard() userId: number) {
-    const user = await this.usersRepository.findUserById(userId);
+    const user = await this.usersQueryRepository.findUserById(userId);
 
     if (!user) {
       return exceptionHandler(ResultCode.NotFound, userNotFound, userIDField);

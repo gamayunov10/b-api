@@ -26,7 +26,22 @@ export class DevicesQueryRepository {
     });
   }
 
-  async findDeviceByUserId(userId: string): Promise<Device | null> {
+  async findDeviceByDeviceId(deviceId: string): Promise<Device | null> {
+    const devices = await this.dataSource.query(
+      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
+       FROM public.devices
+       WHERE "deviceId" = $1`,
+      [deviceId],
+    );
+
+    if (devices.length === 0) {
+      return null;
+    }
+
+    return devices[0];
+  }
+
+  async findDeviceByUserId(userId: number): Promise<Device | null> {
     const devices = await this.dataSource.query(
       `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
        FROM public.devices

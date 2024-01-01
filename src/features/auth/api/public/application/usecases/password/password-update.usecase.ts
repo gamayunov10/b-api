@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 
 import { NewPasswordModel } from '../../../../../models/new-password.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
+import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 
 export class PasswordUpdateCommand {
   constructor(public newPasswordModel: NewPasswordModel) {}
@@ -12,10 +13,13 @@ export class PasswordUpdateCommand {
 export class PasswordUpdateUseCase
   implements ICommandHandler<PasswordUpdateCommand>
 {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
+  ) {}
 
   async execute(command: PasswordUpdateCommand): Promise<boolean> {
-    const user = await this.usersRepository.findPasswordRecoveryRecord(
+    const user = await this.usersQueryRepository.findPasswordRecoveryRecord(
       command.newPasswordModel.recoveryCode,
     );
 

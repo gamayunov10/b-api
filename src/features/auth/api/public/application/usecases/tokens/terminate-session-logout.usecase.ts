@@ -8,6 +8,7 @@ import {
   deviceIDField,
   deviceNotFound,
 } from '../../../../../../../base/constants/constants';
+import { DevicesQueryRepository } from '../../../../../../devices/infrastructure/devices.query.repository';
 
 export class TerminateSessionLogoutCommand {
   constructor(public deviceId: string) {}
@@ -17,12 +18,17 @@ export class TerminateSessionLogoutCommand {
 export class TerminateSessionLogoutUseCase
   implements ICommandHandler<TerminateSessionLogoutCommand>
 {
-  constructor(private readonly devicesRepository: DevicesRepository) {}
+  constructor(
+    private readonly devicesRepository: DevicesRepository,
+    private readonly devicesQueryRepository: DevicesQueryRepository,
+  ) {}
 
   async execute(
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
-    const device = await this.devicesRepository.findDevice(command.deviceId);
+    const device = await this.devicesQueryRepository.findDeviceByDeviceId(
+      command.deviceId,
+    );
 
     if (!device) {
       return {

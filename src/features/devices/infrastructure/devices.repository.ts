@@ -42,21 +42,6 @@ export class DevicesRepository {
     return device[0].id;
   }
 
-  async findDevice(deviceId: string): Promise<Device | null> {
-    const devices = await this.dataSource.query(
-      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
-       FROM public.devices
-       WHERE "deviceId" = $1`,
-      [deviceId],
-    );
-
-    if (devices.length === 0) {
-      return null;
-    }
-
-    return devices[0];
-  }
-
   async updateDevice(
     deviceId: string,
     token: any,

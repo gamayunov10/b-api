@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-import { UsersRepository } from '../../../../users/infrastructure/users.repository';
+import { UsersQueryRepository } from '../../../../users/infrastructure/users.query.repository';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async checkCredentials(loginOrEmail: string, password: string) {
-    const user = await this.usersRepository.findUserByLoginOrEmail(
+    const user = await this.usersQueryRepository.findUserByLoginOrEmail(
       loginOrEmail,
     );
 

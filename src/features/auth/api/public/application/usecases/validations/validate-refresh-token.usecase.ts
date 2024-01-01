@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { DevicesRepository } from '../../../../../../devices/infrastructure/devices.repository';
+import { DevicesQueryRepository } from '../../../../../../devices/infrastructure/devices.query.repository';
 
 export class ValidateRefreshTokenCommand {
   constructor(public payload: any) {}
@@ -10,10 +10,12 @@ export class ValidateRefreshTokenCommand {
 export class ValidateRefreshTokenUseCase
   implements ICommandHandler<ValidateRefreshTokenCommand>
 {
-  constructor(private readonly devicesRepository: DevicesRepository) {}
+  constructor(
+    private readonly devicesQueryRepository: DevicesQueryRepository,
+  ) {}
 
   async execute(command: ValidateRefreshTokenCommand) {
-    const device = await this.devicesRepository.findDevice(
+    const device = await this.devicesQueryRepository.findDeviceByDeviceId(
       command.payload.deviceId,
     );
 

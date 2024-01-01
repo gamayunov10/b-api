@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
+import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 
 export class LoginAndPasswordValidationCommand {
   constructor(public loginOrEmail: string, public password: string) {}
@@ -11,10 +11,10 @@ export class LoginAndPasswordValidationCommand {
 export class LoginAndPasswordValidationUseCase
   implements ICommandHandler<LoginAndPasswordValidationCommand>
 {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async execute(command: LoginAndPasswordValidationCommand) {
-    const user = await this.usersRepository.findUserByLoginOrEmail(
+    const user = await this.usersQueryRepository.findUserByLoginOrEmail(
       command.loginOrEmail,
     );
 
