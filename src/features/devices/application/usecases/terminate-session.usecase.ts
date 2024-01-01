@@ -26,12 +26,11 @@ export class TerminateSessionUseCase
   async execute(
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
-    const deviceByParam = await this.devicesRepository.findDevice(
-      command.deviceId,
-    );
+    const deviceByParam =
+      await this.devicesQueryRepository.findDeviceByDeviceId(command.deviceId);
 
     const deviceByToken = await this.devicesQueryRepository.findDeviceByUserId(
-      command.userId,
+      +command.userId,
     );
 
     if (!deviceByParam || !deviceByToken) {
