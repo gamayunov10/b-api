@@ -30,8 +30,9 @@ export class TerminateSessionUseCase
       command.deviceId,
     );
 
-    const deviceByToken =
-      await this.devicesQueryRepository.findDeviceIdByUserId(command.userId);
+    const deviceByToken = await this.devicesQueryRepository.findDeviceByUserId(
+      command.userId,
+    );
 
     if (!deviceByParam || !deviceByToken) {
       return {
