@@ -26,12 +26,14 @@ export class TerminateSessionUseCase
   async execute(
     command: TerminateSessionCommand,
   ): Promise<ExceptionResultType<boolean>> {
-    const device = await this.devicesRepository.findDevice(command.deviceId);
+    const deviceByParam = await this.devicesRepository.findDevice(
+      command.deviceId,
+    );
 
-    const tokenDeviceId =
+    const deviceByToken =
       await this.devicesQueryRepository.findDeviceIdByUserId(command.userId);
 
-    if (!device || !tokenDeviceId) {
+    if (!deviceByParam || !deviceByToken) {
       return {
         data: false,
         code: ResultCode.NotFound,
@@ -40,7 +42,7 @@ export class TerminateSessionUseCase
       };
     }
 
-    if (tokenDeviceId !== command.deviceId) {
+    if (deviceByToken.userId !== deviceByParam.userId) {
       throw new ForbiddenException();
     }
 
