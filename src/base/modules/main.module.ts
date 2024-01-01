@@ -43,6 +43,7 @@ import { DevicesRepository } from '../../features/devices/infrastructure/devices
 import { UsersQueryRepository } from '../../features/users/infrastructure/users.query.repository';
 import { IsEmailAlreadyExistConstraint } from '../../infrastructure/decorators/unique-email.decorator';
 import { IsLoginAlreadyExistConstraint } from '../../infrastructure/decorators/unique-login.decorator';
+import { TerminateSessionLogoutUseCase } from '../../features/auth/api/public/application/usecases/tokens/terminate-session-logout.usecase';
 
 const controllers = [
   UsersController,
@@ -62,6 +63,7 @@ const useCases = [
   LoginDeviceUseCase,
   TerminateOtherSessionsUseCase,
   TerminateSessionUseCase,
+  TerminateSessionLogoutUseCase,
   UpdateTokensUseCase,
   RegistrationUseCase,
   RegistrationEmailResendUseCase,
