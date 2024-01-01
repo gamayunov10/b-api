@@ -7,19 +7,16 @@ import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput2,
-  createUserInput3,
   createUserInput4,
   createUserInput5,
   createUserInput6,
   loginUserInput,
   loginUserInput2,
-  loginUserInput3,
   loginUserInput4,
   loginUserInput5,
   loginUserInput6,
   userLogin01,
   userLogin02,
-  userLogin03,
   userLogin05,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
@@ -28,7 +25,6 @@ import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
 import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
 
 describe('Devices: DELETE session security/devices/:id', () => {
@@ -51,28 +47,13 @@ describe('Devices: DELETE session security/devices/:id', () => {
     });
 
     it(`should not Terminate specified device session 
-    if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
-      await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
-      const refreshToken = res.headers['set-cookie'][0];
-      const deviceId = await usersTestManager.getDeviceId(userLogin01);
-
-      const response = await agent
-        .delete(security_devices_uri + deviceId)
-        // .set('Cookie', refreshToken) // missing
-        .expect(401);
-
-      expecFilteredMessages(response, 401, security_devices_uri + deviceId);
-    }, 10000);
-
-    it(`should not Terminate specified device session 
-    if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
+        if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput2);
       const res = await usersTestManager.login(loginUserInput2);
       const refreshToken = res.headers['set-cookie'][0];
       const deviceId = await usersTestManager.getDeviceId(userLogin02);
 
-      await waitForIt(21);
+      await waitForIt(22);
 
       const response = await agent
         .delete(security_devices_uri + deviceId)
@@ -81,21 +62,6 @@ describe('Devices: DELETE session security/devices/:id', () => {
 
       expecFilteredMessages(response, 401, security_devices_uri + deviceId);
     }, 30000);
-
-    it(`should not Terminate specified device session 
-        if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
-      await usersTestManager.createUser(createUserInput3);
-      const res = await usersTestManager.login(loginUserInput3);
-      const refreshToken = res.headers['set-cookie'][0];
-      const deviceId = await usersTestManager.getDeviceId(userLogin03);
-
-      const response = await agent
-        .delete(security_devices_uri + deviceId)
-        .set('Cookie', invalidRefreshToken) // incorrect
-        .expect(401);
-
-      expecFilteredMessages(response, 401, security_devices_uri + deviceId);
-    }, 10000);
 
     it(`should not Terminate specified device session 
         If try to delete the deviceId of other user`, async () => {

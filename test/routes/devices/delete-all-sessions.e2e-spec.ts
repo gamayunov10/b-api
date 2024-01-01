@@ -48,8 +48,8 @@ describe('Devices: DELETE all sessions security/devices', () => {
     it(`should not Terminate all other sessions (exclude current) 
     if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
-      const refreshToken = res.headers['set-cookie'][0];
+      // const res = await usersTestManager.login(loginUserInput);
+      // const refreshToken = res.headers['set-cookie'][0];
 
       const response = await agent
         .delete(security_devices_uri)
@@ -78,8 +78,8 @@ describe('Devices: DELETE all sessions security/devices', () => {
     it(`should not Terminate all other sessions (exclude current)  
         if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput3);
-      const res = await usersTestManager.login(loginUserInput3);
-      const refreshToken = res.headers['set-cookie'][0];
+      // const res = await usersTestManager.login(loginUserInput3);
+      // const refreshToken = res.headers['set-cookie'][0];
 
       const response = await agent
         .delete(security_devices_uri)

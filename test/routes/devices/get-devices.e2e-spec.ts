@@ -41,8 +41,8 @@ describe('Devices: GET security/devices', () => {
     it(`should not Return all devices with active sessions for current user
      if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput2);
-      const res = await usersTestManager.login(loginUserInput2);
-      const refreshToken = res.headers['set-cookie'][0];
+      // const res = await usersTestManager.login(loginUserInput2);
+      // const refreshToken = res.headers['set-cookie'][0];
 
       const response = await agent
         .get(security_devices_uri)
