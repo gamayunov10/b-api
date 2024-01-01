@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { DeviceViewModel } from '../api/models/output/device.view.model';
+import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
@@ -25,9 +26,9 @@ export class DevicesQueryRepository {
     });
   }
 
-  async findDeviceIdByUserId(userId: string): Promise<string | null> {
+  async findDeviceByUserId(userId: string): Promise<Device | null> {
     const devices = await this.dataSource.query(
-      `SELECT "deviceId"
+      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
        FROM public.devices
        WHERE "userId" = $1;`,
       [userId],
@@ -37,6 +38,6 @@ export class DevicesQueryRepository {
       return null;
     }
 
-    return devices[0].deviceId;
+    return devices[0];
   }
 }
