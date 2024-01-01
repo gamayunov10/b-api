@@ -40,7 +40,6 @@ import { LoginInputModel } from '../../models/login-input.model';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { UserInputModel } from '../../../users/api/models/input/user-input-model';
 import { UpdateTokensCommand } from '../../../devices/application/usecases/update-tokens.usecase';
-import { TerminateSessionCommand } from '../../../devices/application/usecases/terminate-session.usecase';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -49,6 +48,7 @@ import { RegistrationEmailResendCommand } from './application/usecases/registrat
 import { RegistrationCommand } from './application/usecases/registration/registration.usecase';
 import { RegistrationConfirmationCommand } from './application/usecases/registration/registration-confirmation.usecase';
 import { AuthService } from './application/auth.service';
+import { TerminateSessionLogoutCommand } from './application/usecases/tokens/terminate-session-logout.usecase';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -258,7 +258,7 @@ export class AuthController {
     const decodedToken: any = this.jwtService.decode(refreshToken);
 
     return this.commandBus.execute(
-      new TerminateSessionCommand(decodedToken.deviceId, decodedToken.userId),
+      new TerminateSessionLogoutCommand(decodedToken.deviceId),
     );
   }
 }
