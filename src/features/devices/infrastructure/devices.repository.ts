@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
-import { Device } from '../domain/device.entity';
+import { DeviceAuthSessions } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(
-    @InjectRepository(Device)
-    private readonly devicesRepository: Repository<Device>,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async dataSourceSave(entity: Device): Promise<Device> {
+  async dataSourceSave(
+    entity: DeviceAuthSessions,
+  ): Promise<DeviceAuthSessions> {
     return this.dataSource.manager.save(entity);
   }
 
@@ -25,7 +23,7 @@ export class DevicesRepository {
     const expDate = new Date(decodedToken.exp * 1000).toISOString();
 
     const device = await this.dataSource.query(
-      `INSERT INTO public.devices
+      `INSERT INTO public.device_auth_sessions
                 ("deviceId", ip, title, "lastActiveDate", "expirationDate", "userId")
               VALUES ($1, $2, $3, $4, $5, $6)
               RETURNING id;`,
@@ -49,7 +47,7 @@ export class DevicesRepository {
     userAgent: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
-      `UPDATE public.devices
+      `UPDATE public.device_auth_sessions
               SET "lastActiveDate" = to_timestamp($2),
               ip = $3,
               title = $4
@@ -63,7 +61,7 @@ export class DevicesRepository {
   async deleteDevice(deviceId: string): Promise<boolean> {
     const result = await this.dataSource.query(
       `DELETE
-              FROM public.devices
+              FROM public.device_auth_sessions
               WHERE "deviceId" = $1;`,
       [deviceId],
     );
@@ -73,7 +71,7 @@ export class DevicesRepository {
   async deleteOthers(deviceId: number): Promise<boolean> {
     return this.dataSource.query(
       `DELETE
-      FROM public.devices
+      FROM public.device_auth_sessions
       WHERE "deviceId" != $1;`,
       [deviceId],
     );

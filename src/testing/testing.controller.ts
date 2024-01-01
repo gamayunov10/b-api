@@ -15,7 +15,7 @@ export class TestingController {
   @HttpCode(204)
   async deleteAll() {
     await this.dataSource.query(`DELETE FROM public.users;`);
-    await this.dataSource.query(`DELETE FROM public.devices;`);
+    await this.dataSource.query(`DELETE FROM public.device_auth_sessions;`);
     await this.dataSource.query(`DELETE FROM public.user_email_confirmation;`);
     await this.dataSource.query(`DELETE FROM public.user_password_recovery;`);
   }

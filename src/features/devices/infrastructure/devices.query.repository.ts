@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { DeviceViewModel } from '../api/models/output/device.view.model';
-import { Device } from '../domain/device.entity';
+import { DeviceAuthSessions } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
@@ -11,7 +11,7 @@ export class DevicesQueryRepository {
   async findActiveDevices(userId: string): Promise<DeviceViewModel[]> {
     const devices = await this.dataSource.query(
       `SELECT  ip, title, "lastActiveDate", "deviceId"
-              FROM public.devices
+              FROM public.device_auth_sessions
               WHERE "userId" = $1;`,
       [userId],
     );
@@ -26,10 +26,12 @@ export class DevicesQueryRepository {
     });
   }
 
-  async findDeviceByDeviceId(deviceId: string): Promise<Device | null> {
+  async findDeviceByDeviceId(
+    deviceId: string,
+  ): Promise<DeviceAuthSessions | null> {
     const devices = await this.dataSource.query(
       `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
-       FROM public.devices
+       FROM public.device_auth_sessions
        WHERE "deviceId" = $1`,
       [deviceId],
     );
@@ -41,10 +43,10 @@ export class DevicesQueryRepository {
     return devices[0];
   }
 
-  async findDeviceByUserId(userId: number): Promise<Device | null> {
+  async findDeviceByUserId(userId: number): Promise<DeviceAuthSessions | null> {
     const devices = await this.dataSource.query(
       `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
-       FROM public.devices
+       FROM public.device_auth_sessions
        WHERE "userId" = $1;`,
       [userId],
     );

@@ -200,7 +200,7 @@ export class UsersQueryRepository {
               ON e."userId" = u.id
               LEFT JOIN public.user_password_recovery p
               ON p."userId" = u.id
-              LEFT JOIN public.devices d
+              LEFT JOIN public.device_auth_sessions d
               ON d."userId" = u.id
               WHERE login = $1
               OR email = $1;`,

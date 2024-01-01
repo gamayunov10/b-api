@@ -21,7 +21,7 @@ import { ValidateRefreshTokenUseCase } from '../../features/auth/api/public/appl
 import { TokensCreateUseCase } from '../../features/auth/api/public/application/usecases/tokens/tokens-create.usecase';
 import { JwtRefreshTokenStrategy } from '../../features/auth/strategies/jwt-refresh.strategy';
 import { AuthController } from '../../features/auth/api/public/auth.controller';
-import { Device } from '../../features/devices/domain/device.entity';
+import { DeviceAuthSessions } from '../../features/devices/domain/device.entity';
 import { User } from '../../features/users/domain/user.entity';
 import { BasicStrategy } from '../../features/auth/strategies/basic.strategy';
 import { JwtBearerStrategy } from '../../features/auth/strategies/jwt-bearer.strategy';
@@ -54,8 +54,8 @@ const controllers = [
 
 const services = [JwtService, AuthService];
 
-const entities = [Device, User];
-const typeORMRepositories = [Repository<User>, Repository<Device>];
+const entities = [DeviceAuthSessions, User];
+const typeORMRepositories = [Repository<User>, Repository<DeviceAuthSessions>];
 
 const useCases = [
   UserCreateUseCase,

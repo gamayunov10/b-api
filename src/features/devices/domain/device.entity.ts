@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('devices')
-export class Device {
+@Entity('deviceAuthSessions')
+export class DeviceAuthSessions {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -11,8 +11,8 @@ export class Device {
   @Column({ type: 'character varying' })
   ip: string;
 
-  @Column({ type: 'character varying' })
-  title: string;
+  @Column({ name: 'deviceName', type: 'character varying' })
+  deviceName: string;
 
   @Column({ name: 'lastActiveDate', type: 'timestamp with time zone' })
   lastActiveDate: Date;
