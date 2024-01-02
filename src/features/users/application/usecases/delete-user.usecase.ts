@@ -1,10 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
 
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UsersQueryRepository } from '../../infrastructure/users.query.repository';
 
 export class UserDeleteCommand {
-  constructor(public userId: number) {}
+  constructor(public userId: string) {}
 }
 
 @CommandHandler(UserDeleteCommand)
@@ -15,12 +16,16 @@ export class UserDeleteUseCase implements ICommandHandler<UserDeleteCommand> {
   ) {}
 
   async execute(command: UserDeleteCommand): Promise<boolean> {
-    const user = await this.usersQueryRepository.findUserById(command.userId);
+    if (isNaN(+command.userId)) {
+      throw new NotFoundException();
+    }
+
+    const user = await this.usersQueryRepository.findUserById(+command.userId);
 
     if (!user) {
       return null;
     }
 
-    return this.usersRepository.deleteUser(command.userId);
+    return this.usersRepository.deleteUser(+command.userId);
   }
 }

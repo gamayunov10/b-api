@@ -62,7 +62,7 @@ export class UsersController {
   @ApiBasicAuth('Basic')
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
-  async deleteUser(@Param('id') userId: number) {
+  async deleteUser(@Param('id') userId: string) {
     const result = await this.commandBus.execute(new UserDeleteCommand(userId));
 
     if (!result) {
