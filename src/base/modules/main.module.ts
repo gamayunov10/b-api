@@ -29,7 +29,7 @@ import { LocalStrategy } from '../../features/auth/strategies/local.strategy';
 import { IsDeviceExist } from '../../infrastructure/middlewares/is-device-exist.middleware';
 import { DevicesQueryRepository } from '../../features/devices/infrastructure/devices.query.repository';
 import { DevicesController } from '../../features/devices/api/devices.controller';
-import { UsersController } from '../../features/users/api/users.controller';
+import { SAUsersController } from '../../features/users/api/sa-users.controller';
 import { AuthService } from '../../features/auth/api/public/application/auth.service';
 import { UserCreateUseCase } from '../../features/users/application/usecases/create-user.usecase';
 import { UserDeleteUseCase } from '../../features/users/application/usecases/delete-user.usecase';
@@ -44,9 +44,23 @@ import { UsersQueryRepository } from '../../features/users/infrastructure/users.
 import { IsEmailAlreadyExistConstraint } from '../../infrastructure/decorators/unique-email.decorator';
 import { IsLoginAlreadyExistConstraint } from '../../infrastructure/decorators/unique-login.decorator';
 import { TerminateSessionLogoutUseCase } from '../../features/auth/api/public/application/usecases/tokens/terminate-session-logout.usecase';
+import { BlogCreateUseCase } from '../../features/blogs/application/usecases/create-blog.usecase';
+import { BlogsRepository } from '../../features/blogs/infrastructure/blogs.repository';
+import { BlogsQueryRepository } from '../../features/blogs/infrastructure/blogs.query.repository';
+import { SABlogsController } from '../../features/blogs/api/sa-blogs.controller';
+import { BlogUpdateUseCase } from '../../features/blogs/application/usecases/update-blog.usecase';
+import { BlogDeleteUseCase } from '../../features/blogs/application/usecases/delete-blog.usecase';
+import { PostsQueryRepository } from '../../features/posts/infrastructure/posts.query.repository';
+import { PostsRepository } from '../../features/posts/infrastructure/posts.repository';
+import { PostsController } from '../../features/posts/api/posts.controller';
+import { PostCreatePostForSpecificBlog } from '../../features/posts/application/usecases/create-post-for-specific-blog.usecase';
+import { PostUpdatePostForSpecificBlogUseCase } from '../../features/posts/application/usecases/update-post-for-specific-blog.usecase';
+import { PostDeleteUseCase } from '../../features/posts/application/usecases/delete-post.usecase';
 
 const controllers = [
-  UsersController,
+  SAUsersController,
+  SABlogsController,
+  PostsController,
   DevicesController,
   AuthController,
   TestingController,
@@ -73,11 +87,27 @@ const useCases = [
   ValidateRefreshTokenUseCase,
   TokensCreateUseCase,
   LoginAndPasswordValidationUseCase,
+  BlogCreateUseCase,
+  BlogUpdateUseCase,
+  BlogDeleteUseCase,
+  PostCreatePostForSpecificBlog,
+  PostUpdatePostForSpecificBlogUseCase,
+  PostDeleteUseCase,
 ];
 
-const repositories = [UsersRepository, DevicesRepository];
+const repositories = [
+  UsersRepository,
+  DevicesRepository,
+  BlogsRepository,
+  PostsRepository,
+];
 
-const queryRepositories = [UsersQueryRepository, DevicesQueryRepository];
+const queryRepositories = [
+  UsersQueryRepository,
+  DevicesQueryRepository,
+  BlogsQueryRepository,
+  PostsQueryRepository,
+];
 
 const constraints = [
   IsEmailAlreadyExistConstraint,
