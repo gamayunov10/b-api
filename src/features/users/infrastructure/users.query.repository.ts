@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
-import { SuperAdminUserViewModel } from '../api/models/output/user-view.model';
+import { SuperAdminUserViewModel } from '../api/models/output/sa-user-view.model';
 import { UserTestManagerModel } from '../api/models/output/user-test-manager.model';
 import { usersFilter } from '../../../base/pagination/users-filter.paginator';
 import { Paginator } from '../../../base/pagination/_paginator';
@@ -64,20 +64,6 @@ export class UsersQueryRepository {
     return mappedUsers[0];
   }
 
-  // async findUserById(userId: number): Promise<User | null> {
-  //   const users = await this.dataSource.query(
-  //     `SELECT id, login, email
-  //      FROM public.users
-  //      WHERE id = $1`,
-  //     [userId],
-  //   );
-  //
-  //   if (users.length === 0) {
-  //     return null;
-  //   }
-  //
-  //   return users[0];
-  // }
   async findUserByLogin(login: string): Promise<User[] | null> {
     const users = await this.dataSource.query(
       `SELECT id

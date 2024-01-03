@@ -18,14 +18,14 @@ import { UsersQueryRepository } from '../infrastructure/users.query.repository';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
-import { userIDField, userNotFound } from '../../../base/constants/constants';
+import { userIdField, userNotFound } from '../../../base/constants/constants';
 
 import { UserInputModel } from './models/input/user-input-model';
 import { UserQueryModel } from './models/input/user.query.model';
 
 @ApiTags('sa/users')
 @Controller('sa/users')
-export class UsersController {
+export class SAUsersController {
   constructor(
     private commandBus: CommandBus,
     private readonly usersQueryRepository: UsersQueryRepository,
@@ -66,7 +66,7 @@ export class UsersController {
     const result = await this.commandBus.execute(new UserDeleteCommand(userId));
 
     if (!result) {
-      return exceptionHandler(ResultCode.NotFound, userNotFound, userIDField);
+      return exceptionHandler(ResultCode.NotFound, userNotFound, userIdField);
     }
 
     return result;
