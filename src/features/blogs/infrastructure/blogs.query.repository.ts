@@ -6,7 +6,6 @@ import { BlogViewModel } from '../api/models/output/blog-view.model';
 import { Paginator } from '../../../base/pagination/_paginator';
 import { BlogQueryModel } from '../api/models/input/blog.query.model';
 import { blogsFilter } from '../../../base/pagination/blogs-filter.paginator';
-import { SABlogQueryModel } from '../api/models/input/sa-blog.query.model';
 
 @Injectable()
 export class BlogsQueryRepository {
