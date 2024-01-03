@@ -14,4 +14,5 @@ export type ExceptionResultType<T> = {
   code: ResultCode;
   field?: string;
   message?: string;
+  response?: any;
 };
