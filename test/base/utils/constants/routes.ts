@@ -16,5 +16,9 @@ export const security_devices_uri = '/security/devices/';
 export const users_uri = '/sa/users/';
 export const sa_users_uri = '/sa/users/';
 
+//blogs
+export const blogs_uri = '/blogs/';
+export const sa_blogs_uri = '/sa/blogs/';
+
 //testing
 export const testing_allData_uri = '/testing/all-data/';
