@@ -6,10 +6,10 @@ export const userNotFound = 'User not found';
 export const deviceNotFound = 'Device not found';
 
 // Fields
-export const blogIDField = 'blogId';
+export const blogIdField = 'blogId';
 export const postIDField = 'postId';
 export const commentIDField = 'commentId';
-export const userIDField = 'userId';
+export const userIdField = 'userId';
 export const deviceIDField = 'deviceId';
 export const confirmCodeField = 'code';
 export const recoveryCodeField = 'recoveryCode';
