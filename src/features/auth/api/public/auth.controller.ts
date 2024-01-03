@@ -23,7 +23,7 @@ import {
   emailField,
   recoveryCodeField,
   recoveryCodeIsIncorrect,
-  userIDField,
+  userIdField,
   userNotFound,
   userNotFoundOrConfirmed,
 } from '../../../../base/constants/constants';
@@ -68,7 +68,7 @@ export class AuthController {
     const user = await this.usersQueryRepository.findUserById(userId);
 
     if (!user) {
-      return exceptionHandler(ResultCode.NotFound, userNotFound, userIDField);
+      return exceptionHandler(ResultCode.NotFound, userNotFound, userIdField);
     }
 
     return {
@@ -84,7 +84,7 @@ export class AuthController {
       'Registration in the system. Email with confirmation code will be send to passed email address',
   })
   @UseGuards(ThrottlerGuard)
-  // @Throttle(5, 10)
+  @Throttle(5, 10)
   @HttpCode(204)
   async registerUser(@Body() userInputModel: UserInputModel) {
     return this.commandBus.execute(new RegistrationCommand(userInputModel));
