@@ -18,5 +18,7 @@ export class TestingController {
     await this.dataSource.query(`DELETE FROM public.device_auth_sessions;`);
     await this.dataSource.query(`DELETE FROM public.user_email_confirmation;`);
     await this.dataSource.query(`DELETE FROM public.user_password_recovery;`);
+    await this.dataSource.query(`DELETE FROM public.blogs;`);
+    await this.dataSource.query(`DELETE FROM public.posts;`);
   }
 }
