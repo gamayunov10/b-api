@@ -11,7 +11,6 @@ import { MailModule } from './features/mail/mail.module';
 import { MainModule } from './base/modules/main.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TestingController } from './testing/testing.controller';
 
 @Module({
   imports: [
@@ -21,7 +20,7 @@ import { TestingController } from './testing/testing.controller';
     MainModule,
     MailModule,
   ],
-  controllers: [AppController, TestingController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
