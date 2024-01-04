@@ -62,6 +62,11 @@ export class BlogsQueryRepository {
     );
 
     const mappedBlogs = await this.blogsMapping(blogs);
+
+    if (mappedBlogs.length === 0) {
+      return null;
+    }
+
     return mappedBlogs[0];
   }
 
