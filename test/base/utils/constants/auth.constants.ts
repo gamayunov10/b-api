@@ -5,6 +5,12 @@ export const basicAuthPassword = 'qwerty';
 export const set_cookie = 'set-cookie';
 
 export const someSiteURl = 'https://some-site.com';
+export const someSiteURl2 = 'https://some-2-site.com';
+export const someSiteURl3 = 'https://some-3-site.com';
+export const someSiteURl4 = 'https://some-4-site.com';
+export const someSiteURl5 = 'https://some-5-site.com';
+export const someSiteURl6 = 'https://some-6-site.com';
+export const someSiteURl7 = 'https://some-7-site.com';
 export const updatedSomeSiteURl = 'https://some-updated-site.com';
 
 export const userAgent1 =
