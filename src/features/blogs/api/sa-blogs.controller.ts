@@ -100,27 +100,8 @@ export class SABlogsController {
     @Param('id') blogId: string,
     @Body() blogInputModel: BlogInputModel,
   ) {
-    await this.commandBus.execute(
-      new BlogUpdateCommand(blogInputModel, blogId),
-    );
-  }
-
-  @Put(':blogId/posts/:postId')
-  @ApiOperation({
-    summary: 'Update existing post by id with InputModel',
-  })
-  @ApiBasicAuth('Basic')
-  @UseGuards(BasicAuthGuard)
-  @HttpCode(204)
-  async updatePost(
-    @Param('blogId') blogId: string,
-    @Param('postId') postId: string,
-    @Body() postInputModel: PostInputModel,
-  ) {
-    console.log('blogId', blogId);
-    console.log('postId', postId);
     const result = await this.commandBus.execute(
-      new PostUpdatePostForSpecificBlogCommand(postInputModel, blogId, postId),
+      new BlogUpdateCommand(blogInputModel, blogId),
     );
 
     if (result.code !== ResultCode.Success) {
@@ -149,6 +130,29 @@ export class SABlogsController {
     }
 
     return this.postsQueryRepository.findPostByPostId(result.response);
+  }
+
+  @Put(':blogId/posts/:postId')
+  @ApiOperation({
+    summary: 'Update existing post by id with InputModel',
+  })
+  @ApiBasicAuth('Basic')
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(204)
+  async updatePost(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @Body() postInputModel: PostInputModel,
+  ) {
+    const result = await this.commandBus.execute(
+      new PostUpdatePostForSpecificBlogCommand(postInputModel, blogId, postId),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return result;
   }
 
   @Delete(':id')
