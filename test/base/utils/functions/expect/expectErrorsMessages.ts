@@ -7,8 +7,8 @@ export const expectErrorsMessages = (response, field) => {
   expect(firstErrorMessage).toHaveProperty('message');
   expect(firstErrorMessage).toHaveProperty('field');
 
-  expect(firstErrorMessage.field).toBe(field);
   expect(typeof firstErrorMessage.message).toBe('string');
+  expect(firstErrorMessage.field).toBe(field);
 };
 
 // Example
