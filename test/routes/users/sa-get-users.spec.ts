@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput2,
@@ -25,10 +24,8 @@ import {
   userLogin05,
   userLogin06,
   userLogin07,
-  userPassword,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   sa_users_uri,
   testing_allData_uri,
@@ -37,9 +34,10 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
+import { expectFilteredMessages } from '../../base/utils/functions/expectFilteredMessages';
 import { expectFirstPaginatedUser } from '../../base/utils/functions/users/expectFirstPaginatedUser';
 import { expectPaginatedUsers } from '../../base/utils/functions/users/expectPaginatedUsers';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Users: GET sa/users', () => {
   let app: INestApplication;
@@ -47,12 +45,10 @@ describe('Users: GET sa/users', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: GET sa/users', () => {
@@ -64,62 +60,42 @@ describe('Users: GET sa/users', () => {
       const response = await agent
         .get(sa_users_uri)
         .auth('incorrect', basicAuthPassword)
-        .send({
-          login: userLogin01,
-          password: userPassword,
-          email: userEmail01,
-        })
         .expect(401);
 
-      expecFilteredMessages(response, 401, sa_users_uri);
+      expectFilteredMessages(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if login is incorrect`, async () => {
       const response = await agent
         .post(sa_users_uri)
         .auth('', basicAuthPassword)
-        .send({
-          login: userLogin01,
-          password: userPassword,
-          email: userEmail01,
-        })
         .expect(401);
 
-      expecFilteredMessages(response, 401, sa_users_uri);
+      expectFilteredMessages(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if password is incorrect`, async () => {
       const response = await agent
         .post(sa_users_uri)
         .auth(basicAuthLogin, 'incorrect')
-        .send({
-          login: userLogin01,
-          password: userPassword,
-          email: userEmail01,
-        })
         .expect(401);
 
-      expecFilteredMessages(response, 401, sa_users_uri);
+      expectFilteredMessages(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if password is incorrect`, async () => {
       const response = await agent
         .post(sa_users_uri)
         .auth(basicAuthLogin, '')
-        .send({
-          login: userLogin01,
-          password: userPassword,
-          email: userEmail01,
-        })
         .expect(401);
 
-      expecFilteredMessages(response, 401, sa_users_uri);
+      expectFilteredMessages(response, 401, sa_users_uri);
     });
   });
 
   describe('positive: GET sa/users', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 
