@@ -42,9 +42,12 @@ export class PostCreatePostForSpecificBlog
       };
     }
 
+    const blogName = blog.name;
+
     const postId = await this.postsRepository.createPostForSpecificBlog(
       command.postInputModel,
       +command.blogId,
+      blogName,
     );
 
     return {
