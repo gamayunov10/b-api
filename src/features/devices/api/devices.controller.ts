@@ -21,7 +21,7 @@ import { exceptionHandler } from '../../../infrastructure/exception-filters/exce
 
 import { DeviceViewModel } from './models/output/device.view.model';
 
-@ApiTags('security')
+@ApiTags('device sessions')
 @Controller('security')
 export class DevicesController {
   constructor(
