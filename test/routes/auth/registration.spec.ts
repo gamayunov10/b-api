@@ -3,7 +3,6 @@ import { SuperAgentTest } from 'supertest';
 import { randomUUID } from 'crypto';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   userEmail01,
@@ -22,12 +21,12 @@ import {
   lorem20,
   lorem30,
 } from '../../base/utils/constants/lorems';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   auth_registration_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
+import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/registration', () => {
   let app: INestApplication;
@@ -35,12 +34,10 @@ describe('Auth: auth/registration', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: auth/registration', () => {
@@ -207,7 +204,7 @@ describe('Auth: auth/registration', () => {
 
   describe('positive: auth/registration', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

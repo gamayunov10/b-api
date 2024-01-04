@@ -3,18 +3,17 @@ import { SuperAgentTest } from 'supertest';
 import { randomUUID } from 'crypto';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   userLogin01,
   userPassword,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   auth_login_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/login', () => {
   let app: INestApplication;
@@ -22,12 +21,10 @@ describe('Auth: auth/login', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: auth/login', () => {
@@ -83,7 +80,7 @@ describe('Auth: auth/login', () => {
 
   describe('positive: auth/login', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

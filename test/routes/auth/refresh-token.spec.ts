@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput3,
@@ -11,11 +10,11 @@ import {
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   auth_refreshToken_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/refresh-token', () => {
   let app: INestApplication;
@@ -23,12 +22,10 @@ describe('Auth: auth/refresh-token', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: auth/refresh-token', () => {
@@ -67,7 +64,7 @@ describe('Auth: auth/refresh-token', () => {
 
   describe('positive: auth/refresh-token', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

@@ -2,18 +2,17 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   userEmail01,
   userEmail03,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   auth_passwordRecovery_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { PasswordRecoveryUseCase } from '../../../src/features/auth/api/public/application/usecases/password/password-recovery.usecase';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/password-recovery', () => {
   let app: INestApplication;
@@ -21,12 +20,10 @@ describe('Auth: auth/password-recovery', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: auth/password-recovery', () => {
@@ -88,7 +85,7 @@ describe('Auth: auth/password-recovery', () => {
 
   describe('positive: auth/password-recovery', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

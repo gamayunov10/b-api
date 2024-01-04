@@ -2,9 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   sa_blogs_uri,
   testing_allData_uri,
@@ -16,12 +14,14 @@ import {
 } from '../../base/utils/constants/auth.constants';
 import {
   blogDescription,
-  blogName01,
+  blogName,
+  createBlogInput,
 } from '../../base/utils/constants/blogs.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expectFilteredMessages';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
 import { lorem1000, lorem15, lorem20 } from '../../base/utils/constants/lorems';
-import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
-import { expectCreatedBlog } from '../../base/utils/functions/devices/expectCreatedBlog';
+import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
+import { expectCreatedBlog } from '../../base/utils/functions/expect/blogs/expectCreatedBlog';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Blogs: POST sa/blogs', () => {
   let app: INestApplication;
@@ -29,12 +29,10 @@ describe('Blogs: POST sa/blogs', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: POST sa/blogs', () => {
@@ -47,7 +45,7 @@ describe('Blogs: POST sa/blogs', () => {
         .post(sa_blogs_uri)
         .auth('incorrect', basicAuthPassword)
         .send({
-          name: blogName01,
+          name: blogName,
           description: blogDescription,
           websiteUrl: someSiteURl,
         })
@@ -56,12 +54,12 @@ describe('Blogs: POST sa/blogs', () => {
       expectFilteredMessages(response, 401, sa_blogs_uri);
     });
 
-    it(`should not Create new blog if login is incorrect`, async () => {
+    it(`should not Create new blog if password is incorrect`, async () => {
       const response = await agent
         .post(sa_blogs_uri)
         .auth(basicAuthLogin, '123')
         .send({
-          name: blogName01,
+          name: blogName,
           description: blogDescription,
           websiteUrl: someSiteURl,
         })
@@ -115,7 +113,7 @@ describe('Blogs: POST sa/blogs', () => {
 
   describe('positive: POST sa/blogs', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 
@@ -123,14 +121,10 @@ describe('Blogs: POST sa/blogs', () => {
       const response = await agent
         .post(sa_blogs_uri)
         .auth(basicAuthLogin, basicAuthPassword)
-        .send({
-          name: blogName01,
-          description: blogDescription,
-          websiteUrl: someSiteURl,
-        })
+        .send(createBlogInput)
         .expect(201);
 
-      expectCreatedBlog(response, blogName01, blogDescription, someSiteURl);
+      expectCreatedBlog(response, createBlogInput);
     });
   });
 

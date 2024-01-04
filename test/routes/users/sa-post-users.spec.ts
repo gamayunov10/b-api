@@ -2,14 +2,13 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
+  createUserInput,
   userEmail01,
   userLogin01,
   userPassword,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   sa_users_uri,
   testing_allData_uri,
@@ -18,10 +17,11 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
-import { expectFilteredMessages } from '../../base/utils/functions/expectFilteredMessages';
+import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
 import { lorem20, lorem30 } from '../../base/utils/constants/lorems';
-import { expectCreatedUser } from '../../base/utils/functions/users/expectCreatedUser';
+import { expectCreatedUser } from '../../base/utils/functions/expect/users/expectCreatedUser';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Users: POST sa/users', () => {
   let app: INestApplication;
@@ -29,12 +29,10 @@ describe('Users: POST sa/users', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: POST sa/users', () => {
@@ -206,7 +204,7 @@ describe('Users: POST sa/users', () => {
 
   describe('positive: POST sa/users', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 
@@ -214,14 +212,10 @@ describe('Users: POST sa/users', () => {
       const response = await agent
         .post(sa_users_uri)
         .auth(basicAuthLogin, basicAuthPassword)
-        .send({
-          login: userLogin01,
-          password: userPassword,
-          email: userEmail01,
-        })
+        .send(createUserInput)
         .expect(201);
 
-      expectCreatedUser(response, userLogin01, userEmail01);
+      expectCreatedUser(response, createUserInput);
     });
   });
 

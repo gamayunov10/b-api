@@ -2,8 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   createUserInput,
   userEmail01,
@@ -21,7 +19,8 @@ import {
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { SendRegistrationMailUseCase } from '../../../src/features/mail/application/usecases/send-registration-mail.usecase';
-import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
+import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/registration-email-resending', () => {
   let app: INestApplication;
@@ -29,12 +28,10 @@ describe('Auth: auth/registration-email-resending', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: auth/registration-email-resending', () => {
@@ -100,7 +97,7 @@ describe('Auth: auth/registration-email-resending', () => {
 
   describe('positive: auth/registration-email-resending', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

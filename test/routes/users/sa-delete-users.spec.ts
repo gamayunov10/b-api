@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput2,
@@ -10,7 +9,6 @@ import {
   createUserInput4,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   sa_users_uri,
   testing_allData_uri,
@@ -19,8 +17,9 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectErrorsMessages } from '../../base/utils/functions/expectErrorsMessages';
-import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
+import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Users: DELETE sa/users/:id', () => {
   let app: INestApplication;
@@ -28,12 +27,10 @@ describe('Users: DELETE sa/users/:id', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: delete sa/users/:id', () => {
@@ -47,10 +44,10 @@ describe('Users: DELETE sa/users/:id', () => {
 
       const response = await agent
         .delete(`${sa_users_uri}${id}`)
-        .auth('incorrect', basicAuthPassword)
+        .auth('', basicAuthPassword)
         .expect(401);
 
-      expecFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if login is incorrect`, async () => {
@@ -62,7 +59,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expecFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if password is incorrect`, async () => {
@@ -74,7 +71,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expecFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if password is incorrect`, async () => {
@@ -86,7 +83,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth(basicAuthLogin, '123')
         .expect(401);
 
-      expecFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id If specified user is not exists`, async () => {
@@ -103,7 +100,7 @@ describe('Users: DELETE sa/users/:id', () => {
 
   describe('positive: DELETE sa/users/:id', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 

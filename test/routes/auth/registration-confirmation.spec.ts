@@ -2,8 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   userEmail01,
   userLogin01,
@@ -16,6 +14,7 @@ import {
 } from '../../base/utils/constants/routes';
 import { invalidConfirmationCode } from '../../base/utils/constants/auth.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/registration-confirmation', () => {
   let app: INestApplication;
@@ -23,12 +22,10 @@ describe('Auth: auth/registration-confirmation', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: registration-confirmation', () => {
@@ -97,7 +94,7 @@ describe('Auth: auth/registration-confirmation', () => {
 
   describe('positive: registration-confirmation', () => {
     it(`should clear db`, async () => {
-      await waitForIt(11);
+      await waitForIt();
       await agent.delete(testing_allData_uri);
     }, 15000);
 
