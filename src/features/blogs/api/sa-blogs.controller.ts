@@ -28,10 +28,10 @@ import { PostCreatePostForSpecificBlogCommand } from '../../posts/application/us
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query.repository';
 import { PostUpdatePostForSpecificBlogCommand } from '../../posts/application/usecases/update-post-for-specific-blog.usecase';
 import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.usecase';
+import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
 
 import { BlogInputModel } from './models/input/blog-input-model';
 import { BlogQueryModel } from './models/input/blog.query.model';
-import { SABlogQueryModel } from './models/input/sa-blog.query.model';
 
 @ApiTags('sa/blogs')
 @Controller('sa/blogs')
@@ -59,7 +59,7 @@ export class SABlogsController {
   @ApiBasicAuth('Basic')
   @UseGuards(BasicAuthGuard)
   async findPostsByBlogId(
-    @Query() query: SABlogQueryModel,
+    @Query() query: PostQueryModel,
     @Param('id') blogId: string,
   ) {
     if (isNaN(+blogId)) {
