@@ -5,10 +5,6 @@ export const blogsFilter = (searchNameTerm: string) => {
     searchNameTermFilter = `%${searchNameTerm}%`;
   }
 
-  if (!searchNameTerm) {
-    searchNameTermFilter = '';
-  }
-
   return {
     name: searchNameTermFilter,
   };
