@@ -10,20 +10,6 @@ import {
   createUserInput5,
   createUserInput6,
   createUserInput7,
-  userEmail01,
-  userEmail02,
-  userEmail03,
-  userEmail04,
-  userEmail05,
-  userEmail06,
-  userEmail07,
-  userLogin01,
-  userLogin02,
-  userLogin03,
-  userLogin04,
-  userLogin05,
-  userLogin06,
-  userLogin07,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import {
@@ -34,9 +20,9 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expectFilteredMessages';
-import { expectFirstPaginatedUser } from '../../base/utils/functions/users/expectFirstPaginatedUser';
-import { expectPaginatedUsers } from '../../base/utils/functions/users/expectPaginatedUsers';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectFirstPaginatedUser } from '../../base/utils/functions/expect/users/expectFirstPaginatedUser';
+import { expectPaginatedUsers } from '../../base/utils/functions/expect/users/expectPaginatedUsers';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Users: GET sa/users', () => {
@@ -108,7 +94,7 @@ describe('Users: GET sa/users', () => {
         .query({ pageSize: 3, sortDirection: 'asc' })
         .expect(200);
 
-      expectFirstPaginatedUser(response, 1, 1, 3, 1, userLogin01, userEmail01);
+      expectFirstPaginatedUser(response, 1, 1, 3, 1, createUserInput);
     });
 
     it(`should Return all users with pagination`, async () => {
@@ -134,20 +120,13 @@ describe('Users: GET sa/users', () => {
         1,
         10,
         7,
-        userLogin01,
-        userEmail01,
-        userLogin02,
-        userEmail02,
-        userLogin03,
-        userEmail03,
-        userLogin04,
-        userEmail04,
-        userLogin05,
-        userEmail05,
-        userLogin06,
-        userEmail06,
-        userLogin07,
-        userEmail07,
+        createUserInput,
+        createUserInput2,
+        createUserInput3,
+        createUserInput4,
+        createUserInput5,
+        createUserInput6,
+        createUserInput7,
       );
     });
 
@@ -174,20 +153,13 @@ describe('Users: GET sa/users', () => {
         1,
         10,
         7,
-        userLogin07,
-        userEmail07,
-        userLogin06,
-        userEmail06,
-        userLogin05,
-        userEmail05,
-        userLogin04,
-        userEmail04,
-        userLogin03,
-        userEmail03,
-        userLogin02,
-        userEmail02,
-        userLogin01,
-        userEmail01,
+        createUserInput7,
+        createUserInput6,
+        createUserInput5,
+        createUserInput4,
+        createUserInput3,
+        createUserInput2,
+        createUserInput,
       );
     });
 
@@ -208,7 +180,7 @@ describe('Users: GET sa/users', () => {
         .query({ pageSize: 6, pageNumber: 2, sortDirection: 'desc' })
         .expect(200);
 
-      expectFirstPaginatedUser(response, 2, 2, 6, 7, userLogin01, userEmail01);
+      expectFirstPaginatedUser(response, 2, 2, 6, 7, createUserInput);
     });
   });
 
