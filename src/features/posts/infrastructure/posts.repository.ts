@@ -10,17 +10,19 @@ export class PostsRepository {
   async createPostForSpecificBlog(
     postInputModel: PostInputModel,
     blogId: number,
+    blogName: string,
   ): Promise<number> {
     const posts = await this.dataSource.query(
       `INSERT INTO public.posts 
-                (title, "shortDescription", content, "blogId")
-       VALUES ($1, $2, $3, $4)
+                (title, "shortDescription", content, "blogId", "blogName")
+       VALUES ($1, $2, $3, $4, $5)
        returning id;`,
       [
         postInputModel.title,
         postInputModel.shortDescription,
         postInputModel.content,
         blogId,
+        blogName,
       ],
     );
 
