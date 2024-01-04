@@ -11,12 +11,9 @@ import {
   basicAuthLogin,
   basicAuthPassword,
   someSiteURl,
-  someSiteURl2,
 } from '../../base/utils/constants/auth.constants';
 import {
   blogDescription,
-  blogDescription2,
-  blogName2,
   createBlogInput,
   createBlogInput2,
 } from '../../base/utils/constants/blogs.constant';
