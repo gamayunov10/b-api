@@ -24,7 +24,14 @@ export class PostsQueryRepository {
              FROM public.posts p
              LEFT JOIN public.blogs b
              ON b.id = p."blogId"
-             WHERE b.id = $1;`,
+             WHERE p."blogId" = $1
+             ORDER BY "${query.sortBy}" 
+             ${query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''} ${
+        query.sortDirection
+      }
+             LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${
+        query.pageSize
+      }`,
       [blogId],
     );
 
@@ -38,7 +45,7 @@ export class PostsQueryRepository {
 
     return Paginator.paginate({
       pageNumber: query.pageNumber,
-      pageSize: query.pageSize,
+      pageSize: Number(query.pageSize),
       totalCount: Number(totalCount[0].count),
       items: await this.postsMapping(posts),
     });
@@ -62,6 +69,11 @@ export class PostsQueryRepository {
     );
 
     const mappedPosts = await this.postsMapping(posts);
+
+    if (mappedPosts.length === 0) {
+      return null;
+    }
+
     return mappedPosts[0];
   }
 
