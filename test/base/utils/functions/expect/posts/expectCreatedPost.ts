@@ -14,6 +14,7 @@ export const expectCreatedPost = (
   expect(response.body).toHaveProperty('blogName');
   expect(response.body).toHaveProperty('createdAt');
   expect(response.body).toHaveProperty('extendedLikesInfo');
+  expect(response.body.extendedLikesInfo).toBeInstanceOf(Object);
   expect(response.body.extendedLikesInfo).toHaveProperty('likesCount');
   expect(response.body.extendedLikesInfo).toHaveProperty('dislikesCount');
   expect(response.body.extendedLikesInfo).toHaveProperty('myStatus');

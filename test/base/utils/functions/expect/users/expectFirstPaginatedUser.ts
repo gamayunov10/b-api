@@ -1,11 +1,12 @@
+import { UserInputModel } from '../../../../../../src/features/users/api/models/input/user-input-model';
+
 export const expectFirstPaginatedUser = (
   response: any,
   pagesCount: number,
   page: number,
   pageSize: number,
   totalCount: number,
-  login: string,
-  email: string,
+  createUserInput: UserInputModel,
 ) => {
   expect(response.body).toHaveProperty('pagesCount');
   expect(response.body).toHaveProperty('page');
@@ -27,8 +28,8 @@ export const expectFirstPaginatedUser = (
   expect(firstUser).toHaveProperty('createdAt');
 
   expect(firstUser.id).toBeDefined();
-  expect(firstUser.login).toBe(login);
-  expect(firstUser.email).toBe(email);
+  expect(firstUser.login).toBe(createUserInput.login);
+  expect(firstUser.email).toBe(createUserInput.email);
   expect(firstUser.createdAt).toBeDefined();
 };
 

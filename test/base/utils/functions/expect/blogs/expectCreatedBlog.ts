@@ -1,4 +1,9 @@
-export const expectCreatedBlog = (response, name, description, websiteUrl) => {
+import { BlogInputModel } from '../../../../../../src/features/blogs/api/models/input/blog-input-model';
+
+export const expectCreatedBlog = (
+  response,
+  createBlogInput: BlogInputModel,
+) => {
   expect(response.body).toHaveProperty('id');
   expect(response.body).toHaveProperty('name');
   expect(response.body).toHaveProperty('description');
@@ -7,9 +12,9 @@ export const expectCreatedBlog = (response, name, description, websiteUrl) => {
   expect(response.body).toHaveProperty('isMembership');
 
   expect(response.body.id).toBeDefined();
-  expect(response.body.name).toBe(name);
-  expect(response.body.description).toBe(description);
-  expect(response.body.websiteUrl).toBe(websiteUrl);
+  expect(response.body.name).toBe(createBlogInput.name);
+  expect(response.body.description).toBe(createBlogInput.description);
+  expect(response.body.websiteUrl).toBe(createBlogInput.websiteUrl);
   expect(response.body.createdAt).toBeDefined();
   expect(response.body.isMembership).toBeTruthy();
 };
