@@ -32,7 +32,7 @@ export class BlogsRepository {
   ): Promise<boolean> {
     try {
       return this.dataSource.transaction(async () => {
-        await this.dataSource.query(
+        const result = await this.dataSource.query(
           `UPDATE public.blogs 
                   SET    name = $2, description = $3, "websiteUrl" = $4
                   WHERE id = $1;`,
@@ -44,7 +44,7 @@ export class BlogsRepository {
           ],
         );
 
-        return true;
+        return result[1] === 1;
       });
     } catch (e) {
       console.log(e);
