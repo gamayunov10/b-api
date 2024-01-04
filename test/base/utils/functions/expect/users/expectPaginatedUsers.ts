@@ -1,23 +1,18 @@
+import { UserInputModel } from '../../../../../../src/features/users/api/models/input/user-input-model';
+
 export const expectPaginatedUsers = (
   response: any,
   pagesCount: number,
   page: number,
   pageSize: number,
   totalCount: number,
-  login: string,
-  email: string,
-  login2: string,
-  email2: string,
-  login3: string,
-  email3: string,
-  login4: string,
-  email4: string,
-  login5: string,
-  email5: string,
-  login6: string,
-  email6: string,
-  login7: string,
-  email7: string,
+  createUserInput: UserInputModel,
+  createUserInput2: UserInputModel,
+  createUserInput3: UserInputModel,
+  createUserInput4: UserInputModel,
+  createUserInput5: UserInputModel,
+  createUserInput6: UserInputModel,
+  createUserInput7: UserInputModel,
 ) => {
   expect(response.body).toHaveProperty('pagesCount');
   expect(response.body).toHaveProperty('page');
@@ -45,38 +40,38 @@ export const expectPaginatedUsers = (
   expect(firstUser).toHaveProperty('createdAt');
 
   expect(firstUser.id).toBeDefined();
-  expect(firstUser.login).toBe(login);
-  expect(firstUser.email).toBe(email);
+  expect(firstUser.login).toBe(createUserInput.login);
+  expect(firstUser.email).toBe(createUserInput.email);
   expect(firstUser.createdAt).toBeDefined();
 
   expect(secondUser.id).toBeDefined();
-  expect(secondUser.login).toBe(login2);
-  expect(secondUser.email).toBe(email2);
+  expect(secondUser.login).toBe(createUserInput2.login);
+  expect(secondUser.email).toBe(createUserInput2.email);
   expect(secondUser.createdAt).toBeDefined();
 
   expect(thirdUser.id).toBeDefined();
-  expect(thirdUser.login).toBe(login3);
-  expect(thirdUser.email).toBe(email3);
+  expect(thirdUser.login).toBe(createUserInput3.login);
+  expect(thirdUser.email).toBe(createUserInput3.email);
   expect(thirdUser.createdAt).toBeDefined();
 
   expect(fourth.id).toBeDefined();
-  expect(fourth.login).toBe(login4);
-  expect(fourth.email).toBe(email4);
+  expect(fourth.login).toBe(createUserInput4.login);
+  expect(fourth.email).toBe(createUserInput4.email);
   expect(fourth.createdAt).toBeDefined();
 
   expect(fifth.id).toBeDefined();
-  expect(fifth.login).toBe(login5);
-  expect(fifth.email).toBe(email5);
+  expect(fifth.login).toBe(createUserInput5.login);
+  expect(fifth.email).toBe(createUserInput5.email);
   expect(fifth.createdAt).toBeDefined();
 
   expect(sixth.id).toBeDefined();
-  expect(sixth.login).toBe(login6);
-  expect(sixth.email).toBe(email6);
+  expect(sixth.login).toBe(createUserInput6.login);
+  expect(sixth.email).toBe(createUserInput6.email);
   expect(sixth.createdAt).toBeDefined();
 
   expect(seventh.id).toBeDefined();
-  expect(seventh.login).toBe(login7);
-  expect(seventh.email).toBe(email7);
+  expect(seventh.login).toBe(createUserInput7.login);
+  expect(seventh.email).toBe(createUserInput7.email);
   expect(seventh.createdAt).toBeDefined();
 };
 
