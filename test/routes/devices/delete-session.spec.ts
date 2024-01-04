@@ -3,7 +3,6 @@ import { SuperAgentTest } from 'supertest';
 import { randomUUID } from 'crypto';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput2,
@@ -20,12 +19,12 @@ import {
   userLogin05,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Devices: DELETE session security/devices/:id', () => {
   let app: INestApplication;
@@ -33,12 +32,10 @@ describe('Devices: DELETE session security/devices/:id', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: DELETE security/devices/:id', () => {
@@ -60,7 +57,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
         .set('Cookie', refreshToken) // expired
         .expect(401);
 
-      expecFilteredMessages(response, 401, security_devices_uri + deviceId);
+      expectFilteredMessages(response, 401, security_devices_uri + deviceId);
     }, 30000);
 
     it(`should not Terminate specified device session 
@@ -78,7 +75,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
         .set('Cookie', refreshTokenUser1)
         .expect(403);
 
-      expecFilteredMessages(
+      expectFilteredMessages(
         response,
         403,
         security_devices_uri + otherUserDeviceId,

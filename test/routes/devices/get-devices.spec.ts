@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { initializeApp } from '../../base/settings/initializeApp';
 import {
   createUserInput,
   createUserInput2,
@@ -11,13 +10,13 @@ import {
   userLogin02,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
-import { UsersQueryRepository } from '../../../src/features/users/infrastructure/users.query.repository';
 import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { expecFilteredMessages } from '../../base/utils/functions/expecFilteredMessages';
-import { expectGetDevices } from '../../base/utils/functions/devices/expectGetDevices';
+import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectGetDevices } from '../../base/utils/functions/expect/devices/expectGetDevices';
+import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Devices: GET security/devices', () => {
   let app: INestApplication;
@@ -25,12 +24,10 @@ describe('Devices: GET security/devices', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    await waitForIt(11);
-    const result = await initializeApp();
-    app = result.app;
-    agent = result.agent;
-    const usersQueryRepository = app.get(UsersQueryRepository);
-    usersTestManager = new UsersTestManager(app, usersQueryRepository);
+    const testConfig = await beforeAllConfig();
+    app = testConfig.app;
+    agent = testConfig.agent;
+    usersTestManager = testConfig.usersTestManager;
   }, 15000);
 
   describe('negative: GET security/devices', () => {
@@ -49,7 +46,7 @@ describe('Devices: GET security/devices', () => {
         // .set('Cookie', refreshToken) // missing
         .expect(401);
 
-      expecFilteredMessages(response, 401, security_devices_uri);
+      expectFilteredMessages(response, 401, security_devices_uri);
     });
 
     it(`should not Return all devices with active sessions for current user if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
@@ -64,7 +61,7 @@ describe('Devices: GET security/devices', () => {
         .set('Cookie', refreshToken) // expired
         .expect(401);
 
-      expecFilteredMessages(response, 401, security_devices_uri);
+      expectFilteredMessages(response, 401, security_devices_uri);
     }, 38000);
   });
 
