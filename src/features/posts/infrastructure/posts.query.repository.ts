@@ -8,6 +8,43 @@ import { SABlogQueryModel } from '../../blogs/api/models/input/sa-blog.query.mod
 
 export class PostsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
+  async findPosts(
+    query: SABlogQueryModel,
+  ): Promise<Paginator<PostViewModel[]>> {
+    const posts = await this.dataSource.query(
+      `SELECT 
+                p.id,
+                p.title,
+                p."shortDescription",
+                p.content,
+                b.id as "blogId",
+                b.name as "blogName",
+                p."createdAt"
+             FROM public.posts p
+             LEFT JOIN public.blogs b
+             ON b.id = p."blogId"
+             ORDER BY "${query.sortBy}" 
+             ${query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''} ${
+        query.sortDirection
+      }
+             LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${
+        query.pageSize
+      }`,
+    );
+
+    const totalCount = await this.dataSource.query(
+      `SELECT count(*)
+              FROM public.posts p
+              LEFT JOIN public.blogs b on b.id = p."blogId";`,
+    );
+
+    return Paginator.paginate({
+      pageNumber: Number(query.pageNumber),
+      pageSize: Number(query.pageSize),
+      totalCount: Number(totalCount[0].count),
+      items: await this.postsMapping(posts),
+    });
+  }
   async findPostsByBlogId(
     query: SABlogQueryModel,
     blogId: number,
