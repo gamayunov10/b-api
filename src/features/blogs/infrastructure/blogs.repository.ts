@@ -18,7 +18,7 @@ export class BlogsRepository {
           blogInputModel.name,
           blogInputModel.description,
           blogInputModel.websiteUrl,
-          true,
+          false,
         ],
       );
 
