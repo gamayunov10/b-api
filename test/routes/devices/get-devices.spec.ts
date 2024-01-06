@@ -5,8 +5,6 @@ import { UsersTestManager } from '../../base/managers/users.manager';
 import {
   createUserInput,
   createUserInput2,
-  loginUserInput,
-  loginUserInput2,
   userLogin02,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
@@ -51,7 +49,7 @@ describe('Devices: GET security/devices', () => {
 
     it(`should not Return all devices with active sessions for current user if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
+      const res = await usersTestManager.login(createUserInput.login);
       const refreshToken = res.headers['set-cookie'][0];
 
       await waitForIt(22);
@@ -73,7 +71,7 @@ describe('Devices: GET security/devices', () => {
 
     it(`should Return all devices with active sessions for current user`, async () => {
       await usersTestManager.createUser(createUserInput2);
-      const res = await usersTestManager.login(loginUserInput2);
+      const res = await usersTestManager.login(createUserInput2.login);
       const refreshToken = res.headers['set-cookie'][0];
       const deviceId = await usersTestManager.getDeviceId(userLogin02);
 
