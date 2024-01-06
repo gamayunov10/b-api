@@ -53,13 +53,18 @@ import { BlogDeleteUseCase } from '../../features/blogs/application/usecases/del
 import { PostsQueryRepository } from '../../features/posts/infrastructure/posts.query.repository';
 import { PostsRepository } from '../../features/posts/infrastructure/posts.repository';
 import { PostsController } from '../../features/posts/api/posts.controller';
-import { PostCreatePostForSpecificBlog } from '../../features/posts/application/usecases/create-post-for-specific-blog.usecase';
+import { PostCreatePostForSpecificBlogUseCase } from '../../features/posts/application/usecases/create-post-for-specific-blog.usecase';
 import { PostUpdatePostForSpecificBlogUseCase } from '../../features/posts/application/usecases/update-post-for-specific-blog.usecase';
 import { PostDeleteUseCase } from '../../features/posts/application/usecases/delete-post.usecase';
+import { BlogsController } from '../../features/blogs/api/blogs.controller';
+import { PostCreateCommentUseCase } from '../../features/posts/application/usecases/create-comment-for-post.usecase';
+import { CommentsQueryRepository } from '../../features/comments/infrastructure/comments.query.repository';
+import { CommentsRepository } from '../../features/comments/infrastructure/comments.repository';
 
 const controllers = [
   SAUsersController,
   SABlogsController,
+  BlogsController,
   PostsController,
   DevicesController,
   AuthController,
@@ -90,9 +95,10 @@ const useCases = [
   BlogCreateUseCase,
   BlogUpdateUseCase,
   BlogDeleteUseCase,
-  PostCreatePostForSpecificBlog,
+  PostCreatePostForSpecificBlogUseCase,
   PostUpdatePostForSpecificBlogUseCase,
   PostDeleteUseCase,
+  PostCreateCommentUseCase,
 ];
 
 const repositories = [
@@ -100,6 +106,7 @@ const repositories = [
   DevicesRepository,
   BlogsRepository,
   PostsRepository,
+  CommentsRepository,
 ];
 
 const queryRepositories = [
@@ -107,6 +114,7 @@ const queryRepositories = [
   DevicesQueryRepository,
   BlogsQueryRepository,
   PostsQueryRepository,
+  CommentsQueryRepository,
 ];
 
 const constraints = [
