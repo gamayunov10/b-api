@@ -34,7 +34,7 @@ export const expectFirstPaginatedBlog = (
   expect(firstUser.description).toBe(createBlogInput.description);
   expect(firstUser.websiteUrl).toBe(createBlogInput.websiteUrl);
   expect(firstUser.createdAt).toBeDefined();
-  expect(firstUser.isMembership).toBeTruthy();
+  expect(firstUser.isMembership).toBeFalsy();
 };
 
 // Example
