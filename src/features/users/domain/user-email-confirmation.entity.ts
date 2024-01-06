@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('user_email_confirmation')
 export class UserEmailConfirmation {
   @PrimaryGeneratedColumn()
   id: number;
