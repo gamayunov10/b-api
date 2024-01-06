@@ -69,10 +69,13 @@ export class UsersTestManager {
     return await this.postsQueryRepository.findPostByPostId(id);
   }
 
-  async login(loginModel: any): Promise<Response> {
+  async login(loginOrEmail: string, password: string): Promise<Response> {
     return await supertest(this.app.getHttpServer())
       .post('/auth/login')
-      .send(loginModel)
+      .send({
+        loginOrEmail: loginOrEmail,
+        password: password,
+      })
       .expect(200);
   }
 
