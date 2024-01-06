@@ -21,6 +21,7 @@ import { CommentInputModel } from '../../comments/api/models/input/comment-input
 import { JwtBearerGuard } from '../../auth/guards/jwt-bearer.guard';
 import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
+import { CommentQueryModel } from '../../comments/api/models/input/comment.query.model';
 
 import { PostQueryModel } from './models/input/post.query.model';
 
@@ -56,6 +57,30 @@ export class PostsController {
     }
 
     return result;
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({
+    summary: 'Returns comments for specified post',
+  })
+  async findCommentsByPostId(
+    @Param('id') postId: string,
+    @Query() query: CommentQueryModel,
+  ) {
+    if (isNaN(+postId)) {
+      throw new NotFoundException();
+    }
+
+    const post = await this.postsQueryRepository.findPostByPostId(+postId);
+
+    if (!post) {
+      return exceptionHandler(ResultCode.NotFound, postNotFound, postIDField);
+    }
+
+    return await this.commentsQueryRepository.findCommentsByPostId(
+      +postId,
+      query,
+    );
   }
 
   @Post(':id/comments')
