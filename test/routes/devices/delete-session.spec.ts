@@ -9,11 +9,6 @@ import {
   createUserInput4,
   createUserInput5,
   createUserInput6,
-  loginUserInput,
-  loginUserInput2,
-  loginUserInput4,
-  loginUserInput5,
-  loginUserInput6,
   userLogin01,
   userLogin02,
   userLogin05,
@@ -46,7 +41,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
     it(`should not Terminate specified device session 
         if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput2);
-      const res = await usersTestManager.login(loginUserInput2);
+      const res = await usersTestManager.login(createUserInput2.login);
       const refreshToken = res.headers['set-cookie'][0];
       const deviceId = await usersTestManager.getDeviceId(userLogin02);
 
@@ -63,11 +58,11 @@ describe('Devices: DELETE session security/devices/:id', () => {
     it(`should not Terminate specified device session 
         If try to delete the deviceId of other user`, async () => {
       await usersTestManager.createUser(createUserInput4);
-      const resUser1 = await usersTestManager.login(loginUserInput4);
+      const resUser1 = await usersTestManager.login(createUserInput4.login);
       const refreshTokenUser1 = resUser1.headers['set-cookie'][0];
 
       await usersTestManager.createUser(createUserInput5);
-      await usersTestManager.login(loginUserInput5);
+      await usersTestManager.login(createUserInput5.login);
       const otherUserDeviceId = await usersTestManager.getDeviceId(userLogin05);
 
       const response = await agent
@@ -87,7 +82,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
       await waitForIt(10);
 
       await usersTestManager.createUser(createUserInput6);
-      const res = await usersTestManager.login(loginUserInput6);
+      const res = await usersTestManager.login(createUserInput6.login);
       const refreshToken = res.headers['set-cookie'][0];
       const deviceId = randomUUID();
 
@@ -109,7 +104,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
     it(`should Terminate specified device session`, async () => {
       await usersTestManager.createUser(createUserInput);
 
-      const res = await usersTestManager.login(loginUserInput);
+      const res = await usersTestManager.login(createUserInput.login);
       const refreshToken = res.headers['set-cookie'][0];
 
       const deviceId = await usersTestManager.getDeviceId(userLogin01);

@@ -104,10 +104,7 @@ describe('Posts: POST posts/:id/comments', () => {
 
       await usersTestManager.createUser(createUserInput);
 
-      const userToken = await usersTestManager.login(
-        createUserInput.login,
-        createUserInput.password,
-      );
+      const userToken = await usersTestManager.login(createUserInput.login);
 
       const token = userToken.body.accessToken;
 
@@ -132,10 +129,7 @@ describe('Posts: POST posts/:id/comments', () => {
 
       await usersTestManager.createUser(createUserInput2);
 
-      const userToken = await usersTestManager.login(
-        createUserInput2.login,
-        createUserInput2.password,
-      );
+      const userToken = await usersTestManager.login(createUserInput2.login);
 
       const token = userToken.body.accessToken;
 
@@ -160,10 +154,7 @@ describe('Posts: POST posts/:id/comments', () => {
 
       await usersTestManager.createUser(createUserInput3);
 
-      const userToken = await usersTestManager.login(
-        createUserInput3.login,
-        createUserInput3.password,
-      );
+      const userToken = await usersTestManager.login(createUserInput3.login);
 
       const token = userToken.body.accessToken;
 
@@ -196,10 +187,7 @@ describe('Posts: POST posts/:id/comments', () => {
       const user = await usersTestManager.createUser(createUserInput3);
       const userId = user.body.id;
 
-      const userToken = await usersTestManager.login(
-        createUserInput3.login,
-        createUserInput3.password,
-      );
+      const userToken = await usersTestManager.login(createUserInput3.login);
 
       const token = userToken.body.accessToken;
 
