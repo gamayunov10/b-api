@@ -2,10 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import {
-  createUserInput,
-  loginUserInput,
-} from '../../base/utils/constants/users.constants';
+import { createUserInput } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import {
   auth_logout_uri,
@@ -47,7 +44,7 @@ describe('Auth: auth/logout', () => {
     it(`should return 401 when trying to logout if cookie is expired`, async () => {
       await usersTestManager.createUser(createUserInput);
 
-      const response = await usersTestManager.login(loginUserInput);
+      const response = await usersTestManager.login(createUserInput.login);
 
       const refreshTokenCookie = response
         .get('Set-Cookie')
@@ -70,7 +67,7 @@ describe('Auth: auth/logout', () => {
 
     it(`should logout user`, async () => {
       await usersTestManager.createUser(createUserInput);
-      const res = await usersTestManager.login(loginUserInput);
+      const res = await usersTestManager.login(createUserInput.login);
       const refreshToken = res.headers['set-cookie'][0];
 
       await agent

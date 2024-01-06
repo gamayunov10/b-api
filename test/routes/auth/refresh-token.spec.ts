@@ -5,8 +5,6 @@ import { UsersTestManager } from '../../base/managers/users.manager';
 import {
   createUserInput,
   createUserInput3,
-  loginUserInput,
-  loginUserInput3,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
@@ -47,7 +45,7 @@ describe('Auth: auth/refresh-token', () => {
     it(`should return 401 if refreshToken is expired`, async () => {
       await usersTestManager.createUser(createUserInput3);
 
-      const response = await usersTestManager.login(loginUserInput3);
+      const response = await usersTestManager.login(createUserInput3.login);
 
       const refreshToken = response
         .get('Set-Cookie')
@@ -73,7 +71,7 @@ describe('Auth: auth/refresh-token', () => {
         that will be revoked after refreshing`, async () => {
       await usersTestManager.createUser(createUserInput);
 
-      const response = await usersTestManager.login(loginUserInput);
+      const response = await usersTestManager.login(createUserInput.login);
 
       const refreshToken = response
         .get('Set-Cookie')

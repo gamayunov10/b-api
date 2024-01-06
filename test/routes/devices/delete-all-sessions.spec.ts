@@ -8,11 +8,6 @@ import {
   createUserInput3,
   createUserInput4,
   createUserInput5,
-  loginUserInput,
-  loginUserInput2,
-  loginUserInput3,
-  loginUserInput4,
-  loginUserInput5,
   userLogin02,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
@@ -59,7 +54,7 @@ describe('Devices: DELETE all sessions security/devices', () => {
     it(`should not Terminate all other sessions (exclude current) 
     if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
       await usersTestManager.createUser(createUserInput2);
-      const res = await usersTestManager.login(loginUserInput2);
+      const res = await usersTestManager.login(createUserInput2.login);
       const refreshToken = res.headers['set-cookie'][0];
 
       await waitForIt(21);
@@ -95,21 +90,21 @@ describe('Devices: DELETE all sessions security/devices', () => {
 
     it(`should Terminate all other sessions (exclude current)`, async () => {
       await usersTestManager.createUser(createUserInput);
-      await usersTestManager.login(loginUserInput);
+      await usersTestManager.login(createUserInput.login);
 
       await usersTestManager.createUser(createUserInput2);
-      const res2 = await usersTestManager.login(loginUserInput2);
+      const res2 = await usersTestManager.login(createUserInput2.login);
       const refreshToken = res2.headers['set-cookie'][0];
       const deviceId = await usersTestManager.getDeviceId(userLogin02);
 
       await usersTestManager.createUser(createUserInput3);
-      await usersTestManager.login(loginUserInput3);
+      await usersTestManager.login(createUserInput3.login);
 
       await usersTestManager.createUser(createUserInput4);
-      await usersTestManager.login(loginUserInput4);
+      await usersTestManager.login(createUserInput4.login);
 
       await usersTestManager.createUser(createUserInput5);
-      await usersTestManager.login(loginUserInput5);
+      await usersTestManager.login(createUserInput5.login);
 
       await agent
         .delete(security_devices_uri)

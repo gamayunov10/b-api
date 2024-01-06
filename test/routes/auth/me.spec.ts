@@ -6,9 +6,6 @@ import {
   createUserInput,
   createUserInput2,
   createUserInput3,
-  loginUserInput,
-  loginUserInput2,
-  loginUserInput3,
 } from '../../base/utils/constants/users.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import {
@@ -41,7 +38,7 @@ describe('Auth: auth/me', () => {
     it(`should not Get information about current user if accessToken is incorrect`, async () => {
       await usersTestManager.createUser(createUserInput);
 
-      const response = await usersTestManager.login(loginUserInput);
+      const response = await usersTestManager.login(createUserInput.login);
 
       const accessToken = response.body;
 
@@ -54,7 +51,7 @@ describe('Auth: auth/me', () => {
     it(`should not Get information about current user if accessToken is expired`, async () => {
       await usersTestManager.createUser(createUserInput3);
 
-      const response = await usersTestManager.login(loginUserInput3);
+      const response = await usersTestManager.login(createUserInput3.login);
 
       const accessToken = response.body.accessToken;
 
@@ -76,7 +73,7 @@ describe('Auth: auth/me', () => {
     it(`should Get information about current user`, async () => {
       await usersTestManager.createUser(createUserInput2);
 
-      const response = await usersTestManager.login(loginUserInput2);
+      const response = await usersTestManager.login(createUserInput2.login);
 
       const accessToken = response.body.accessToken;
 
