@@ -1,1 +1,5 @@
-export const commentContent = 'valid test content comment content';
+import { lorem30 } from './lorems';
+
+export const createCommentInput = {
+  content: lorem30,
+};
