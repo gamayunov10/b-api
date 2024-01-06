@@ -10,6 +10,9 @@ import { BlogsQueryRepository } from '../../../src/features/blogs/infrastructure
 import { BlogViewModel } from '../../../src/features/blogs/api/models/output/blog-view.model';
 import { PostsQueryRepository } from '../../../src/features/posts/infrastructure/posts.query.repository';
 import { PostViewModel } from '../../../src/features/posts/api/models/output/post-view.model';
+import { CommentInputModel } from '../../../src/features/comments/api/models/input/comment-input.model';
+import { createCommentInput } from '../utils/constants/comments.constant';
+import { userPassword } from '../utils/constants/users.constants';
 
 export class UsersTestManager {
   constructor(
@@ -45,6 +48,18 @@ export class UsersTestManager {
       .expect(204);
   }
 
+  async createCommentForPost(
+    createModel: CommentInputModel,
+    postId: string,
+    token: string,
+  ): Promise<Response> {
+    return supertest(this.app.getHttpServer())
+      .post(`/posts/${postId}/comments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(createCommentInput)
+      .expect(201);
+  }
+
   async createBlog(createModel: any): Promise<Response> {
     return supertest(this.app.getHttpServer())
       .post('/sa/blogs')
@@ -69,12 +84,12 @@ export class UsersTestManager {
     return await this.postsQueryRepository.findPostByPostId(id);
   }
 
-  async login(loginOrEmail: string, password: string): Promise<Response> {
+  async login(loginOrEmail: string): Promise<Response> {
     return await supertest(this.app.getHttpServer())
       .post('/auth/login')
       .send({
         loginOrEmail: loginOrEmail,
-        password: password,
+        password: userPassword,
       })
       .expect(200);
   }
