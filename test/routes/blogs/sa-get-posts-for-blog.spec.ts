@@ -23,7 +23,7 @@ import {
 import { expectFirstPaginatedPost } from '../../base/utils/functions/expect/posts/expectFirstPaginatedPost';
 import { expectPaginatedPosts } from '../../base/utils/functions/expect/posts/expectPaginatedPosts';
 
-describe('Blogs: GET sa/blogs/:id/posts', () => {
+describe('Blogs: GET sa/blogs/:blogId/posts', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
   let usersTestManager: UsersTestManager;
