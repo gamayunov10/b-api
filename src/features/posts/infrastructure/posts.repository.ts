@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { PostInputModel } from '../api/models/input/post-input-model';
+import { CommentInputModel } from '../../comments/api/models/input/comment-input.model';
 
 @Injectable()
 export class PostsRepository {
@@ -48,6 +49,24 @@ export class PostsRepository {
     );
 
     return result[1] === 1;
+  }
+
+  async createCommentForSpecificPost(
+    postId: number,
+    userId: number,
+    commentInputModel: CommentInputModel,
+  ): Promise<number> {
+    return this.dataSource.transaction(async () => {
+      const comments = await this.dataSource.query(
+        `INSERT INTO public.comments 
+                    (content, "commentatorId", "postId")
+         VALUES ($1, $2, $3)
+         RETURNING id;`,
+        [commentInputModel.content, userId, postId],
+      );
+
+      return comments[0].id;
+    });
   }
 
   async deletePost(postId: number): Promise<boolean> {
