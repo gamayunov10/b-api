@@ -16,7 +16,7 @@ export class PostCreatePostForSpecificBlogCommand {
 }
 
 @CommandHandler(PostCreatePostForSpecificBlogCommand)
-export class PostCreatePostForSpecificBlog
+export class PostCreatePostForSpecificBlogUseCase
   implements ICommandHandler<PostCreatePostForSpecificBlogCommand>
 {
   constructor(
