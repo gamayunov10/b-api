@@ -60,6 +60,7 @@ import { BlogsController } from '../../features/blogs/api/blogs.controller';
 import { PostCreateCommentUseCase } from '../../features/posts/application/usecases/create-comment-for-post.usecase';
 import { CommentsQueryRepository } from '../../features/comments/infrastructure/comments.query.repository';
 import { CommentsRepository } from '../../features/comments/infrastructure/comments.repository';
+import { CommentsController } from '../../features/comments/api/comments.controller';
 
 const controllers = [
   SAUsersController,
@@ -69,6 +70,7 @@ const controllers = [
   DevicesController,
   AuthController,
   TestingController,
+  CommentsController,
 ];
 
 const services = [JwtService, AuthService];
