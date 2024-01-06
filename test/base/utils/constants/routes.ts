@@ -20,5 +20,9 @@ export const sa_users_uri = '/sa/users/';
 export const blogs_uri = '/blogs/';
 export const sa_blogs_uri = '/sa/blogs/';
 
+//posts
+export const posts_uri = '/posts/';
+export const sa_posts_uri = '/sa/posts/';
+
 //testing
 export const testing_allData_uri = '/testing/all-data/';
