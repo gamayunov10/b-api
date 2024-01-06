@@ -13,6 +13,8 @@ import { PostViewModel } from '../../../src/features/posts/api/models/output/pos
 import { CommentInputModel } from '../../../src/features/comments/api/models/input/comment-input.model';
 import { createCommentInput } from '../utils/constants/comments.constant';
 import { userPassword } from '../utils/constants/users.constants';
+import { CommentsQueryRepository } from '../../../src/features/comments/infrastructure/comments.query.repository';
+import { CommentViewModel } from '../../../src/features/comments/api/models/output/comment-view.model';
 
 export class UsersTestManager {
   constructor(
@@ -20,6 +22,7 @@ export class UsersTestManager {
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   expectCorrectModel(createModel: any, responseModel: any) {
@@ -82,6 +85,10 @@ export class UsersTestManager {
 
   async findPostByPostId(id: number): Promise<PostViewModel | null> {
     return await this.postsQueryRepository.findPostByPostId(id);
+  }
+
+  async findComment(id: number): Promise<CommentViewModel | null> {
+    return await this.commentsQueryRepository.findComment(id);
   }
 
   async login(loginOrEmail: string): Promise<Response> {
