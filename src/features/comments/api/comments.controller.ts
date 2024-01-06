@@ -4,8 +4,6 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
 import {
-  blogIdField,
-  blogNotFound,
   commentIDField,
   commentNotFound,
 } from '../../../base/constants/constants';
