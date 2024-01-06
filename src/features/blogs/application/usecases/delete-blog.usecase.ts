@@ -20,12 +20,12 @@ export class BlogDeleteUseCase implements ICommandHandler<BlogDeleteCommand> {
       throw new NotFoundException();
     }
 
-    const blog = this.blogsQueryRepository.findBlogById(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
 
     if (!blog) {
       return null;
     }
 
-    return this.blogsRepository.deleteBlog(+command.blogId);
+    return await this.blogsRepository.deleteBlog(+command.blogId);
   }
 }
