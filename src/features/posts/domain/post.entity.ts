@@ -2,13 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { LikeInfo } from './likes-info.entity';
-
-@Entity()
+@Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,9 +25,6 @@ export class Post {
   @Column({ type: 'character varying' })
   blogName: string;
 
-  @CreateDateColumn({ name: 'createdAt', type: 'timestamp with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
-
-  @OneToOne(() => LikeInfo, { cascade: true })
-  likesInfo: LikeInfo;
 }
