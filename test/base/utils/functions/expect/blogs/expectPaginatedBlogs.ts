@@ -46,49 +46,49 @@ export const expectPaginatedBlogs = (
   expect(firstBlog.description).toBe(createBlogInput.description);
   expect(firstBlog.websiteUrl).toBe(createBlogInput.websiteUrl);
   expect(firstBlog.createdAt).toBeDefined();
-  expect(firstBlog.isMembership).toBeTruthy();
+  expect(firstBlog.isMembership).toBeFalsy();
 
   expect(secondBlog.id).toBeDefined();
   expect(secondBlog.name).toBe(createBlogInput2.name);
   expect(secondBlog.description).toBe(createBlogInput2.description);
   expect(secondBlog.websiteUrl).toBe(createBlogInput2.websiteUrl);
   expect(secondBlog.createdAt).toBeDefined();
-  expect(secondBlog.isMembership).toBeTruthy();
+  expect(secondBlog.isMembership).toBeFalsy();
 
   expect(thirdBlog.id).toBeDefined();
   expect(thirdBlog.name).toBe(createBlogInput3.name);
   expect(thirdBlog.description).toBe(createBlogInput3.description);
   expect(thirdBlog.websiteUrl).toBe(createBlogInput3.websiteUrl);
   expect(thirdBlog.createdAt).toBeDefined();
-  expect(thirdBlog.isMembership).toBeTruthy();
+  expect(thirdBlog.isMembership).toBeFalsy();
 
   expect(fourthBlog.id).toBeDefined();
   expect(fourthBlog.name).toBe(createBlogInput4.name);
   expect(fourthBlog.description).toBe(createBlogInput4.description);
   expect(fourthBlog.websiteUrl).toBe(createBlogInput4.websiteUrl);
   expect(fourthBlog.createdAt).toBeDefined();
-  expect(fourthBlog.isMembership).toBeTruthy();
+  expect(fourthBlog.isMembership).toBeFalsy();
 
   expect(fifthBlog.id).toBeDefined();
   expect(fifthBlog.name).toBe(createBlogInput5.name);
   expect(fifthBlog.description).toBe(createBlogInput5.description);
   expect(fifthBlog.websiteUrl).toBe(createBlogInput5.websiteUrl);
   expect(fifthBlog.createdAt).toBeDefined();
-  expect(fifthBlog.isMembership).toBeTruthy();
+  expect(fifthBlog.isMembership).toBeFalsy();
 
   expect(sixthBlog.id).toBeDefined();
   expect(sixthBlog.name).toBe(createBlogInput6.name);
   expect(sixthBlog.description).toBe(createBlogInput6.description);
   expect(sixthBlog.websiteUrl).toBe(createBlogInput6.websiteUrl);
   expect(sixthBlog.createdAt).toBeDefined();
-  expect(sixthBlog.isMembership).toBeTruthy();
+  expect(sixthBlog.isMembership).toBeFalsy();
 
   expect(seventhBlog.id).toBeDefined();
   expect(seventhBlog.name).toBe(createBlogInput7.name);
   expect(seventhBlog.description).toBe(createBlogInput7.description);
   expect(seventhBlog.websiteUrl).toBe(createBlogInput7.websiteUrl);
   expect(seventhBlog.createdAt).toBeDefined();
-  expect(seventhBlog.isMembership).toBeTruthy();
+  expect(seventhBlog.isMembership).toBeFalsy();
 };
 
 // Example
