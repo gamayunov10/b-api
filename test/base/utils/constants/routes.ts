@@ -24,5 +24,8 @@ export const sa_blogs_uri = '/sa/blogs/';
 export const posts_uri = '/posts/';
 export const sa_posts_uri = '/sa/posts/';
 
+//comments
+export const comments_uri = '/comments/';
+
 //testing
 export const testing_allData_uri = '/testing/all-data/';
