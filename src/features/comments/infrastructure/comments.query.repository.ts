@@ -44,6 +44,7 @@ export class CommentsQueryRepository {
       items: await this.commentsMapping(comments),
     });
   }
+
   async findComment(commentId: number): Promise<CommentViewModel | null> {
     const comments = await this.dataSource.query(
       `SELECT 
