@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -22,8 +23,10 @@ import { JwtBearerGuard } from '../../auth/guards/jwt-bearer.guard';
 import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
 import { CommentQueryModel } from '../../comments/api/models/input/comment.query.model';
+import { PostLikeOperationCommand } from '../application/usecases/post-like-operation.usecase';
 
 import { PostQueryModel } from './models/input/post.query.model';
+import { LikeStatusInputModel } from './models/input/like-status-input.model';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -104,5 +107,28 @@ export class PostsController {
     }
 
     return this.commentsQueryRepository.findComment(result.response);
+  }
+
+  @Put(':id/like-status')
+  @ApiOperation({
+    summary: 'Make like/unlike/dislike/undislike operation',
+  })
+  @ApiBasicAuth('Bearer')
+  @UseGuards(JwtBearerGuard)
+  @HttpCode(204)
+  async postLikeStatus(
+    @Param('id') postId: string,
+    @UserIdFromGuard() userId: string,
+    @Body() likeStatusInputModel: LikeStatusInputModel,
+  ) {
+    const result = await this.commandBus.execute(
+      new PostLikeOperationCommand(postId, userId, likeStatusInputModel),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return result;
   }
 }
