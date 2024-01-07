@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 
 import { PostInputModel } from '../api/models/input/post-input-model';
 import { CommentInputModel } from '../../comments/api/models/input/comment-input.model';
+import { LikeStatusInputModel } from '../api/models/input/like-status-input.model';
 
 @Injectable()
 export class PostsRepository {
@@ -66,6 +67,41 @@ export class PostsRepository {
       );
 
       return comments[0].id;
+    });
+  }
+
+  async postLikeStatus(
+    postId: number,
+    userId: number,
+    likeStatusInputModel: LikeStatusInputModel,
+  ): Promise<number> {
+    return this.dataSource.transaction(async () => {
+      const existingLike = await this.dataSource.query(
+        `SELECT id 
+                FROM public.post_likes 
+                WHERE "postId" = $1 
+                AND "userId" = $2;`,
+        [postId, userId],
+      );
+
+      if (existingLike && existingLike.length > 0) {
+        await this.dataSource.query(
+          `UPDATE public.post_likes 
+                  SET "likeStatus" = $1 
+                  WHERE "postId" = $2 
+                  AND "userId" = $3;`,
+          [likeStatusInputModel.likeStatus, postId, userId],
+        );
+        return existingLike[0].id;
+      } else {
+        const newLike = await this.dataSource.query(
+          `INSERT INTO public.post_likes ("postId", "userId", "likeStatus")
+                  VALUES ($1, $2, $3)
+                  RETURNING id;`,
+          [postId, userId, likeStatusInputModel.likeStatus],
+        );
+        return newLike[0].id;
+      }
     });
   }
 
