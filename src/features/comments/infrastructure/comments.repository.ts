@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { CommentInputModel } from '../api/models/input/comment-input.model';
+import { LikeStatusInputModel } from '../../posts/api/models/input/like-status-input.model';
 
 @Injectable()
 export class CommentsRepository {
@@ -26,6 +27,41 @@ export class CommentsRepository {
       console.log(e);
       return false;
     }
+  }
+
+  async commentLikeStatus(
+    commentId: number,
+    userId: number,
+    likeStatusInputModel: LikeStatusInputModel,
+  ): Promise<number> {
+    return this.dataSource.transaction(async () => {
+      const existingLike = await this.dataSource.query(
+        `SELECT id 
+                FROM public.comment_likes 
+                WHERE "commentId" = $1 
+                AND "userId" = $2;`,
+        [commentId, userId],
+      );
+
+      if (existingLike && existingLike.length > 0) {
+        await this.dataSource.query(
+          `UPDATE public.comment_likes 
+                  SET "likeStatus" = $1 
+                  WHERE "commentId" = $2 
+                  AND "userId" = $3;`,
+          [likeStatusInputModel.likeStatus, commentId, userId],
+        );
+        return existingLike[0].id;
+      } else {
+        const newLike = await this.dataSource.query(
+          `INSERT INTO public.comment_likes ("commentId", "userId", "likeStatus")
+                  VALUES ($1, $2, $3)
+                  RETURNING id;`,
+          [commentId, userId, likeStatusInputModel.likeStatus],
+        );
+        return newLike[0].id;
+      }
+    });
   }
 
   async deleteComment(commentId: number): Promise<boolean> {

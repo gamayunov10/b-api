@@ -23,9 +23,12 @@ import { JwtBearerGuard } from '../../auth/guards/jwt-bearer.guard';
 import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
 import { CommentUpdateCommand } from '../application/usecases/update-comment.usecase';
 import { CommentDeleteCommand } from '../application/usecases/delete-comment.usecase';
+import { LikeStatusInputModel } from '../../posts/api/models/input/like-status-input.model';
+import { PostLikeOperationCommand } from '../../posts/application/usecases/post-like-operation.usecase';
+import { CommentLikeOperationCommand } from '../application/usecases/comment-like-operation.usecase';
 
-import { CommentInputModel } from './models/input/comment-input.model';
 import { CommentViewModel } from './models/output/comment-view.model';
+import { CommentInputModel } from './models/input/comment-input.model';
 
 @ApiTags('comments')
 @Controller('comments')
@@ -95,6 +98,29 @@ export class CommentsController {
   ): Promise<void> {
     const result = await this.commandBus.execute(
       new CommentDeleteCommand(commentId, userId),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return result;
+  }
+
+  @Put(':id/like-status')
+  @ApiOperation({
+    summary: 'Make like/unlike/dislike/undislike operation',
+  })
+  @ApiBasicAuth('Bearer')
+  @UseGuards(JwtBearerGuard)
+  @HttpCode(204)
+  async commentLikeStatus(
+    @Param('id') commentId: string,
+    @UserIdFromGuard() userId: string,
+    @Body() likeStatusInputModel: LikeStatusInputModel,
+  ) {
+    const result = await this.commandBus.execute(
+      new CommentLikeOperationCommand(commentId, userId, likeStatusInputModel),
     );
 
     if (result.code !== ResultCode.Success) {
