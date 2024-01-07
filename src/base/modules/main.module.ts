@@ -62,6 +62,7 @@ import { CommentsQueryRepository } from '../../features/comments/infrastructure/
 import { CommentsRepository } from '../../features/comments/infrastructure/comments.repository';
 import { CommentsController } from '../../features/comments/api/comments.controller';
 import { CommentUpdateUseCase } from '../../features/comments/application/usecases/update-comment.usecase';
+import { CommentDeleteUseCase } from '../../features/comments/application/usecases/delete-comment.usecase';
 
 const controllers = [
   SAUsersController,
@@ -103,6 +104,7 @@ const useCases = [
   PostDeleteUseCase,
   PostCreateCommentUseCase,
   CommentUpdateUseCase,
+  CommentDeleteUseCase,
 ];
 
 const repositories = [
