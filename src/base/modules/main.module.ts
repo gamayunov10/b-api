@@ -63,6 +63,7 @@ import { CommentsRepository } from '../../features/comments/infrastructure/comme
 import { CommentsController } from '../../features/comments/api/comments.controller';
 import { CommentUpdateUseCase } from '../../features/comments/application/usecases/update-comment.usecase';
 import { CommentDeleteUseCase } from '../../features/comments/application/usecases/delete-comment.usecase';
+import { PostLikeOperationUseCase } from '../../features/posts/application/usecases/post-like-operation.usecase';
 
 const controllers = [
   SAUsersController,
@@ -105,6 +106,7 @@ const useCases = [
   PostCreateCommentUseCase,
   CommentUpdateUseCase,
   CommentDeleteUseCase,
+  PostLikeOperationUseCase,
 ];
 
 const repositories = [
