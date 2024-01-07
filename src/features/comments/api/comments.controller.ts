@@ -15,8 +15,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
 import {
-  blogIdField,
-  blogNotFound,
   commentIDField,
   commentNotFound,
 } from '../../../base/constants/constants';
@@ -24,8 +22,6 @@ import { CommentsQueryRepository } from '../infrastructure/comments.query.reposi
 import { JwtBearerGuard } from '../../auth/guards/jwt-bearer.guard';
 import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
 import { CommentUpdateCommand } from '../application/usecases/update-comment.usecase';
-import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
-import { BlogDeleteCommand } from '../../blogs/application/usecases/delete-blog.usecase';
 import { CommentDeleteCommand } from '../application/usecases/delete-comment.usecase';
 
 import { CommentInputModel } from './models/input/comment-input.model';
