@@ -91,7 +91,7 @@ describe('Comments: GET comments/:id', () => {
       );
       const commentId = comment.body.id;
 
-      const response = await agent.get(comments_uri + commentId).expect(404);
+      const response = await agent.get(comments_uri + commentId).expect(200);
 
       expectCreatedComment(
         response,
