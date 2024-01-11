@@ -24,6 +24,8 @@ import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
 import { CommentQueryModel } from '../../comments/api/models/input/comment.query.model';
 import { PostLikeOperationCommand } from '../application/usecases/post-like-operation.usecase';
+import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
+import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
 
 import { PostQueryModel } from './models/input/post.query.model';
 import { LikeStatusInputModel } from './models/input/like-status-input.model';
@@ -35,25 +37,49 @@ export class PostsController {
     private commandBus: CommandBus,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
-  @Get('')
+  @Get()
   @ApiOperation({
     summary: 'Returns all posts',
   })
-  async findPosts(@Query() query: PostQueryModel) {
-    return await this.postsQueryRepository.findPosts(query);
+  async findPosts(
+    @Query() query: PostQueryModel,
+    @UserIdFromHeaders('id') userId: string,
+  ) {
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    return await this.postsQueryRepository.findPosts(query, checkedUserId);
   }
 
   @Get(':id')
   @ApiOperation({
     summary: 'Return post by id',
   })
-  async findPostById(@Param('id') postId: string) {
+  async findPostById(
+    @Param('id') postId: string,
+    @UserIdFromHeaders('id') userId: string,
+  ) {
     if (isNaN(+postId)) {
       throw new NotFoundException();
     }
 
-    const result = await this.postsQueryRepository.findPostByPostId(+postId);
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    const result = await this.postsQueryRepository.findPostByPostId(
+      +postId,
+      checkedUserId,
+    );
 
     if (!result) {
       return exceptionHandler(ResultCode.NotFound, postNotFound, postIDField);
@@ -68,6 +94,7 @@ export class PostsController {
   })
   async findCommentsByPostId(
     @Param('id') postId: string,
+    @UserIdFromHeaders('id') userId: string,
     @Query() query: CommentQueryModel,
   ) {
     if (isNaN(+postId)) {
@@ -80,9 +107,17 @@ export class PostsController {
       return exceptionHandler(ResultCode.NotFound, postNotFound, postIDField);
     }
 
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
     return await this.commentsQueryRepository.findCommentsByPostId(
-      +postId,
       query,
+      +postId,
+      checkedUserId,
     );
   }
 
@@ -106,7 +141,7 @@ export class PostsController {
       return exceptionHandler(result.code, result.message, result.field);
     }
 
-    return this.commentsQueryRepository.findComment(result.response);
+    return this.commentsQueryRepository.findComment(result.response, +userId);
   }
 
   @Put(':id/like-status')
