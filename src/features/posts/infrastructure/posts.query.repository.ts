@@ -236,7 +236,7 @@ export class PostsQueryRepository {
                     'userId', pl."userId",
                     'login', u.login
                   ) AS user_details,
-                  ROW_NUMBER() OVER (PARTITION BY pl."postId" ORDER BY pl."addedAt" DESC) AS rn
+                  ROW_NUMBER() OVER (PARTITION BY pl."postId" ORDER BY pl."addedAt" ASC) AS rn
                 FROM 
                   public.post_likes pl
                 LEFT JOIN 
