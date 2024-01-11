@@ -14,6 +14,8 @@ import { PostsQueryRepository } from '../../posts/infrastructure/posts.query.rep
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
 import { blogIdField, blogNotFound } from '../../../base/constants/constants';
+import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
+import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
 
 import { SABlogQueryModel } from './models/input/sa-blog.query.model';
 import { BlogQueryModel } from './models/input/blog.query.model';
@@ -26,6 +28,7 @@ export class BlogsController {
     private readonly blogsRepository: BlogsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
   @Get()
   @ApiOperation({
@@ -42,6 +45,7 @@ export class BlogsController {
   async findPostsByBlogId(
     @Query() query: SABlogQueryModel,
     @Param('id') blogId: string,
+    @UserIdFromHeaders('id') userId: string,
   ) {
     if (isNaN(+blogId)) {
       throw new NotFoundException();
@@ -53,7 +57,18 @@ export class BlogsController {
       return exceptionHandler(ResultCode.NotFound, blogNotFound, blogIdField);
     }
 
-    return await this.postsQueryRepository.findPostsByBlogId(query, +blogId);
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    return await this.postsQueryRepository.findPostsByBlogId(
+      query,
+      +blogId,
+      checkedUserId,
+    );
   }
 
   @Get(':id')
