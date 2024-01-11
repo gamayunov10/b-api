@@ -236,7 +236,7 @@ export class PostsQueryRepository {
                     'userId', pl."userId",
                     'login', u.login
                   ) AS user_details,
-                  ROW_NUMBER() OVER (PARTITION BY pl."postId" ORDER BY pl."addedAt" ASC) AS rn
+                  ROW_NUMBER() OVER (PARTITION BY pl."postId" ORDER BY pl."addedAt" DESC) AS rn
                 FROM 
                   public.post_likes pl
                 LEFT JOIN 
@@ -322,7 +322,7 @@ export class PostsQueryRepository {
         p.newestUserDetails[0] === null
           ? []
           : p.newestUserDetails.map((detail: any) => ({
-              addedAt: detail?.addedAt.toString(),
+              addedAt: detail?.addedAt?.toString(),
               userId: detail?.userId.toString(),
               login: detail?.login,
             }));
