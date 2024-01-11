@@ -71,24 +71,30 @@ export class PostsQueryRepository {
     return await this.dataSource.query(
       `
             WITH 
-              NewestLikes AS (
+               NewestLikes AS (
                 SELECT 
                   pl."postId",
                   json_build_object(
                     'addedAt', pl."addedAt",
                     'userId', pl."userId",
                     'login', u.login
-                  ) AS user_details
+                  ) AS user_details,
+                  ROW_NUMBER() OVER (PARTITION BY pl."postId" ORDER BY pl."addedAt" DESC) AS rn
                 FROM 
                   public.post_likes pl
                 LEFT JOIN 
                   public.users u ON pl."userId" = u.id
                 WHERE 
                   pl."likeStatus" = 'Like'
-                ORDER BY 
-                  pl."addedAt" DESC 
-                LIMIT 
-                  3
+              ),
+              FilteredNewestLikes AS (
+                SELECT 
+                  "postId",
+                  user_details
+                FROM 
+                  NewestLikes
+                WHERE 
+                  rn <= 3
               ),
               PostLikes AS (
                 SELECT "postId", COUNT(*) as "likesCount" 
@@ -118,7 +124,7 @@ export class PostsQueryRepository {
               COALESCE(pl."likesCount", 0) as "likesCount",
               COALESCE(pd."dislikesCount", 0) as "dislikesCount",
               COALESCE(uls."likeStatus", 'None') as "myStatus",
-              json_agg(nl.user_details) as "newestUserDetails"
+              json_agg(fn.user_details) as "newestUserDetails"
             FROM 
               public.posts p
             LEFT JOIN 
@@ -130,7 +136,7 @@ export class PostsQueryRepository {
             LEFT JOIN 
               UserLikeStatus uls ON p.id = uls."postId"
             LEFT JOIN 
-              NewestLikes nl ON p.id = nl."postId"
+              FilteredNewestLikes fn ON p.id = fn."postId"
             WHERE 
               p.id = $1
             GROUP BY 
