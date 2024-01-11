@@ -11,7 +11,6 @@ export class TokenParserMiddleware implements NestMiddleware {
     if (token) {
       const decodedToken = this.jwtService.decode(token);
 
-      console.log('TokenParserMiddleware userId:', decodedToken.userId);
       if (!decodedToken) {
         next();
         return;
