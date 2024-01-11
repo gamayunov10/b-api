@@ -61,7 +61,23 @@ export class UsersQueryRepository {
     );
 
     const mappedUsers = await this.usersMapping(users);
+
     return mappedUsers[0];
+  }
+
+  async findUserByIdBool(id: number): Promise<boolean> {
+    if (isNaN(id)) {
+      return false;
+    }
+
+    const users = await this.dataSource.query(
+      `SELECT u.id
+       FROM public.users u
+       WHERE id = $1;`,
+      [id],
+    );
+
+    return users.length !== 0;
   }
 
   async findUserByLogin(login: string): Promise<User[] | null> {
