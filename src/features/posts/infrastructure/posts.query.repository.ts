@@ -351,7 +351,7 @@ export class PostsQueryRepository {
           likesCount: +p.likesCount || +0,
           dislikesCount: +p.dislikesCount || +0,
           myStatus: p.myStatus || LikeStatus.NONE,
-          newestLikes: mappedNewestLikes.reverse() || [],
+          newestLikes: mappedNewestLikes || [],
         },
       };
     });
