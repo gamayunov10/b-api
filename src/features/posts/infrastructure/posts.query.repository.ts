@@ -322,7 +322,7 @@ export class PostsQueryRepository {
         p.newestUserDetails[0] === null
           ? []
           : p.newestUserDetails.map((detail: any) => ({
-              addedAt: detail?.addedAt,
+              addedAt: detail?.addedAt.toString(),
               userId: detail?.userId.toString(),
               login: detail?.login,
             }));
