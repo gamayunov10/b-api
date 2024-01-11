@@ -65,6 +65,14 @@ import { CommentUpdateUseCase } from '../../features/comments/application/usecas
 import { CommentDeleteUseCase } from '../../features/comments/application/usecases/delete-comment.usecase';
 import { PostLikeOperationUseCase } from '../../features/posts/application/usecases/post-like-operation.usecase';
 import { CommentLikeOperationUseCase } from '../../features/comments/application/usecases/comment-like-operation.usecase';
+import { TokenParserMiddleware } from '../../infrastructure/middlewares/token-parser.middleware';
+import { Post } from '../../features/posts/domain/post.entity';
+import { Blog } from '../../features/blogs/domain/blog.entity';
+import { Comment } from '../../features/comments/domain/comment.entity';
+import { CommentLike } from '../../features/comments/domain/comment-like.entity';
+import { PostLike } from '../../features/posts/domain/post-like.entity';
+import { UserEmailConfirmation } from '../../features/users/domain/user-email-confirmation.entity';
+import { UserPasswordRecovery } from '../../features/users/domain/user-password-recovery.entity';
 
 const controllers = [
   SAUsersController,
@@ -79,8 +87,23 @@ const controllers = [
 
 const services = [JwtService, AuthService];
 
-const entities = [DeviceAuthSessions, User];
-const typeORMRepositories = [Repository<User>, Repository<DeviceAuthSessions>];
+const entities = [
+  DeviceAuthSessions,
+  User,
+  Post,
+  Blog,
+  Comment,
+  CommentLike,
+  PostLike,
+  UserEmailConfirmation,
+  UserPasswordRecovery,
+];
+
+const typeORMRepositories = [
+  Repository<User>,
+  Repository<DeviceAuthSessions>,
+  Repository<Post>,
+];
 
 const useCases = [
   UserCreateUseCase,
@@ -166,5 +189,14 @@ export class MainModule implements NestModule {
       path: 'security/devices/:id',
       method: RequestMethod.DELETE,
     });
+    consumer
+      .apply(TokenParserMiddleware)
+      .forRoutes(
+        { path: 'posts', method: RequestMethod.GET },
+        { path: 'posts/:id', method: RequestMethod.GET },
+        { path: 'blogs/:id/posts', method: RequestMethod.GET },
+        { path: 'posts/:id/comments', method: RequestMethod.GET },
+        { path: 'comments/:id', method: RequestMethod.GET },
+      );
   }
 }
