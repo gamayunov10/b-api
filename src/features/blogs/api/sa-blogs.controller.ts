@@ -29,6 +29,8 @@ import { PostsQueryRepository } from '../../posts/infrastructure/posts.query.rep
 import { PostUpdatePostForSpecificBlogCommand } from '../../posts/application/usecases/update-post-for-specific-blog.usecase';
 import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.usecase';
 import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
+import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
+import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
 
 import { BlogInputModel } from './models/input/blog-input-model';
 import { BlogQueryModel } from './models/input/blog.query.model';
@@ -41,6 +43,7 @@ export class SABlogsController {
     private readonly blogsRepository: BlogsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
   @Get()
   @ApiOperation({
@@ -61,6 +64,7 @@ export class SABlogsController {
   async findPostsByBlogId(
     @Query() query: PostQueryModel,
     @Param('id') blogId: string,
+    @UserIdFromHeaders('id') userId: string,
   ) {
     if (isNaN(+blogId)) {
       throw new NotFoundException();
@@ -72,7 +76,18 @@ export class SABlogsController {
       return exceptionHandler(ResultCode.NotFound, blogNotFound, blogIdField);
     }
 
-    return await this.postsQueryRepository.findPostsByBlogId(query, +blogId);
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    return await this.postsQueryRepository.findPostsByBlogId(
+      query,
+      +blogId,
+      checkedUserId,
+    );
   }
 
   @Post()
