@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+// import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -83,8 +83,8 @@ export class AuthController {
     summary:
       'Registration in the system. Email with confirmation code will be send to passed email address',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async registerUser(@Body() userInputModel: UserInputModel) {
     return this.commandBus.execute(new RegistrationCommand(userInputModel));
@@ -92,8 +92,8 @@ export class AuthController {
 
   @Post('registration-confirmation')
   @ApiOperation({ summary: 'Confirm registration' })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async confirmUser(@Body() confirmCodeInputModel: ConfirmationCodeInputModel) {
     const result = await this.commandBus.execute(
@@ -115,8 +115,8 @@ export class AuthController {
   @ApiOperation({
     summary: 'Resend confirmation registration Email if user exists',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async resendEmail(@Body() emailInputModel: EmailInputModel) {
     const result = await this.commandBus.execute(
@@ -139,8 +139,8 @@ export class AuthController {
     summary:
       'Password recovery via Email confirmation. Email should be sent with RecoveryCode inside',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async recoverPassword(@Body() emailInputModel: EmailInputModel) {
     return this.commandBus.execute(
@@ -152,8 +152,8 @@ export class AuthController {
   @ApiOperation({
     summary: 'Confirm Password recovery',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(204)
   async updatePassword(@Body() newPasswordModel: NewPasswordModel) {
     const result = await this.commandBus.execute(
@@ -211,8 +211,8 @@ export class AuthController {
   @ApiOperation({
     summary: 'Try login user to the system',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
+  // @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 10)
   @HttpCode(200)
   async login(
     @Ip() ip: string,
