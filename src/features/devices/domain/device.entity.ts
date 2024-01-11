@@ -12,7 +12,7 @@ export class DeviceAuthSessions {
   ip: string;
 
   @Column({ type: 'character varying' })
-  deviceName: string;
+  title: string;
 
   @Column({ type: 'timestamp with time zone' })
   lastActiveDate: Date;
