@@ -16,7 +16,7 @@ export const expectUpdatedBlog = (
   expect(response.description).toBe(createBlogInput.description);
   expect(response.websiteUrl).toBe(createBlogInput.websiteUrl);
   expect(response.createdAt).toBeDefined();
-  expect(response.isMembership).toBeTruthy();
+  expect(response.isMembership).toBeFalsy();
 };
 
 // Example
