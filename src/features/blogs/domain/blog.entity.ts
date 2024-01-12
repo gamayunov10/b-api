@@ -24,4 +24,7 @@ export class Blog {
 
   @Column({ type: 'boolean' })
   isMembership: boolean;
+
+  @Column({ type: 'character varying' })
+  ownerId: string;
 }
