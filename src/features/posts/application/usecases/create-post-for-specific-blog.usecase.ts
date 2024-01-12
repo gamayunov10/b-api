@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { PostInputModel } from '../../api/models/input/post-input-model';
 import { PostsRepository } from '../../infrastructure/posts.repository';
@@ -10,9 +10,14 @@ import {
   blogIdField,
   blogNotFound,
 } from '../../../../base/constants/constants';
+import { Role } from '../../../../base/enums/roles.enum';
 
 export class PostCreatePostForSpecificBlogCommand {
-  constructor(public postInputModel: PostInputModel, public blogId: string) {}
+  constructor(
+    public postInputModel: PostInputModel,
+    public blogId: string,
+    public blogOwner: Role | number,
+  ) {}
 }
 
 @CommandHandler(PostCreatePostForSpecificBlogCommand)
@@ -43,6 +48,13 @@ export class PostCreatePostForSpecificBlogUseCase
     }
 
     const blogName = blog.name;
+
+    if (
+      typeof command.blogOwner === 'number' &&
+      command.blogOwner !== +blog.id
+    ) {
+      throw new ForbiddenException();
+    }
 
     const postId = await this.postsRepository.createPostForSpecificBlog(
       command.postInputModel,

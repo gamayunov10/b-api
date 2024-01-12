@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query.repository';
 import { PostsRepository } from '../../infrastructure/posts.repository';
@@ -12,9 +12,14 @@ import {
   postIDField,
   postNotFound,
 } from '../../../../base/constants/constants';
+import { Role } from '../../../../base/enums/roles.enum';
 
 export class PostDeleteCommand {
-  constructor(public blogId: string, public postId: string) {}
+  constructor(
+    public blogId: string,
+    public postId: string,
+    public blogOwner: Role | number,
+  ) {}
 }
 
 @CommandHandler(PostDeleteCommand)
@@ -54,6 +59,13 @@ export class PostDeleteUseCase implements ICommandHandler<PostDeleteCommand> {
         field: postIDField,
         message: postNotFound,
       };
+    }
+
+    if (
+      typeof command.blogOwner === 'number' &&
+      command.blogOwner !== +blog.id
+    ) {
+      throw new ForbiddenException();
     }
 
     await this.postsRepository.deletePost(+post.id);

@@ -1,11 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { BlogsQueryRepository } from '../../infrastructure/blogs.query.repository';
+import { Role } from '../../../../base/enums/roles.enum';
 
 export class BlogDeleteCommand {
-  constructor(public blogId: string) {}
+  constructor(public blogId: string, public blogOwner: Role | number) {}
 }
 
 @CommandHandler(BlogDeleteCommand)
@@ -15,7 +16,7 @@ export class BlogDeleteUseCase implements ICommandHandler<BlogDeleteCommand> {
     private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
-  async execute(command: BlogDeleteCommand): Promise<boolean> {
+  async execute(command: BlogDeleteCommand): Promise<boolean | null> {
     if (isNaN(+command.blogId)) {
       throw new NotFoundException();
     }
@@ -24,6 +25,13 @@ export class BlogDeleteUseCase implements ICommandHandler<BlogDeleteCommand> {
 
     if (!blog) {
       return null;
+    }
+
+    if (
+      typeof command.blogOwner === 'number' &&
+      command.blogOwner !== +blog.id
+    ) {
+      throw new ForbiddenException();
     }
 
     return await this.blogsRepository.deleteBlog(+command.blogId);

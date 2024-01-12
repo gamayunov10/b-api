@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { BlogInputModel } from '../../api/models/input/blog-input-model';
@@ -10,9 +10,14 @@ import {
   blogNotFound,
 } from '../../../../base/constants/constants';
 import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
+import { Role } from '../../../../base/enums/roles.enum';
 
 export class BlogUpdateCommand {
-  constructor(public blogInputModel: BlogInputModel, public blogId: string) {}
+  constructor(
+    public blogInputModel: BlogInputModel,
+    public blogId: string,
+    public blogOwner: Role | number,
+  ) {}
 }
 
 @CommandHandler(BlogUpdateCommand)
@@ -38,6 +43,13 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
         field: blogIdField,
         message: blogNotFound,
       };
+    }
+
+    if (
+      typeof command.blogOwner === 'number' &&
+      command.blogOwner !== +blog.id
+    ) {
+      throw new ForbiddenException();
     }
 
     await this.blogsRepository.updateBlog(

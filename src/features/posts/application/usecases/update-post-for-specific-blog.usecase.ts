@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { PostInputModel } from '../../api/models/input/post-input-model';
 import { PostsRepository } from '../../infrastructure/posts.repository';
@@ -13,12 +13,14 @@ import {
   postNotFound,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
+import { Role } from '../../../../base/enums/roles.enum';
 
 export class PostUpdatePostForSpecificBlogCommand {
   constructor(
     public postInputModel: PostInputModel,
     public blogId: string,
     public postId: string,
+    public blogOwner: Role | number,
   ) {}
 }
 
@@ -61,6 +63,13 @@ export class PostUpdatePostForSpecificBlogUseCase
         field: postIDField,
         message: postNotFound,
       };
+    }
+
+    if (
+      typeof command.blogOwner === 'number' &&
+      command.blogOwner !== +blog.id
+    ) {
+      throw new ForbiddenException();
     }
 
     await this.postsRepository.updatePost(command.postInputModel, +post.id);
