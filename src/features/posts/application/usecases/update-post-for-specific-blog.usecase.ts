@@ -39,7 +39,7 @@ export class PostUpdatePostForSpecificBlogUseCase
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogOwner(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
 
     if (!blog) {
       return {
