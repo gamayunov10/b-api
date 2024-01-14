@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { BlogInputModel } from '../../api/models/input/blog-input-model';
@@ -10,14 +10,9 @@ import {
   blogNotFound,
 } from '../../../../base/constants/constants';
 import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
-import { Role } from '../../../../base/enums/roles.enum';
 
 export class BlogUpdateCommand {
-  constructor(
-    public blogInputModel: BlogInputModel,
-    public blogId: string,
-    public blogOwner: Role | number,
-  ) {}
+  constructor(public blogInputModel: BlogInputModel, public blogId: string) {}
 }
 
 @CommandHandler(BlogUpdateCommand)
@@ -34,7 +29,7 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogOwner(+command.blogId);
 
     if (!blog) {
       return {
@@ -43,13 +38,6 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
         field: blogIdField,
         message: blogNotFound,
       };
-    }
-
-    if (
-      typeof command.blogOwner === 'number' &&
-      command.blogOwner !== +blog.id
-    ) {
-      throw new ForbiddenException();
     }
 
     await this.blogsRepository.updateBlog(

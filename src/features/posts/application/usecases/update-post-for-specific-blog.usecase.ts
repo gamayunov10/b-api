@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 
 import { PostInputModel } from '../../api/models/input/post-input-model';
 import { PostsRepository } from '../../infrastructure/posts.repository';
@@ -13,14 +13,13 @@ import {
   postNotFound,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
-import { Role } from '../../../../base/enums/roles.enum';
+import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 export class PostUpdatePostForSpecificBlogCommand {
   constructor(
     public postInputModel: PostInputModel,
     public blogId: string,
     public postId: string,
-    public blogOwner: Role | number,
   ) {}
 }
 
@@ -32,6 +31,7 @@ export class PostUpdatePostForSpecificBlogUseCase
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(
@@ -41,7 +41,7 @@ export class PostUpdatePostForSpecificBlogUseCase
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogOwner(+command.blogId);
 
     if (!blog) {
       return {
@@ -63,13 +63,6 @@ export class PostUpdatePostForSpecificBlogUseCase
         field: postIDField,
         message: postNotFound,
       };
-    }
-
-    if (
-      typeof command.blogOwner === 'number' &&
-      command.blogOwner !== +blog.id
-    ) {
-      throw new ForbiddenException();
     }
 
     await this.postsRepository.updatePost(command.postInputModel, +post.id);

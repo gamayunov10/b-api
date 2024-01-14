@@ -3,27 +3,22 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { BlogInputModel } from '../api/models/input/blog-input-model';
-import { Role } from '../../../base/enums/roles.enum';
 
 @Injectable()
 export class BlogsRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
-  async createBlog(
-    blogInputModel: BlogInputModel,
-    blogOwner: Role | number,
-  ): Promise<number> {
+  async createBlog(blogInputModel: BlogInputModel): Promise<number> {
     return this.dataSource.transaction(async () => {
       const blog = await this.dataSource.query(
         `INSERT INTO public.blogs 
-                    (name, description, "websiteUrl", "isMembership", "ownerId")
-         VALUES ($1, $2, $3, $4, $5)
+                    (name, description, "websiteUrl", "isMembership")
+         VALUES ($1, $2, $3, $4)
          RETURNING id;`,
         [
           blogInputModel.name,
           blogInputModel.description,
           blogInputModel.websiteUrl,
           false,
-          blogOwner,
         ],
       );
 

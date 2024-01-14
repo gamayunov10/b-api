@@ -31,7 +31,6 @@ import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.
 import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
-import { Role } from '../../../base/enums/roles.enum';
 
 import { BlogInputModel } from './models/input/blog-input-model';
 import { BlogQueryModel } from './models/input/blog.query.model';
@@ -99,7 +98,7 @@ export class SABlogsController {
   @UseGuards(BasicAuthGuard)
   async createBlog(@Body() blogInputModel: BlogInputModel) {
     const blogId = await this.commandBus.execute(
-      new BlogCreateCommand(blogInputModel, Role.SA),
+      new BlogCreateCommand(blogInputModel),
     );
 
     return this.blogsQueryRepository.findBlogById(blogId);
@@ -117,7 +116,7 @@ export class SABlogsController {
     @Body() blogInputModel: BlogInputModel,
   ) {
     const result = await this.commandBus.execute(
-      new BlogUpdateCommand(blogInputModel, blogId, Role.SA),
+      new BlogUpdateCommand(blogInputModel, blogId),
     );
 
     if (result.code !== ResultCode.Success) {
@@ -138,7 +137,7 @@ export class SABlogsController {
     @Body() postInputModel: PostInputModel,
   ) {
     const result = await this.commandBus.execute(
-      new PostCreatePostForSpecificBlogCommand(postInputModel, blogId, Role.SA),
+      new PostCreatePostForSpecificBlogCommand(postInputModel, blogId),
     );
 
     if (result.code !== ResultCode.Success) {
@@ -161,12 +160,7 @@ export class SABlogsController {
     @Body() postInputModel: PostInputModel,
   ) {
     const result = await this.commandBus.execute(
-      new PostUpdatePostForSpecificBlogCommand(
-        postInputModel,
-        blogId,
-        postId,
-        Role.SA,
-      ),
+      new PostUpdatePostForSpecificBlogCommand(postInputModel, blogId, postId),
     );
 
     if (result.code !== ResultCode.Success) {
@@ -184,9 +178,7 @@ export class SABlogsController {
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async deleteBlog(@Param('id') blogId: string) {
-    const result = await this.commandBus.execute(
-      new BlogDeleteCommand(blogId, Role.SA),
-    );
+    const result = await this.commandBus.execute(new BlogDeleteCommand(blogId));
 
     if (!result) {
       return exceptionHandler(ResultCode.NotFound, blogNotFound, blogIdField);
@@ -203,7 +195,7 @@ export class SABlogsController {
     @Param('postId') postId: string,
   ) {
     const result = await this.commandBus.execute(
-      new PostDeleteCommand(blogId, postId, Role.SA),
+      new PostDeleteCommand(blogId, postId),
     );
 
     if (result.code !== ResultCode.Success) {
