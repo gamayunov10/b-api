@@ -13,7 +13,6 @@ import {
   postNotFound,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
-import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 export class PostUpdatePostForSpecificBlogCommand {
   constructor(
@@ -31,7 +30,6 @@ export class PostUpdatePostForSpecificBlogUseCase
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
-    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(
