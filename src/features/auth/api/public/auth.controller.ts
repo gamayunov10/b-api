@@ -13,7 +13,19 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
@@ -27,19 +39,22 @@ import {
   userNotFound,
   userNotFoundOrConfirmed,
 } from '../../../../base/constants/constants';
-import { ConfirmationCodeInputModel } from '../../models/user-confirm.model';
+import { ConfirmationCodeInputModel } from '../../models/input/user-confirm.model';
 import { UserIdFromGuard } from '../../decorators/user-id-from-guard.guard.decorator';
 import { JwtRefreshGuard } from '../../guards/jwt-refresh.guard';
 import { RefreshToken } from '../../decorators/refresh-token.param.decorator';
 import { JwtBearerGuard } from '../../guards/jwt-bearer.guard';
-import { EmailInputModel } from '../../models/email-input.model';
-import { NewPasswordModel } from '../../models/new-password.model';
+import { EmailInputModel } from '../../models/input/email-input.model';
+import { NewPasswordModel } from '../../models/input/new-password.model';
 import { exceptionHandler } from '../../../../infrastructure/exception-filters/exception.handler';
 import { LoginDeviceCommand } from '../../../devices/application/usecases/login-device.usecase';
-import { LoginInputModel } from '../../models/login-input.model';
+import { LoginInputModel } from '../../models/input/login-input.model';
 import { UserInputModel } from '../../../users/api/models/input/user-input-model';
 import { UpdateTokensCommand } from '../../../devices/application/usecases/update-tokens.usecase';
 import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
+import { MeView } from '../../models/output/me-view.model';
+import { AccessTokenView } from '../../models/output/access-token-view.model';
+import { ErrorsMessages } from '../../../../base/schemas/api-errors-messages.schema';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -61,9 +76,18 @@ export class AuthController {
   ) {}
 
   @Get('me')
-  @UseGuards(JwtBearerGuard)
   @ApiOperation({ summary: 'Get information about current user' })
-  @ApiBasicAuth('Bearer')
+  @ApiBearerAuth()
+  @ApiExtraModels(MeView)
+  @ApiResponse({
+    status: 200,
+    description: 'Success',
+    schema: {
+      $ref: getSchemaPath(MeView),
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @UseGuards(JwtBearerGuard)
   async getProfile(@UserIdFromGuard() userId: number) {
     const user = await this.usersQueryRepository.findUserById(userId);
 
@@ -83,6 +107,22 @@ export class AuthController {
     summary:
       'Registration in the system. Email with confirmation code will be send to passed email address',
   })
+  @ApiResponse({
+    status: 204,
+    description:
+      'Input data is accepted. Email with confirmation code will be send to passed email address',
+  })
+  @ApiExtraModels(ErrorsMessages)
+  @ApiBadRequestResponse({
+    description:
+      'If the inputModel has incorrect values (in particular if the user with the given email or password already exists)',
+    schema: {
+      $ref: getSchemaPath(ErrorsMessages),
+    },
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
+  })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   @HttpCode(204)
@@ -92,6 +132,20 @@ export class AuthController {
 
   @Post('registration-confirmation')
   @ApiOperation({ summary: 'Confirm registration' })
+  @ApiNoContentResponse({
+    description: 'Email was verified. Account was activated',
+  })
+  @ApiExtraModels(ErrorsMessages)
+  @ApiBadRequestResponse({
+    description:
+      'If the confirmation code is incorrect, expired or already been applied',
+    schema: {
+      $ref: getSchemaPath(ErrorsMessages),
+    },
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
+  })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   @HttpCode(204)
@@ -114,6 +168,21 @@ export class AuthController {
   @Post('registration-email-resending')
   @ApiOperation({
     summary: 'Resend confirmation registration Email if user exists',
+  })
+  @ApiNoContentResponse({
+    description:
+      'Input data is accepted.Email with confirmation code will be send to passed email address.Confirmation code should be inside link as query param, for example: https://some-front.com/confirm-registration?code=youtcodehere',
+  })
+  @ApiExtraModels(ErrorsMessages)
+  @ApiBadRequestResponse({
+    description: 'If the inputModel has incorrect values',
+    schema: {
+      $ref: getSchemaPath(ErrorsMessages),
+    },
+  })
+  @ApiTooManyRequestsResponse({
+    status: 429,
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -139,6 +208,16 @@ export class AuthController {
     summary:
       'Password recovery via Email confirmation. Email should be sent with RecoveryCode inside',
   })
+  @ApiNoContentResponse({
+    description:
+      "Even if current email is not registered (for prevent user's email detection)",
+  })
+  @ApiBadRequestResponse({
+    description: 'if the inputModel has incorrect values',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
+  })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
   @HttpCode(204)
@@ -149,8 +228,16 @@ export class AuthController {
   }
 
   @Post('new-password')
-  @ApiOperation({
-    summary: 'Confirm Password recovery',
+  @ApiOperation({ summary: 'Confirm Password recovery' })
+  @ApiNoContentResponse({
+    description: 'If code is valid and new password is accepted',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -175,6 +262,19 @@ export class AuthController {
   @ApiOperation({
     summary:
       'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
+  })
+  @ApiExtraModels(AccessTokenView)
+  @ApiOkResponse({
+    status: 200,
+    description:
+      'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
+    schema: {
+      $ref: getSchemaPath(AccessTokenView),
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
   })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(200)
@@ -208,8 +308,28 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({
-    summary: 'Try login user to the system',
+  @ApiOperation({ summary: 'Try login user to the system' })
+  @ApiExtraModels(AccessTokenView)
+  @ApiOkResponse({
+    description:
+      'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
+    schema: {
+      $ref: getSchemaPath(AccessTokenView),
+    },
+  })
+  @ApiExtraModels(ErrorsMessages)
+  @ApiBadRequestResponse({
+    description: 'If the inputModel has incorrect values',
+    schema: {
+      $ref: getSchemaPath(ErrorsMessages),
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
   @UseGuards(ThrottlerGuard)
   @Throttle(5, 10)
@@ -251,6 +371,13 @@ export class AuthController {
   @ApiOperation({
     summary:
       'In cookie client must send correct refreshToken that will be revoked',
+  })
+  @ApiNoContentResponse({
+    description: 'No Content',
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
   })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(204)
