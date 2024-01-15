@@ -1,7 +1,7 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'crypto';
 
-import { EmailInputModel } from '../../../../../models/email-input.model';
+import { EmailInputModel } from '../../../../../models/input/email-input.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
 import { SendPasswordRecoveryMailCommand } from '../../../../../../mail/application/usecases/send-pass-recovery-mail.usecase';
 import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';

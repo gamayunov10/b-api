@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { ConfirmationCodeInputModel } from '../../../../../models/user-confirm.model';
+import { ConfirmationCodeInputModel } from '../../../../../models/input/user-confirm.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
 import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 

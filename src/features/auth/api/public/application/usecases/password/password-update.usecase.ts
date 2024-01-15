@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import * as bcrypt from 'bcrypt';
 
-import { NewPasswordModel } from '../../../../../models/new-password.model';
+import { NewPasswordModel } from '../../../../../models/input/new-password.model';
 import { UsersRepository } from '../../../../../../users/infrastructure/users.repository';
 import { UsersQueryRepository } from '../../../../../../users/infrastructure/users.query.repository';
 
