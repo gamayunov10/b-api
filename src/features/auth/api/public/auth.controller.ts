@@ -26,7 +26,7 @@ import {
   ApiUnauthorizedResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import {
@@ -67,6 +67,8 @@ import { TerminateSessionLogoutCommand } from './application/usecases/tokens/ter
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
+@Throttle(5, 10)
 export class AuthController {
   constructor(
     private commandBus: CommandBus,
@@ -76,6 +78,7 @@ export class AuthController {
   ) {}
 
   @Get('me')
+  @SkipThrottle(true)
   @ApiOperation({ summary: 'Get information about current user' })
   @ApiBearerAuth()
   @ApiExtraModels(MeView)
@@ -107,8 +110,7 @@ export class AuthController {
     summary:
       'Registration in the system. Email with confirmation code will be send to passed email address',
   })
-  @ApiResponse({
-    status: 204,
+  @ApiNoContentResponse({
     description:
       'Input data is accepted. Email with confirmation code will be send to passed email address',
   })
@@ -123,8 +125,6 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(204)
   async registerUser(@Body() userInputModel: UserInputModel) {
     return this.commandBus.execute(new RegistrationCommand(userInputModel));
@@ -146,8 +146,6 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(204)
   async confirmUser(@Body() confirmCodeInputModel: ConfirmationCodeInputModel) {
     const result = await this.commandBus.execute(
@@ -181,11 +179,8 @@ export class AuthController {
     },
   })
   @ApiTooManyRequestsResponse({
-    status: 429,
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(204)
   async resendEmail(@Body() emailInputModel: EmailInputModel) {
     const result = await this.commandBus.execute(
@@ -218,8 +213,6 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(204)
   async recoverPassword(@Body() emailInputModel: EmailInputModel) {
     return this.commandBus.execute(
@@ -239,8 +232,6 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(204)
   async updatePassword(@Body() newPasswordModel: NewPasswordModel) {
     const result = await this.commandBus.execute(
@@ -259,13 +250,13 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @SkipThrottle(true)
   @ApiOperation({
     summary:
       'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
   })
   @ApiExtraModels(AccessTokenView)
   @ApiOkResponse({
-    status: 200,
     description:
       'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
     schema: {
@@ -331,8 +322,6 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 10)
   @HttpCode(200)
   async login(
     @Ip() ip: string,
@@ -368,6 +357,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @SkipThrottle(true)
   @ApiOperation({
     summary:
       'In cookie client must send correct refreshToken that will be revoked',
