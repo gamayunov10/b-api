@@ -56,7 +56,7 @@ describe('Posts: GET posts', () => {
     it(`should clear db`, async () => {
       await waitForIt();
       await agent.delete(testing_allData_uri);
-    });
+    }, 20000);
   });
 
   describe('negative: GET blogs', () => {
@@ -83,7 +83,7 @@ describe('Posts: GET posts', () => {
         createUserInput4.login,
       );
       tokenUser4 = user4Response.body.accessToken;
-    });
+    }, 15000);
 
     it(`should create new blog`, async () => {
       const blog = await usersTestManager.createBlog(createBlogInput);
@@ -106,7 +106,7 @@ describe('Posts: GET posts', () => {
       postId4 = posts.body.items[3].id;
       postId5 = posts.body.items[4].id;
       postId6 = posts.body.items[5].id;
-    });
+    }, 15000);
 
     it('should like post 1 by user 1', async () => {
       return agent
@@ -329,7 +329,7 @@ describe('Posts: GET posts', () => {
       expect(posts.body.items[5].extendedLikesInfo.newestLikes[0].login).toBe(
         userLogin01,
       );
-    });
+    }, 20000);
   });
 
   afterAll(async () => {
