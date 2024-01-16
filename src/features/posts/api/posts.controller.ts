@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { PostsQueryRepository } from '../infrastructure/posts.query.repository';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
@@ -26,9 +26,12 @@ import { CommentQueryModel } from '../../comments/api/models/input/comment.query
 import { PostLikeOperationCommand } from '../application/usecases/post-like-operation.usecase';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
+import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
 
 import { PostQueryModel } from './models/input/post.query.model';
 import { LikeStatusInputModel } from './models/input/like-status-input.model';
+import { PostViewModel } from './models/output/post-view.model';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -40,9 +43,21 @@ export class PostsController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
   @Get()
-  @ApiOperation({
-    summary: 'Returns all posts',
-  })
+  @SwaggerOptions(
+    'Returns all posts',
+    false,
+    false,
+    200,
+    'Success',
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  )
+  @ApiQuery({ type: PostQueryModel, required: false })
   async findPosts(
     @Query() query: PostQueryModel,
     @UserIdFromHeaders('id') userId: string,
@@ -58,9 +73,20 @@ export class PostsController {
   }
 
   @Get(':id')
-  @ApiOperation({
-    summary: 'Return post by id',
-  })
+  @SwaggerOptions(
+    'Return post by id',
+    false,
+    false,
+    200,
+    'Success',
+    PostViewModel,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  )
   async findPostById(
     @Param('id') postId: string,
     @UserIdFromHeaders('id') userId: string,
@@ -89,9 +115,21 @@ export class PostsController {
   }
 
   @Get(':id/comments')
-  @ApiOperation({
-    summary: 'Returns comments for specified post',
-  })
+  @SwaggerOptions(
+    'Returns comments for specified post',
+    false,
+    false,
+    200,
+    'Success',
+    PostViewModel,
+    false,
+    false,
+    false,
+    false,
+    "If post for passed postId doesn't exist",
+    false,
+  )
+  @ApiQuery({ type: CommentQueryModel, required: false })
   async findCommentsByPostId(
     @Param('id') postId: string,
     @UserIdFromHeaders('id') userId: string,
@@ -122,10 +160,20 @@ export class PostsController {
   }
 
   @Post(':id/comments')
-  @ApiOperation({
-    summary: 'Create new comment',
-  })
-  @ApiBasicAuth('Bearer')
+  @SwaggerOptions(
+    'Create new comment',
+    true,
+    false,
+    201,
+    'Returns the newly created post',
+    PostViewModel,
+    true,
+    ErrorsMessages,
+    true,
+    false,
+    'If post with specified postId does not exists',
+    false,
+  )
   @UseGuards(JwtBearerGuard)
   @HttpCode(201)
   async createComment(
@@ -145,9 +193,20 @@ export class PostsController {
   }
 
   @Put(':id/like-status')
-  @ApiOperation({
-    summary: 'Make like/unlike/dislike/undislike operation',
-  })
+  @SwaggerOptions(
+    'Make like/unlike/dislike/undislike operation',
+    true,
+    false,
+    204,
+    'No Content',
+    LikeStatusInputModel,
+    false,
+    ErrorsMessages,
+    true,
+    false,
+    "If post with specified postId doesn't exists",
+    false,
+  )
   @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)

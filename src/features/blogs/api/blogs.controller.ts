@@ -6,7 +6,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
@@ -16,9 +16,11 @@ import { ResultCode } from '../../../base/enums/result-code.enum';
 import { blogIdField, blogNotFound } from '../../../base/constants/constants';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 
 import { SABlogQueryModel } from './models/input/sa-blog.query.model';
 import { BlogQueryModel } from './models/input/blog.query.model';
+import { BlogViewModel } from './models/output/blog-view.model';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -31,17 +33,41 @@ export class BlogsController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
   @Get()
-  @ApiOperation({
-    summary: 'Returns blogs with paging',
-  })
+  @SwaggerOptions(
+    'Returns blogs with paging',
+    true,
+    false,
+    200,
+    'Success',
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  )
+  @ApiQuery({ type: BlogQueryModel, required: false })
   async findBlogs(@Query() query: BlogQueryModel) {
     return this.blogsQueryRepository.findBlogs(query);
   }
 
   @Get(':id/posts')
-  @ApiOperation({
-    summary: 'Returns all posts for specified blog',
-  })
+  @SwaggerOptions(
+    'Returns all posts for specified blog',
+    true,
+    false,
+    200,
+    'Success',
+    false,
+    false,
+    false,
+    false,
+    false,
+    'If specified blog is not exists',
+    false,
+  )
+  @ApiQuery({ type: SABlogQueryModel, required: false })
   async findPostsByBlogId(
     @Query() query: SABlogQueryModel,
     @Param('id') blogId: string,
@@ -72,9 +98,20 @@ export class BlogsController {
   }
 
   @Get(':id')
-  @ApiOperation({
-    summary: 'Returns blog by id',
-  })
+  @SwaggerOptions(
+    'Returns blog by id',
+    true,
+    false,
+    200,
+    'Success',
+    BlogViewModel,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  )
   async findBlogById(@Param('id') blogId: string) {
     if (isNaN(+blogId)) {
       throw new NotFoundException();

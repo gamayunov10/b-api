@@ -13,19 +13,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { CommandBus } from '@nestjs/cqrs';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiExtraModels,
-  ApiNoContentResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiTooManyRequestsResponse,
-  ApiUnauthorizedResponse,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 import { ResultCode } from '../../../../base/enums/result-code.enum';
@@ -55,6 +43,7 @@ import { UsersQueryRepository } from '../../../users/infrastructure/users.query.
 import { MeView } from '../../models/output/me-view.model';
 import { AccessTokenView } from '../../models/output/access-token-view.model';
 import { ErrorsMessages } from '../../../../base/schemas/api-errors-messages.schema';
+import { SwaggerOptions } from '../../../../infrastructure/decorators/swagger';
 
 import { TokensCreateCommand } from './application/usecases/tokens/tokens-create.usecase';
 import { PasswordUpdateCommand } from './application/usecases/password/password-update.usecase';
@@ -79,17 +68,20 @@ export class AuthController {
 
   @Get('me')
   @SkipThrottle(true)
-  @ApiOperation({ summary: 'Get information about current user' })
-  @ApiBearerAuth()
-  @ApiExtraModels(MeView)
-  @ApiResponse({
-    status: 200,
-    description: 'Success',
-    schema: {
-      $ref: getSchemaPath(MeView),
-    },
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @SwaggerOptions(
+    'Get information about current user',
+    true,
+    false,
+    200,
+    'Success',
+    MeView,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+  )
   @UseGuards(JwtBearerGuard)
   async getProfile(@UserIdFromGuard() userId: number) {
     const user = await this.usersQueryRepository.findUserById(userId);
@@ -106,46 +98,40 @@ export class AuthController {
   }
 
   @Post('registration')
-  @ApiOperation({
-    summary:
-      'Registration in the system. Email with confirmation code will be send to passed email address',
-  })
-  @ApiNoContentResponse({
-    description:
-      'Input data is accepted. Email with confirmation code will be send to passed email address',
-  })
-  @ApiExtraModels(ErrorsMessages)
-  @ApiBadRequestResponse({
-    description:
-      'If the inputModel has incorrect values (in particular if the user with the given email or password already exists)',
-    schema: {
-      $ref: getSchemaPath(ErrorsMessages),
-    },
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Registration in the system. Email with confirmation code will be send to passed email address',
+    false,
+    false,
+    204,
+    'Input data is accepted. Email with confirmation code will be send to passed email address',
+    false,
+    'If the inputModel has incorrect values (in particular if the user with the given email or password already exists)',
+    ErrorsMessages,
+    false,
+    false,
+    false,
+    true,
+  )
   @HttpCode(204)
   async registerUser(@Body() userInputModel: UserInputModel) {
     return this.commandBus.execute(new RegistrationCommand(userInputModel));
   }
 
   @Post('registration-confirmation')
-  @ApiOperation({ summary: 'Confirm registration' })
-  @ApiNoContentResponse({
-    description: 'Email was verified. Account was activated',
-  })
-  @ApiExtraModels(ErrorsMessages)
-  @ApiBadRequestResponse({
-    description:
-      'If the confirmation code is incorrect, expired or already been applied',
-    schema: {
-      $ref: getSchemaPath(ErrorsMessages),
-    },
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Confirm registration',
+    false,
+    false,
+    204,
+    'Email was verified. Account was activated',
+    false,
+    'If the confirmation code is incorrect, expired or already been applied',
+    ErrorsMessages,
+    false,
+    false,
+    false,
+    true,
+  )
   @HttpCode(204)
   async confirmUser(@Body() confirmCodeInputModel: ConfirmationCodeInputModel) {
     const result = await this.commandBus.execute(
@@ -164,23 +150,20 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
-  @ApiOperation({
-    summary: 'Resend confirmation registration Email if user exists',
-  })
-  @ApiNoContentResponse({
-    description:
-      'Input data is accepted.Email with confirmation code will be send to passed email address.Confirmation code should be inside link as query param, for example: https://some-front.com/confirm-registration?code=youtcodehere',
-  })
-  @ApiExtraModels(ErrorsMessages)
-  @ApiBadRequestResponse({
-    description: 'If the inputModel has incorrect values',
-    schema: {
-      $ref: getSchemaPath(ErrorsMessages),
-    },
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Resend confirmation registration Email if user exists',
+    false,
+    false,
+    204,
+    'Input data is accepted.Email with confirmation code will be send to passed email address.Confirmation code should be inside link as query param, for example: https://some-front.com/confirm-registration?code=youtcodehere',
+    false,
+    true,
+    ErrorsMessages,
+    false,
+    false,
+    false,
+    true,
+  )
   @HttpCode(204)
   async resendEmail(@Body() emailInputModel: EmailInputModel) {
     const result = await this.commandBus.execute(
@@ -199,20 +182,20 @@ export class AuthController {
   }
 
   @Post('password-recovery')
-  @ApiOperation({
-    summary:
-      'Password recovery via Email confirmation. Email should be sent with RecoveryCode inside',
-  })
-  @ApiNoContentResponse({
-    description:
-      "Even if current email is not registered (for prevent user's email detection)",
-  })
-  @ApiBadRequestResponse({
-    description: 'if the inputModel has incorrect values',
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Password recovery via Email confirmation. Email should be sent with RecoveryCode inside',
+    false,
+    false,
+    204,
+    "Even if current email is not registered (for prevent user's email detection)",
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+  )
   @HttpCode(204)
   async recoverPassword(@Body() emailInputModel: EmailInputModel) {
     return this.commandBus.execute(
@@ -221,17 +204,20 @@ export class AuthController {
   }
 
   @Post('new-password')
-  @ApiOperation({ summary: 'Confirm Password recovery' })
-  @ApiNoContentResponse({
-    description: 'If code is valid and new password is accepted',
-  })
-  @ApiBadRequestResponse({
-    description:
-      'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Confirm Password recovery',
+    false,
+    false,
+    204,
+    'If code is valid and new password is accepted',
+    false,
+    'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
+    false,
+    false,
+    false,
+    false,
+    true,
+  )
   @HttpCode(204)
   async updatePassword(@Body() newPasswordModel: NewPasswordModel) {
     const result = await this.commandBus.execute(
@@ -251,22 +237,20 @@ export class AuthController {
 
   @Post('refresh-token')
   @SkipThrottle(true)
-  @ApiOperation({
-    summary:
-      'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
-  })
-  @ApiExtraModels(AccessTokenView)
-  @ApiOkResponse({
-    description:
-      'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
-    schema: {
-      $ref: getSchemaPath(AccessTokenView),
-    },
-  })
-  @ApiUnauthorizedResponse({
-    description:
-      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
-  })
+  @SwaggerOptions(
+    'Generate new pair of access and refresh tokens (in cookie client must send correct refreshToken that will be revoked after refreshing) Device LastActiveDate should be overrode by issued Date of new refresh token',
+    false,
+    false,
+    200,
+    'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
+    AccessTokenView,
+    'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    false,
+    false,
+    false,
+  )
   @UseGuards(JwtRefreshGuard)
   @HttpCode(200)
   async refreshTokens(
@@ -299,29 +283,20 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Try login user to the system' })
-  @ApiExtraModels(AccessTokenView)
-  @ApiOkResponse({
-    description:
-      'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
-    schema: {
-      $ref: getSchemaPath(AccessTokenView),
-    },
-  })
-  @ApiExtraModels(ErrorsMessages)
-  @ApiBadRequestResponse({
-    description: 'If the inputModel has incorrect values',
-    schema: {
-      $ref: getSchemaPath(ErrorsMessages),
-    },
-  })
-  @ApiUnauthorizedResponse({
-    description:
-      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
+  @SwaggerOptions(
+    'Try login user to the system',
+    false,
+    false,
+    200,
+    'Returns JWT accessToken (expired after 10 seconds) in body and JWT refreshToken in cookie (http-only, secure) (expired after 20 seconds).',
+    AccessTokenView,
+    'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
+    false,
+    'If the password or login is wrong',
+    false,
+    false,
+    true,
+  )
   @HttpCode(200)
   async login(
     @Ip() ip: string,
@@ -358,17 +333,20 @@ export class AuthController {
 
   @Post('logout')
   @SkipThrottle(true)
-  @ApiOperation({
-    summary:
-      'In cookie client must send correct refreshToken that will be revoked',
-  })
-  @ApiNoContentResponse({
-    description: 'No Content',
-  })
-  @ApiUnauthorizedResponse({
-    description:
-      'If the JWT refreshToken inside cookie is missing, expired or incorrect',
-  })
+  @SwaggerOptions(
+    'In cookie client must send correct refreshToken that will be revoked',
+    false,
+    false,
+    204,
+    'No Content',
+    false,
+    'If the inputModel has incorrect value (for incorrect password length) or RecoveryCode is incorrect or expired',
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    false,
+    false,
+    false,
+  )
   @UseGuards(JwtRefreshGuard)
   @HttpCode(204)
   async logout(@RefreshToken() refreshToken: string): Promise<boolean> {

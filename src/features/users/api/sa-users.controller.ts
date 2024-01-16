@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { UserCreateCommand } from '../application/usecases/create-user.usecase';
 import { UserDeleteCommand } from '../application/usecases/delete-user.usecase';
@@ -19,9 +19,12 @@ import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
 import { userIdField, userNotFound } from '../../../base/constants/constants';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
+import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
 
 import { UserInputModel } from './models/input/user-input-model';
 import { UserQueryModel } from './models/input/user.query.model';
+import { SuperAdminUserViewModel } from './models/output/sa-user-view.model';
 
 @ApiTags('sa/users')
 @Controller('sa/users')
@@ -32,20 +35,41 @@ export class SAUsersController {
   ) {}
 
   @Get()
-  @ApiOperation({
-    summary: 'Returns all users. Admins only',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Returns all users. Admins only',
+    false,
+    true,
+    200,
+    'Success',
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+  )
+  @ApiQuery({ type: UserQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findUsers(@Query() query: UserQueryModel) {
     return this.usersQueryRepository.findUsers(query);
   }
 
   @Post()
-  @ApiOperation({
-    summary: 'Add new user to the system. Admins only',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Add new user to the system. Admins only',
+    false,
+    true,
+    201,
+    'Returns the newly created user',
+    SuperAdminUserViewModel,
+    true,
+    ErrorsMessages,
+    true,
+    false,
+    false,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   async createUser(@Body() userInputModel: UserInputModel) {
     const userId = await this.commandBus.execute(
@@ -56,10 +80,20 @@ export class SAUsersController {
   }
 
   @Delete(':id')
-  @ApiOperation({
-    summary: 'Delete user specified by id. Admins only',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Delete user specified by id. Admins only',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    true,
+    false,
+    'If specified user is not exists',
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async deleteUser(@Param('id') userId: string) {

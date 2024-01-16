@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { TerminateOtherSessionsCommand } from '../application/usecases/terminate-other-sessions.usecase';
 import { TerminateSessionCommand } from '../application/usecases/terminate-session.usecase';
@@ -18,6 +18,7 @@ import { RefreshToken } from '../../auth/decorators/refresh-token.param.decorato
 import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
 import { ResultCode } from '../../../base/enums/result-code.enum';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 
 import { DeviceViewModel } from './models/output/device.view.model';
 
@@ -30,9 +31,20 @@ export class DevicesController {
     private readonly devicesQueryRepository: DevicesQueryRepository,
   ) {}
   @Get('devices')
-  @ApiOperation({
-    summary: 'Terminate all other (exclude current) devices sessions',
-  })
+  @SwaggerOptions(
+    'Terminate all other (exclude current) devices sessions',
+    false,
+    false,
+    200,
+    'Success',
+    DeviceViewModel,
+    false,
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    false,
+    false,
+    false,
+  )
   @UseGuards(JwtRefreshGuard)
   async findActiveDevices(
     @RefreshToken() refreshToken: string,
@@ -45,9 +57,20 @@ export class DevicesController {
   }
 
   @Delete('devices')
-  @ApiOperation({
-    summary: 'Terminate all other (exclude current) devices sessions',
-  })
+  @SwaggerOptions(
+    'Terminate all other (exclude current) devices sessions',
+    false,
+    false,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    false,
+    false,
+    false,
+  )
   @UseGuards(JwtRefreshGuard)
   @HttpCode(204)
   async deleteOldDevices(@RefreshToken() refreshToken: string) {
@@ -62,9 +85,20 @@ export class DevicesController {
   }
 
   @Delete('devices/:id')
-  @ApiOperation({
-    summary: 'Terminate specified device session',
-  })
+  @SwaggerOptions(
+    'Terminate specified device session',
+    false,
+    false,
+    204,
+    'No Content',
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    false,
+    'If the JWT refreshToken inside cookie is missing, expired or incorrect',
+    'If try to delete the deviceId of other user',
+    true,
+    false,
+  )
   @UseGuards(JwtRefreshGuard)
   @HttpCode(204)
   async terminateSession(

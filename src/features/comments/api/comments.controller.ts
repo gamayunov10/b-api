@@ -9,7 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
 
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
@@ -27,6 +27,8 @@ import { LikeStatusInputModel } from '../../posts/api/models/input/like-status-i
 import { CommentLikeOperationCommand } from '../application/usecases/comment-like-operation.usecase';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
+import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
 
 import { CommentViewModel } from './models/output/comment-view.model';
 import { CommentInputModel } from './models/input/comment-input.model';
@@ -41,9 +43,20 @@ export class CommentsController {
   ) {}
 
   @Get(':id')
-  @ApiOperation({
-    summary: 'Returns comment by id',
-  })
+  @SwaggerOptions(
+    'Returns comment by id',
+    false,
+    false,
+    200,
+    'Success',
+    CommentViewModel,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  )
   async findCommentById(
     @Param('id') commentId: string,
     @UserIdFromHeaders('id') userId: string,
@@ -76,9 +89,20 @@ export class CommentsController {
   }
 
   @Put(':id')
-  @ApiOperation({
-    summary: 'Update existing comment by id with InputModel',
-  })
+  @SwaggerOptions(
+    'Update existing comment by id with InputModel',
+    true,
+    false,
+    204,
+    'No Content',
+    false,
+    true,
+    ErrorsMessages,
+    true,
+    'If try edit the comment that is not your own',
+    true,
+    false,
+  )
   @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
@@ -99,9 +123,20 @@ export class CommentsController {
   }
 
   @Put(':id/like-status')
-  @ApiOperation({
-    summary: 'Make like/unlike/dislike/undislike operation',
-  })
+  @SwaggerOptions(
+    'Make like/unlike/dislike/undislike operation',
+    true,
+    false,
+    204,
+    'No Content',
+    false,
+    true,
+    ErrorsMessages,
+    true,
+    false,
+    "If comment with specified id doesn't exists",
+    false,
+  )
   @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
@@ -122,9 +157,20 @@ export class CommentsController {
   }
 
   @Delete(':id')
-  @ApiOperation({
-    summary: 'Delete comment specified by id',
-  })
+  @SwaggerOptions(
+    'Delete comment specified by id',
+    true,
+    false,
+    204,
+    'No Content',
+    false,
+    true,
+    false,
+    true,
+    true,
+    true,
+    false,
+  )
   @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)

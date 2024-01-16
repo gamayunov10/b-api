@@ -12,9 +12,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
-import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
 import { BlogCreateCommand } from '../application/usecases/create-blog.usecase';
@@ -31,35 +30,60 @@ import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.
 import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
+import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
+import { PostViewModel } from '../../posts/api/models/output/post-view.model';
+import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
 
 import { BlogInputModel } from './models/input/blog-input-model';
 import { BlogQueryModel } from './models/input/blog.query.model';
+import { BlogViewModel } from './models/output/blog-view.model';
 
 @ApiTags('sa/blogs')
 @Controller('sa/blogs')
 export class SABlogsController {
   constructor(
     private commandBus: CommandBus,
-    private readonly blogsRepository: BlogsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
   @Get()
-  @ApiOperation({
-    summary: 'Returns all blogs with paging',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Returns all blogs with paging',
+    false,
+    true,
+    200,
+    'Success',
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+  )
+  @ApiQuery({ type: BlogQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findBlogs(@Query() query: BlogQueryModel) {
     return this.blogsQueryRepository.findBlogs(query);
   }
 
   @Get(':id/posts')
-  @ApiOperation({
-    summary: 'Returns posts for blog with paging and sorting',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Returns posts for blog with paging and sorting',
+    false,
+    true,
+    200,
+    'Success',
+    PostViewModel,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+  )
+  @ApiQuery({ type: PostQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findPostsByBlogId(
     @Query() query: PostQueryModel,
@@ -91,10 +115,20 @@ export class SABlogsController {
   }
 
   @Post()
-  @ApiOperation({
-    summary: 'Create new blog',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Create new blog',
+    false,
+    true,
+    201,
+    'Returns the newly created blog',
+    BlogViewModel,
+    'If the inputModel has incorrect values',
+    ErrorsMessages,
+    true,
+    false,
+    false,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   async createBlog(@Body() blogInputModel: BlogInputModel) {
     const blogId = await this.commandBus.execute(
@@ -105,10 +139,20 @@ export class SABlogsController {
   }
 
   @Put(':id')
-  @ApiOperation({
-    summary: 'Update existing Blog by id with InputModel',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Update existing Blog by id with InputModel',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    'If the inputModel has incorrect values',
+    ErrorsMessages,
+    true,
+    "If user try to update blog that doesn't belong to current user",
+    false,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async updateBlog(
@@ -127,10 +171,20 @@ export class SABlogsController {
   }
 
   @Post(':id/posts')
-  @ApiOperation({
-    summary: 'Create new post for specific blog',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Create new post for specific blog',
+    false,
+    true,
+    201,
+    'Returns the newly created post',
+    PostViewModel,
+    'If the inputModel has incorrect values',
+    ErrorsMessages,
+    true,
+    "If user try to add post to blog that doesn't belong to current user",
+    "If specific blog doesn't exists",
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   async createPostForSpecificBlog(
     @Param('id') blogId: string,
@@ -148,10 +202,20 @@ export class SABlogsController {
   }
 
   @Put(':blogId/posts/:postId')
-  @ApiOperation({
-    summary: 'Update existing post by id with InputModel',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Update existing post by id with InputModel',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    'If the inputModel has incorrect values',
+    ErrorsMessages,
+    true,
+    "If user try to update post that belongs to blog that doesn't belong to current user",
+    true,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async updatePost(
@@ -171,10 +235,20 @@ export class SABlogsController {
   }
 
   @Delete(':id')
-  @ApiOperation({
-    summary: 'Delete blog specified by id',
-  })
-  @ApiBasicAuth('Basic')
+  @SwaggerOptions(
+    'Delete blog specified by id',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async deleteBlog(@Param('id') blogId: string) {
@@ -188,6 +262,20 @@ export class SABlogsController {
   }
 
   @Delete(':blogId/posts/:postId')
+  @SwaggerOptions(
+    'Delete post specified by id',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+  )
   @UseGuards(BasicAuthGuard)
   @HttpCode(204)
   async deletePost(
