@@ -1,45 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { UserInputModel } from '../api/models/input/user-input-model';
+import { User } from '../domain/user.entity';
+import { UserEmailConfirmation } from '../domain/user-email-confirmation.entity';
+import { UserPasswordRecovery } from '../domain/user-password-recovery.entity';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly userEmailConfirmationRepository: Repository<UserEmailConfirmation>,
+    private readonly userPasswordRecoveryRepository: Repository<UserPasswordRecovery>,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
 
   async createUser(
     userInputModel: UserInputModel,
     hash: string,
   ): Promise<number> {
     return this.dataSource.transaction(async () => {
-      const user = await this.dataSource.query(
-        `INSERT INTO public.users (login, "passwordHash", email, "isConfirmed")
-         VALUES ($1, $2, $3, $4)
-         RETURNING id;`,
-        [userInputModel.login, hash, userInputModel.email, true],
-      );
+      const user = await this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
+          login: userInputModel.login,
+          passwordHash: hash,
+          email: userInputModel.email,
+          isConfirmed: true,
+        })
+        .returning('id')
+        .execute();
 
-      return user[0].id;
+      return user.identifiers[0].id;
     });
   }
 
   async confirmUser(userId: number): Promise<boolean> {
     return this.dataSource.transaction(async () => {
-      await this.dataSource.query(
-        `UPDATE public.users
-             SET "isConfirmed" = true
-             WHERE id = $1;`,
-        [userId],
-      );
+      await this.dataSource
+        .createQueryBuilder()
+        .update(User)
+        .set({ isConfirmed: true })
+        .where('id = :id', { id: userId })
+        .execute();
 
-      const result = await this.dataSource.query(
-        `DELETE
-                FROM public.user_email_confirmation
-                WHERE "userId" = $1;`,
-        [userId],
-      );
-      return result[1] === 1;
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .delete()
+        .from(UserEmailConfirmation)
+        .where('userId= :id', { id: userId })
+        .execute();
+
+      return result.affected === 1;
     });
   }
 
@@ -47,14 +63,22 @@ export class UsersRepository {
     recoveryCode: string,
     userId: number,
   ): Promise<number> {
-    const result = await this.dataSource.query(
-      `INSERT INTO public.user_password_recovery
-                ("userId", "recoveryCode", "expirationDate")
-               VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 hours')
-               RETURNING id;`,
-      [userId, recoveryCode],
-    );
-    return result[0].id;
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 5);
+
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into(UserPasswordRecovery)
+      .values({
+        userId: userId,
+        recoveryCode: recoveryCode,
+        expirationDate: expirationDate,
+      })
+      .returning('id')
+      .execute();
+
+    return result.identifiers[0].id;
   }
 
   async registerUser(
@@ -62,23 +86,35 @@ export class UsersRepository {
     hash: string,
     confirmationCode: string,
   ): Promise<number> {
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 5);
+
     return this.dataSource.transaction(async () => {
-      const user = await this.dataSource.query(
-        `INSERT INTO public.users
-                 (login, "passwordHash", email, "isConfirmed")
-                 VALUES ($1, $2, $3, $4)
-                 RETURNING id;`,
-        [userInputModel.login, hash, userInputModel.email, false],
-      );
+      const user = await this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
+          login: userInputModel.login,
+          passwordHash: hash,
+          email: userInputModel.email,
+          isConfirmed: true,
+        })
+        .returning('id')
+        .execute();
 
-      const userId = user[0].id;
+      const userId = user.identifiers[0].id;
 
-      await this.dataSource.query(
-        `INSERT INTO public.user_email_confirmation 
-                    ("userId", "confirmationCode", "expirationDate")
-                VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 hours');`,
-        [userId, confirmationCode],
-      );
+      await this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(UserEmailConfirmation)
+        .values({
+          userId: userId,
+          confirmationCode: confirmationCode,
+          expirationDate: expirationDate,
+        })
+        .execute();
 
       return userId;
     });
@@ -86,20 +122,21 @@ export class UsersRepository {
 
   async updatePassword(userId: number, hash: string): Promise<boolean> {
     return this.dataSource.transaction(async () => {
-      await this.dataSource.query(
-        `UPDATE public.users
-                SET "passwordHash" = $2
-                WHERE id = $1`,
-        [userId, hash],
-      );
+      await this.dataSource
+        .createQueryBuilder()
+        .update(User)
+        .set({ passwordHash: hash })
+        .where('id = :id', { id: userId })
+        .execute();
 
-      const result = await this.dataSource.query(
-        `DELETE
-                FROM public.user_password_recovery
-                WHERE "userId" = $1;`,
-        [userId],
-      );
-      return result[1] === 1;
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .delete()
+        .from(UserPasswordRecovery)
+        .where('userId = :id', { id: userId })
+        .execute();
+
+      return result.affected === 1;
     });
   }
 
@@ -107,23 +144,30 @@ export class UsersRepository {
     confirmationCode: string,
     userId: number,
   ): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `UPDATE public.user_email_confirmation
-              SET "confirmationCode" = $1, 
-                  "expirationDate" = CURRENT_TIMESTAMP + interval '5 hours'
-              WHERE "userId" = $2;`,
-      [confirmationCode, userId],
-    );
-    return result[1] === 1;
+    const expirationDate = new Date();
+    expirationDate.setHours(expirationDate.getHours() + 5);
+
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .update(UserEmailConfirmation)
+      .set({
+        confirmationCode: confirmationCode,
+        expirationDate: expirationDate,
+      })
+      .where('userId = :id', { id: userId })
+      .execute();
+
+    return result.affected === 1;
   }
 
   async deleteUser(userId: number): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `DELETE
-       FROM public.users
-       WHERE id = $1;`,
-      [userId],
-    );
-    return result[1] === 1;
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('id= :id', { id: userId })
+      .execute();
+
+    return result.affected === 1;
   }
 }
