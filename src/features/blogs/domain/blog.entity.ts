@@ -2,8 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { Post } from '../../posts/domain/post.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -24,4 +27,10 @@ export class Blog {
 
   @Column({ type: 'boolean' })
   isMembership: boolean;
+
+  @OneToMany(() => Post, (post) => post.blog, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  post: Post;
 }

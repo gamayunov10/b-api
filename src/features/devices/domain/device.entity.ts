@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+import { User } from '../../users/domain/user.entity';
 
 @Entity('device_auth_sessions')
 export class DeviceAuthSessions {
@@ -22,4 +24,10 @@ export class DeviceAuthSessions {
 
   @Column({ type: 'integer' })
   userId: number;
+
+  @ManyToOne(() => User, (u) => u.deviceAuthSessions, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  user: User;
 }
