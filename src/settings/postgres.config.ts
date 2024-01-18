@@ -18,7 +18,7 @@ export const postgresConfig: TypeOrmModuleOptions = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  autoLoadEntities: false,
+  autoLoadEntities: true,
   synchronize: true,
   logging: 'all',
   logger: 'debug',
