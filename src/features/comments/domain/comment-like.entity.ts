@@ -1,4 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+import { User } from '../../users/domain/user.entity';
+
+import { Comment } from './comment.entity';
 
 @Entity('comment_likes')
 export class CommentLike {
@@ -13,4 +17,16 @@ export class CommentLike {
 
   @Column({ type: 'character varying' })
   likeStatus: string;
+
+  @ManyToOne(() => Comment, (comment) => comment.commentLike, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  comment: Comment;
+
+  @ManyToOne(() => User, (user) => user.commentLike, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  user: User;
 }
