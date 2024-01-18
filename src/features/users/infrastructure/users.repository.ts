@@ -52,7 +52,7 @@ export class UsersRepository {
         .createQueryBuilder()
         .delete()
         .from(UserEmailConfirmation)
-        .where('userId= :id', { id: userId })
+        .where('userId = :id', { id: userId })
         .execute();
 
       return result.affected === 1;

@@ -1,32 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { CommentInputModel } from '../api/models/input/comment-input.model';
 import { LikeStatusInputModel } from '../../posts/api/models/input/like-status-input.model';
+import { Comment } from '../domain/comment.entity';
+import { CommentLike } from '../domain/comment-like.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Comment)
+    private readonly commentsRepository: Repository<Comment>,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
+
   async updateComment(
     commentId: number,
     commentInputModel: CommentInputModel,
   ): Promise<boolean> {
-    try {
-      return this.dataSource.transaction(async (): Promise<boolean> => {
-        const result = await this.dataSource.query(
-          `UPDATE public.comments 
-                  SET content = $2
-                  WHERE id = $1;`,
-          [commentId, commentInputModel.content],
-        );
+    return this.dataSource.transaction(async (): Promise<boolean> => {
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .update(Comment)
+        .set({ content: commentInputModel.content })
+        .where('id = :id', { id: commentId })
+        .execute();
 
-        return result[1] === 1;
-      });
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
+      return result.affected === 1;
+    });
   }
 
   async commentLikeStatus(
@@ -35,43 +37,49 @@ export class CommentsRepository {
     likeStatusInputModel: LikeStatusInputModel,
   ): Promise<number> {
     return this.dataSource.transaction(async () => {
-      const existingLike = await this.dataSource.query(
-        `SELECT id 
-                FROM public.comment_likes 
-                WHERE "commentId" = $1 
-                AND "userId" = $2;`,
-        [commentId, userId],
-      );
+      const existingLike = await this.dataSource
+        .createQueryBuilder()
+        .select('id')
+        .from(CommentLike, 'CommentLike')
+        .where('"commentId" = :commentId', { commentId: commentId })
+        .andWhere('"userId" = :userId', { userId: userId })
+        .execute();
 
       if (existingLike && existingLike.length > 0) {
-        await this.dataSource.query(
-          `UPDATE public.comment_likes 
-                  SET "likeStatus" = $1 
-                  WHERE "commentId" = $2 
-                  AND "userId" = $3;`,
-          [likeStatusInputModel.likeStatus, commentId, userId],
-        );
+        await this.dataSource
+          .createQueryBuilder()
+          .update(CommentLike)
+          .set({ likeStatus: likeStatusInputModel.likeStatus })
+          .where('"commentId" = :commentId', { commentId: commentId })
+          .andWhere('"userId" = :userId', { userId: userId })
+          .execute();
+
         return existingLike[0].id;
       } else {
-        const newLike = await this.dataSource.query(
-          `INSERT INTO public.comment_likes ("commentId", "userId", "likeStatus")
-                  VALUES ($1, $2, $3)
-                  RETURNING id;`,
-          [commentId, userId, likeStatusInputModel.likeStatus],
-        );
-        return newLike[0].id;
+        const newLike = await this.dataSource
+          .createQueryBuilder()
+          .insert()
+          .into(CommentLike)
+          .values({
+            commentId: commentId,
+            userId: userId,
+            likeStatus: likeStatusInputModel.likeStatus,
+          })
+          .execute();
+
+        return newLike.identifiers[0].id;
       }
     });
   }
 
   async deleteComment(commentId: number): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `DELETE
-       FROM public.comments
-       WHERE id = $1;`,
-      [commentId],
-    );
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Comment)
+      .where('id = :id', { id: commentId })
+      .execute();
 
-    return result[1] === 1;
+    return result.affected === 1;
   }
 }
