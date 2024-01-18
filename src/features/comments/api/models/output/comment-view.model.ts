@@ -5,6 +5,6 @@ export class CommentViewModel {
   id: string;
   content: string;
   commentatorInfo: CommentatorInfoViewModel;
-  createdAt: boolean;
+  createdAt: Date;
   likesInfo: LikesInfoViewModel;
 }
