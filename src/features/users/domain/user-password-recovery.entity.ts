@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+import { User } from './user.entity';
 
 @Entity('user_password_recovery')
 export class UserPasswordRecovery {
@@ -6,11 +8,14 @@ export class UserPasswordRecovery {
   id: number;
 
   @Column({ type: 'character varying', nullable: true })
-  recoveryCode: string | null;
+  recoveryCode: string;
 
   @Column({ type: 'timestamp with time zone' })
-  expirationDate: Date | null;
+  expirationDate: Date;
 
   @Column({ type: 'integer' })
   userId: number;
+
+  @ManyToOne(() => User, (user) => user.userPasswordRecovery)
+  user: User;
 }

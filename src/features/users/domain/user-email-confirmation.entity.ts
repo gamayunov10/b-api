@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+import { User } from './user.entity';
 
 @Entity('user_email_confirmation')
 export class UserEmailConfirmation {
@@ -13,4 +15,7 @@ export class UserEmailConfirmation {
 
   @Column({ type: 'integer' })
   userId: string;
+
+  @ManyToOne(() => User, (u) => u.userEmailConfirmation)
+  user: User;
 }
