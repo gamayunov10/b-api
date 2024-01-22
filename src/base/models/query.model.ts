@@ -9,7 +9,7 @@ export class QueryModel {
   @IsOptional()
   sortBy = QueryParamsEnum.createdAt;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, enum: SortDirection })
   @IsOptional()
   sortDirection = SortDirection.DESC;
 

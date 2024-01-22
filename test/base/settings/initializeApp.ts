@@ -9,8 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { customExceptionFactory } from '../../../src/infrastructure/exception-filters/exception.factory';
 import { AppModule } from '../../../src/app.module';
 import { HttpExceptionFilter } from '../../../src/infrastructure/exception-filters/http-exception-filter';
-import { postgresConfig } from '../../../src/settings/postgres.config';
 import { testing_allData_uri } from '../utils/constants/routes';
+import { postgresConfig } from '../../../src/settings/postgres.config';
 
 export const initializeApp = async () => {
   const moduleRef = await Test.createTestingModule({

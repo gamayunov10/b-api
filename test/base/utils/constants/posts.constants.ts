@@ -47,6 +47,36 @@ export const createPostInput7 = {
   content: 'string content7',
 };
 
+export const createPostInput8 = {
+  title: 'title8',
+  shortDescription: 'string description8',
+  content: 'string content8',
+};
+
+export const createPostInput9 = {
+  title: 'title9',
+  shortDescription: 'string description9',
+  content: 'string content9',
+};
+
+export const createPostInput10 = {
+  title: 'title10',
+  shortDescription: 'string description10',
+  content: 'string content10',
+};
+
+export const createPostInput11 = {
+  title: 'title11',
+  shortDescription: 'string description11',
+  content: 'string content11',
+};
+
+export const createPostInput12 = {
+  title: 'title12',
+  shortDescription: 'string description12',
+  content: 'string content12',
+};
+
 export const updatedPostInput = {
   title: 'updated title',
   shortDescription: 'updated description',

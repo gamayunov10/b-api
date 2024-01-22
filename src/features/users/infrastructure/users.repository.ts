@@ -45,14 +45,14 @@ export class UsersRepository {
         .createQueryBuilder()
         .update(User)
         .set({ isConfirmed: true })
-        .where('id = :id', { id: userId })
+        .where('id = :userId', { userId })
         .execute();
 
       const result = await this.dataSource
         .createQueryBuilder()
         .delete()
         .from(UserEmailConfirmation)
-        .where('userId = :id', { id: userId })
+        .where('userId = :userId', { userId })
         .execute();
 
       return result.affected === 1;
@@ -98,7 +98,7 @@ export class UsersRepository {
           login: userInputModel.login,
           passwordHash: hash,
           email: userInputModel.email,
-          isConfirmed: true,
+          isConfirmed: false,
         })
         .returning('id')
         .execute();
@@ -126,14 +126,14 @@ export class UsersRepository {
         .createQueryBuilder()
         .update(User)
         .set({ passwordHash: hash })
-        .where('id = :id', { id: userId })
+        .where('id = :userId', { userId })
         .execute();
 
       const result = await this.dataSource
         .createQueryBuilder()
         .delete()
         .from(UserPasswordRecovery)
-        .where('userId = :id', { id: userId })
+        .where('userId = :userId', { userId })
         .execute();
 
       return result.affected === 1;
@@ -154,7 +154,7 @@ export class UsersRepository {
         confirmationCode: confirmationCode,
         expirationDate: expirationDate,
       })
-      .where('userId = :id', { id: userId })
+      .where('userId = :userId', { userId })
       .execute();
 
     return result.affected === 1;
@@ -165,7 +165,7 @@ export class UsersRepository {
       .createQueryBuilder()
       .delete()
       .from(User)
-      .where('id= :id', { id: userId })
+      .where('id = :userId', { userId })
       .execute();
 
     return result.affected === 1;

@@ -35,6 +35,10 @@ describe('Auth: auth/new-password', () => {
       await agent.delete(testing_allData_uri);
     });
 
+    it(`should`, async () => {
+      await usersTestManager.getEmailConfirmationCode(userLogin01);
+    });
+
     it(`should return 400 If the inputModel has incorrect value`, async () => {
       await agent
         .post(auth_newPassword_uri)

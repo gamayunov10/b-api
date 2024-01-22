@@ -57,7 +57,7 @@ import { TerminateSessionLogoutCommand } from './application/usecases/tokens/ter
 @ApiTags('auth')
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
-@Throttle(5, 10)
+@Throttle(5000, 10000)
 export class AuthController {
   constructor(
     private commandBus: CommandBus,

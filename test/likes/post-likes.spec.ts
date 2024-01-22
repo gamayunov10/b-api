@@ -52,7 +52,7 @@ describe('Posts: GET posts', () => {
   let tokenUser3;
   let tokenUser4;
 
-  describe('negative: GET blogs', () => {
+  describe('clear db', () => {
     it(`should clear db`, async () => {
       await waitForIt();
       await agent.delete(testing_allData_uri);

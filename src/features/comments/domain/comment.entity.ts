@@ -43,6 +43,7 @@ export class Comment {
 
   @OneToMany(() => CommentLike, (l) => l.comment, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   commentLike: CommentLike[];
 }

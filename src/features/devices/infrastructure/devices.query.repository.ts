@@ -8,53 +8,60 @@ import { DeviceAuthSessions } from '../domain/device.entity';
 @Injectable()
 export class DevicesQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
-  async findActiveDevices(userId: string): Promise<DeviceViewModel[]> {
-    const devices = await this.dataSource.query(
-      `SELECT  ip, title, "lastActiveDate", "deviceId"
-              FROM public.device_auth_sessions
-              WHERE "userId" = $1;`,
-      [userId],
-    );
 
-    return devices.map((device) => {
-      return {
-        ip: device.ip,
-        title: device.title,
-        lastActiveDate: device.lastActiveDate,
-        deviceId: device.deviceId,
-      };
-    });
+  async findActiveDevices(userId: string): Promise<DeviceViewModel[]> {
+    return await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'd.ip as ip',
+        'd.title as title',
+        'd.lastActiveDate as "lastActiveDate"',
+        'd.deviceId as "deviceId"',
+      ])
+      .from(DeviceAuthSessions, 'd')
+      .where('d."userId" = :userId', { userId })
+      .getRawMany();
   }
 
   async findDeviceByDeviceId(
     deviceId: string,
   ): Promise<DeviceAuthSessions | null> {
-    const devices = await this.dataSource.query(
-      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
-       FROM public.device_auth_sessions
-       WHERE "deviceId" = $1`,
-      [deviceId],
-    );
+    const devices = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'd.deviceId as "deviceId"',
+        'd.userId as "userId"',
+        'd.lastActiveDate as "lastActiveDate"',
+        'd.expirationDate as "expirationDate"',
+      ])
+      .from(DeviceAuthSessions, 'd')
+      .where('d."deviceId" = :deviceId', { deviceId })
+      .getRawOne();
 
-    if (devices.length === 0) {
+    if (!devices) {
       return null;
     }
 
-    return devices[0];
+    return devices;
   }
 
   async findDeviceByUserId(userId: number): Promise<DeviceAuthSessions | null> {
-    const devices = await this.dataSource.query(
-      `SELECT "deviceId", "userId", "lastActiveDate", "expirationDate"
-       FROM public.device_auth_sessions
-       WHERE "userId" = $1;`,
-      [userId],
-    );
+    const devices = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'd.deviceId as "deviceId"',
+        'd.userId as "userId"',
+        'd.lastActiveDate as "lastActiveDate"',
+        'd.expirationDate as "expirationDate"',
+      ])
+      .from(DeviceAuthSessions, 'd')
+      .where('d."userId" = :userId', { userId })
+      .getRawOne();
 
-    if (devices.length === 0) {
+    if (!devices) {
       return null;
     }
 
-    return devices[0];
+    return devices;
   }
 }

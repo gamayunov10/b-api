@@ -33,10 +33,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
     UserEmailConfirmation,
     UserPasswordRecovery,
   ],
-  ssl: true,
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  // ssl: true,
+  // extra: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
 };

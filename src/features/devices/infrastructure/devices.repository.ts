@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 
 import { DeviceAuthSessions } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
-
-  async dataSourceSave(
-    entity: DeviceAuthSessions,
-  ): Promise<DeviceAuthSessions> {
-    return this.dataSource.manager.save(entity);
-  }
+  constructor(
+    @InjectRepository(DeviceAuthSessions)
+    private readonly devicesRepository: Repository<DeviceAuthSessions>,
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
 
   async createDevice(
     decodedToken: any,
@@ -22,22 +20,22 @@ export class DevicesRepository {
     const iatDate = new Date(decodedToken.iat * 1000).toISOString();
     const expDate = new Date(decodedToken.exp * 1000).toISOString();
 
-    const device = await this.dataSource.query(
-      `INSERT INTO public.device_auth_sessions
-                ("deviceId", ip, title, "lastActiveDate", "expirationDate", "userId")
-              VALUES ($1, $2, $3, $4, $5, $6)
-              RETURNING id;`,
-      [
-        decodedToken.deviceId,
-        ip,
-        userAgent,
-        iatDate,
-        expDate,
-        decodedToken.userId,
-      ],
-    );
+    const device = await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into(DeviceAuthSessions)
+      .values({
+        deviceId: decodedToken.deviceId,
+        ip: ip,
+        title: userAgent,
+        lastActiveDate: iatDate,
+        expirationDate: expDate,
+        userId: decodedToken.userId,
+      })
+      .returning('id')
+      .execute();
 
-    return device[0].id;
+    return device.identifiers[0].id;
   }
 
   async updateDevice(
@@ -46,34 +44,40 @@ export class DevicesRepository {
     ip: string,
     userAgent: string,
   ): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `UPDATE public.device_auth_sessions
-              SET "lastActiveDate" = to_timestamp($2),
-              ip = $3,
-              title = $4
-              WHERE "deviceId" = $1;`,
-      [deviceId, token.iat, ip, userAgent],
-    );
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .update(DeviceAuthSessions)
+      .set({
+        lastActiveDate: () => 'to_timestamp(:iat)',
+        ip: ':ip',
+        title: ':userAgent',
+      })
+      .where('"deviceId" = :deviceId', { deviceId })
+      .setParameters({ deviceId, iat: token.iat, ip, userAgent })
+      .execute();
 
-    return result[1] === 1;
+    return result.affected === 1;
   }
 
   async deleteDevice(deviceId: string): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `DELETE
-              FROM public.device_auth_sessions
-              WHERE "deviceId" = $1;`,
-      [deviceId],
-    );
-    return result[1] === 1;
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(DeviceAuthSessions)
+      .where('"deviceId" = :deviceId', { deviceId })
+      .execute();
+
+    return result.affected === 1;
   }
 
   async deleteOthers(deviceId: number): Promise<boolean> {
-    return this.dataSource.query(
-      `DELETE
-      FROM public.device_auth_sessions
-      WHERE "deviceId" != $1;`,
-      [deviceId],
-    );
+    const result = await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(DeviceAuthSessions)
+      .where('"deviceId" != :deviceId', { deviceId })
+      .execute();
+
+    return result.affected === 1;
   }
 }

@@ -33,5 +33,7 @@ export class TestingController {
     await this.dataSource.query(`DELETE FROM public.user_password_recovery;`);
     await this.dataSource.query(`DELETE FROM public.blogs;`);
     await this.dataSource.query(`DELETE FROM public.posts;`);
+    await this.dataSource.query(`DELETE FROM public.post_likes;`);
+    await this.dataSource.query(`DELETE FROM public.comment_likes;`);
   }
 }
