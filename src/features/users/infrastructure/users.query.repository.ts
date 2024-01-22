@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { DataSource, ILike, Like } from 'typeorm';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { SuperAdminUserViewModel } from '../api/models/output/sa-user-view.model';
@@ -11,6 +11,7 @@ import { User } from '../domain/user.entity';
 import { UserPasswordRecovery } from '../domain/user-password-recovery.entity';
 import { isValidUuid } from '../../../base/utils/is-valid-uuid';
 import { UserEmailConfirmation } from '../domain/user-email-confirmation.entity';
+import { DeviceAuthSessions } from '../../devices/domain/device.entity';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -18,47 +19,51 @@ export class UsersQueryRepository {
 
   async findUsers(query: UserQueryModel) {
     const filter = usersFilter(query.searchLoginTerm, query.searchEmailTerm);
-    const users = await this.dataSource.query(
-      `SELECT u.id,
-              u.login,
-              u.email,
-              u."createdAt"
-       FROM public.users u
-       WHERE (login ILIKE $1 or email ILIKE $2)
-       ORDER BY "${query.sortBy}" ${
-        query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
-      } ${query.sortDirection}
-       LIMIT ${query.pageSize} OFFSET (${query.pageNumber} - 1) * ${
-        query.pageSize
-      }`,
-      [filter.login, filter.email],
-    );
+    const sortDirection = query.sortDirection.toUpperCase();
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
+      .from(User, 'u')
+      .where('u.login ILike :login', { login: filter.login })
+      .orWhere('u.email ILike :email', { email: filter.email })
+      .orderBy(
+        `"${query.sortBy}" ${
+          query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
+        }`,
+        sortDirection as 'ASC' | 'DESC',
+      )
+      .skip((+query.pageNumber - 1) * +query.pageSize)
+      .take(+query.pageSize)
+      .getMany();
 
-    const totalCount = await this.dataSource.query(
-      `SELECT count(*)
-       FROM public.users
-       WHERE (login ILIKE $1 or email ILIKE $2);`,
-      [filter.login, filter.email],
-    );
+    const totalCount = await this.dataSource
+      .createQueryBuilder()
+      .select()
+      .from(User, 'u')
+      .where('u.login ILIKE :login', { login: filter.login })
+      .orWhere('u.email ILIKE :email', { email: filter.email })
+      .getCount();
 
     return Paginator.paginate({
       pageNumber: +query.pageNumber,
       pageSize: +query.pageSize,
-      totalCount: +totalCount[0].count,
+      totalCount: totalCount,
       items: await this.usersMapping(users),
     });
   }
 
   async findUserById(id: number): Promise<SuperAdminUserViewModel> {
-    const users = await this.dataSource.query(
-      `SELECT u.id,
-              u.login,
-              u.email,
-              u."createdAt"
-       FROM public.users u
-       WHERE id = $1`,
-      [id],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'u.id as id',
+        'u.login as login',
+        'u.email as email',
+        'u."createdAt" as "createdAt"',
+      ])
+      .from(User, 'u')
+      .where('id = :id', { id })
+      .execute();
 
     const mappedUsers = await this.usersMapping(users);
 
@@ -70,38 +75,37 @@ export class UsersQueryRepository {
       return false;
     }
 
-    const users = await this.dataSource.query(
-      `SELECT u.id
-       FROM public.users u
-       WHERE id = $1;`,
-      [id],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select('id')
+      .from(User, 'u')
+      .where('id = :id', { id })
+      .execute();
 
     return users.length !== 0;
   }
 
   async findUserByLogin(login: string): Promise<User[] | null> {
-    const users = await this.dataSource.query(
-      `SELECT id
-       FROM public.users
-       WHERE login = $1`,
-      [login],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select('id')
+      .from(User, 'u')
+      .where('u.login = :login', { login })
+      .execute();
 
     if (users.length === 0) {
       return null;
     }
-
     return users;
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
-    const users = await this.dataSource.query(
-      `SELECT id, login, email 
-       FROM public.users
-       WHERE email = $1`,
-      [email],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select('id')
+      .from(User, 'u')
+      .where('u.email = :email', { email })
+      .execute();
 
     if (users.length === 0) {
       return null;
@@ -117,12 +121,12 @@ export class UsersQueryRepository {
       return null;
     }
 
-    const users = await this.dataSource.query(
-      `SELECT *
-       FROM user_password_recovery
-       WHERE "recoveryCode" = $1`,
-      [code],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select(['upr.id, upr.recoveryCode, upr.expirationDate, upr.userId'])
+      .from(UserPasswordRecovery, 'upr')
+      .where('upr.recoveryCode = :code', { code })
+      .execute();
 
     if (users.length === 0) {
       return null;
@@ -132,14 +136,15 @@ export class UsersQueryRepository {
   }
 
   async findUserForEmailResending(email: string): Promise<User | null> {
-    const users = await this.dataSource.query(
-      `SELECT u.id, u.login, u, email, u."isConfirmed", e."confirmationCode"
-              FROM public.users u
-              LEFT JOIN public.user_email_confirmation e
-              ON u.id = e."userId"
-              WHERE email = $1;`,
-      [email],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'u.id, u.login, u, email, u."isConfirmed", e."confirmationCode"',
+      ])
+      .from(User, 'u')
+      .leftJoin(UserEmailConfirmation, 'e', 'u.id = e."userId"')
+      .where('u.email = :email', { email })
+      .execute();
 
     if (users.length === 0) {
       return null;
@@ -155,14 +160,15 @@ export class UsersQueryRepository {
       return null;
     }
 
-    const users = await this.dataSource.query(
-      `SELECT u.id, u."isConfirmed", e."confirmationCode", e."expirationDate"
-              FROM public.users u
-              LEFT JOIN public.user_email_confirmation e
-              ON u.id = e."userId"
-              WHERE e."confirmationCode" = $1;`,
-      [code],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'u.id, u."isConfirmed", e."confirmationCode", e."expirationDate"',
+      ])
+      .from(User, 'u')
+      .leftJoin(UserEmailConfirmation, 'e', 'u.id = e."userId"')
+      .where('e."confirmationCode" = :code', { code })
+      .execute();
 
     if (users.length === 0) {
       return null;
@@ -172,13 +178,13 @@ export class UsersQueryRepository {
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<User | null> {
-    const users = await this.dataSource.query(
-      `SELECT id, "passwordHash", "isConfirmed"
-              FROM public.users
-              WHERE login = $1
-              OR email = $1;`,
-      [loginOrEmail],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select(['u.id, u."passwordHash", u."isConfirmed"'])
+      .from(User, 'u')
+      .where('u.login = :loginOrEmail', { loginOrEmail })
+      .orWhere('u.email = :loginOrEmail', { loginOrEmail })
+      .execute();
 
     if (users.length === 0) {
       return null;
@@ -190,24 +196,18 @@ export class UsersQueryRepository {
   async getUserByLoginOrEmailForTesting(
     loginOrEmail: string,
   ): Promise<UserTestManagerModel | null> {
-    const users = await this.dataSource.query(
-      `SELECT  
-                e."confirmationCode" as "emailConfirmationCode",
-                e."expirationDate" as "emailExpirationDate", 
-                p."recoveryCode" as "passwordRecoveryCode",
-                p."expirationDate" as "passwordExpirationDate",
-                d."deviceId"
-              FROM public.users u
-              LEFT JOIN public.user_email_confirmation e
-              ON e."userId" = u.id
-              LEFT JOIN public.user_password_recovery p
-              ON p."userId" = u.id
-              LEFT JOIN public.device_auth_sessions d
-              ON d."userId" = u.id
-              WHERE login = $1
-              OR email = $1;`,
-      [loginOrEmail],
-    );
+    const users = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'e."confirmationCode" as "emailConfirmationCode", e."expirationDate" as "emailExpirationDate", p."recoveryCode" as "passwordRecoveryCode", p."expirationDate" as "passwordExpirationDate", d."deviceId" as "deviceId"',
+      ])
+      .from(User, 'u')
+      .leftJoin(UserEmailConfirmation, 'e', 'u.id = e."userId"')
+      .leftJoin(UserPasswordRecovery, 'p', 'u.id = p."userId"')
+      .leftJoin(DeviceAuthSessions, 'd', 'u.id = d."userId"')
+      .where('u.login = :loginOrEmail', { loginOrEmail })
+      .orWhere('u.email = :loginOrEmail', { loginOrEmail })
+      .execute();
 
     if (users.length === 0) {
       return null;

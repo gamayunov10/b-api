@@ -7,7 +7,6 @@ import { Paginator } from '../../../base/pagination/_paginator';
 import { CommentQueryModel } from '../api/models/input/comment.query.model';
 import { LikeStatus } from '../../../base/enums/like_status.enum';
 import { User } from '../../users/domain/user.entity';
-import { CommentLike } from '../domain/comment-like.entity';
 import { Comment } from '../domain/comment.entity';
 
 @Injectable()
@@ -18,7 +17,9 @@ export class CommentsQueryRepository {
     postId: number,
     userId: number | null,
   ) {
-    const comment = await this.dataSource
+    const sortDirection = query.sortDirection.toUpperCase();
+
+    const comments = await this.dataSource
       .createQueryBuilder()
       .select([
         'c.id as id',
@@ -29,30 +30,42 @@ export class CommentsQueryRepository {
       ])
       .from(Comment, 'c')
       .leftJoin(User, 'u', 'c."userId" = u.id')
+      .addSelect(
+        `( SELECT COUNT(*)
+                    FROM (
+                        SELECT cl."commentId"
+                        FROM comment_likes cl
+                        WHERE c."id" = cl."commentId" AND cl."likeStatus" = 'Like'
+                    ))`,
+        'likesCount',
+      )
+      .addSelect(
+        `
+                  ( SELECT COUNT(*)
+                    FROM (
+                        SELECT cl."commentId"
+                        FROM comment_likes cl
+                        WHERE c."id" = cl."commentId" AND cl."likeStatus" = 'Dislike'
+                    ))`,
+        'dislikesCount',
+      )
+      .addSelect(
+        `(SELECT cl."likeStatus"
+                        FROM comment_likes cl
+                        WHERE  c."id" = cl."commentId" AND cl."userId" = ${userId}
+                  )`,
+        'myStatus',
+      )
       .where('c."postId" = :postId', { postId })
+      .orderBy(
+        `"${query.sortBy}" ${
+          query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
+        }`,
+        sortDirection as 'ASC' | 'DESC',
+      )
+      .limit(+query.pageSize)
+      .offset((+query.pageNumber - 1) * +query.pageSize)
       .getRawMany();
-
-    if (!comment) {
-      return null;
-    }
-    const commentId = comment[0].id;
-
-    const likesCount = await this.getCommentLikesCount(
-      'commentId',
-      commentId,
-      LikeStatus.LIKE,
-    );
-
-    const dislikesCount = await this.getCommentLikesCount(
-      'commentId',
-      commentId,
-      LikeStatus.DISLIKE,
-    );
-    const myStatus = await this.getUserLikeStatus(
-      'commentId',
-      commentId,
-      userId,
-    );
 
     const totalCount = await this.dataSource
       .createQueryBuilder()
@@ -65,19 +78,14 @@ export class CommentsQueryRepository {
       pageNumber: query.pageNumber,
       pageSize: query.pageSize,
       totalCount: totalCount,
-      items: await this.commentsMapping(
-        comment,
-        likesCount,
-        dislikesCount,
-        myStatus,
-      ),
+      items: await this.commentsMapping(comments),
     });
   }
 
   async findComment(
     commentId: number,
     userId?: number | null,
-  ): Promise<CommentViewModel | null> {
+  ): Promise<CommentViewModel> {
     const comment = await this.dataSource
       .createQueryBuilder()
       .select([
@@ -89,81 +97,41 @@ export class CommentsQueryRepository {
       ])
       .from(Comment, 'c')
       .leftJoin(User, 'u', 'c."userId" = u.id')
+      .addSelect(
+        `( SELECT COUNT(*)
+                    FROM (
+                        SELECT cl."commentId"
+                        FROM comment_likes cl
+                        WHERE c."id" = cl."commentId" AND cl."likeStatus" = 'Like'
+                    ))`,
+        'likesCount',
+      )
+      .addSelect(
+        `
+                  ( SELECT COUNT(*)
+                    FROM (
+                        SELECT cl."commentId"
+                        FROM comment_likes cl
+                        WHERE c."id" = cl."commentId" AND cl."likeStatus" = 'Dislike'
+                    ))`,
+        'dislikesCount',
+      )
+      .addSelect(
+        `(SELECT cl."likeStatus"
+                        FROM comment_likes cl
+                        WHERE  c."id" = cl."commentId" AND cl."userId" = ${userId}
+                  )`,
+        'myStatus',
+      )
       .where('c.id = :commentId', { commentId })
       .getRawMany();
 
-    if (!comment) {
-      return null;
-    }
-
-    const likesCount = await this.getCommentLikesCount(
-      'commentId',
-      commentId,
-      LikeStatus.LIKE,
-    );
-    const dislikesCount = await this.getCommentLikesCount(
-      'commentId',
-      commentId,
-      LikeStatus.DISLIKE,
-    );
-    const myStatus = await this.getUserLikeStatus(
-      'commentId',
-      commentId,
-      userId,
-    );
-
-    const comments = await this.commentsMapping(
-      comment,
-      likesCount,
-      dislikesCount,
-      myStatus,
-    );
+    const comments = await this.commentsMapping(comment);
 
     return comments[0];
   }
 
-  private async getCommentLikesCount(
-    column: string,
-    id: number,
-    likeStatus: string,
-  ): Promise<number> {
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(CommentLike, 'cl')
-      .where(`cl."${column}" = :id`, { id })
-      .andWhere('cl."likeStatus" = :likeStatus', { likeStatus })
-      .getCount();
-
-    return result || 0;
-  }
-
-  private async getUserLikeStatus(
-    column: string,
-    id: number,
-    userId?: number | null,
-  ): Promise<LikeStatus> {
-    if (!userId) {
-      return LikeStatus.NONE;
-    }
-
-    const result = await this.dataSource
-      .createQueryBuilder()
-      .select('"likeStatus"')
-      .from(CommentLike, 'cl')
-      .where(`cl."${column}" = :id`, { id })
-      .andWhere('cl."userId" = :userId', { userId })
-      .getRawOne();
-
-    return result.likeStatus;
-  }
-
-  private async commentsMapping(
-    comments: any,
-    likesCount: number,
-    dislikesCount: number,
-    myStatus: LikeStatus,
-  ): Promise<CommentViewModel[]> {
+  private async commentsMapping(comments: any): Promise<CommentViewModel[]> {
     return comments.map((c) => {
       return {
         id: c.id.toString(),
@@ -174,9 +142,9 @@ export class CommentsQueryRepository {
         },
         createdAt: c.createdAt,
         likesInfo: {
-          likesCount: likesCount,
-          dislikesCount: dislikesCount,
-          myStatus: myStatus,
+          likesCount: +c.likesCount ?? 0,
+          dislikesCount: +c.dislikesCount ?? 0,
+          myStatus: c.myStatus ?? LikeStatus.NONE,
         },
       };
     });

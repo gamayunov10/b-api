@@ -18,7 +18,7 @@ export class BlogsQueryRepository {
 
   async findBlogs(query: BlogQueryModel) {
     const filter = blogsFilter(query.searchNameTerm);
-
+    const sortDirection = query.sortDirection.toUpperCase();
     const blogs = await this.dataSource
       .createQueryBuilder()
       .select([
@@ -31,9 +31,14 @@ export class BlogsQueryRepository {
       ])
       .from(Blog, 'b')
       .where('b.name ILIKE :name', { name: filter.name })
-      .orderBy(`b.${query.sortBy}`, query.sortDirection)
-      .skip((+query.pageNumber - 1) * +query.pageSize)
-      .take(+query.pageSize)
+      .orderBy(
+        `"${query.sortBy}" ${
+          query.sortBy.toLowerCase() !== 'createdat' ? 'COLLATE "C"' : ''
+        }`,
+        sortDirection as 'ASC' | 'DESC',
+      )
+      .limit(+query.pageSize)
+      .offset((+query.pageNumber - 1) * +query.pageSize)
       .getMany();
 
     const totalCount = await this.dataSource
