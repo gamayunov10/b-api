@@ -71,7 +71,7 @@ export class CommentsQueryRepository {
       .createQueryBuilder()
       .select()
       .from(Comment, 'c')
-      .where('c."postId" = "postId"', { postId })
+      .where('c."postId" = :postId', { postId })
       .getCount();
 
     return Paginator.paginate({
@@ -129,6 +129,46 @@ export class CommentsQueryRepository {
     const comments = await this.commentsMapping(comment);
 
     return comments[0];
+  }
+
+  async checkExistenceOfComment(commentId: number) {
+    return await this.dataSource
+      .createQueryBuilder()
+      .select('c.id as id, c."userId" as "userId"')
+      .from(Comment, 'c')
+      .where('c.id = :commentId', { commentId })
+      .getRawOne();
+  }
+
+  async findNewlyCreatedComment(commentId: number): Promise<CommentViewModel> {
+    const comment = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'c.id as id',
+        'c.content as content',
+        'u.id as "userId"',
+        'u.login as "userLogin"',
+        'c.createdAt as "createdAt"',
+      ])
+      .from(Comment, 'c')
+      .leftJoin(User, 'u', 'c."userId" = u.id')
+      .where('c.id = :commentId', { commentId })
+      .getRawOne();
+
+    return {
+      id: comment.id.toString(),
+      content: comment.content,
+      commentatorInfo: {
+        userId: comment.userId.toString(),
+        userLogin: comment.userLogin,
+      },
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeStatus.NONE,
+      },
+    };
   }
 
   private async commentsMapping(comments: any): Promise<CommentViewModel[]> {
