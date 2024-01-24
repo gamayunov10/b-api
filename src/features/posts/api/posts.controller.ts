@@ -139,7 +139,7 @@ export class PostsController {
       throw new NotFoundException();
     }
 
-    const post = await this.postsQueryRepository.findPostByPostId(+postId);
+    const post = await this.postsQueryRepository.checkExistenceOfPost(+postId);
 
     if (!post) {
       return exceptionHandler(ResultCode.NotFound, postNotFound, postIDField);
@@ -189,7 +189,9 @@ export class PostsController {
       return exceptionHandler(result.code, result.message, result.field);
     }
 
-    return this.commentsQueryRepository.findComment(result.response, +userId);
+    return this.commentsQueryRepository.findNewlyCreatedComment(
+      result.response,
+    );
   }
 
   @Put(':id/like-status')
