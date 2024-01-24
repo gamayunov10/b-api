@@ -198,7 +198,7 @@ export class SABlogsController {
       return exceptionHandler(result.code, result.message, result.field);
     }
 
-    return this.postsQueryRepository.findPostByPostId(result.response);
+    return this.postsQueryRepository.findNewlyCreatedPost(result.response);
   }
 
   @Put(':blogId/posts/:postId')
