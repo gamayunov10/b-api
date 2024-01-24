@@ -7,6 +7,7 @@ import { Paginator } from '../../../base/pagination/_paginator';
 import { SABlogQueryModel } from '../../blogs/api/models/input/sa-blog.query.model';
 import { Post } from '../domain/post.entity';
 import { Blog } from '../../blogs/domain/blog.entity';
+import { PostOutputModel } from '../api/models/output/post-output.model';
 
 export class PostsQueryRepository {
   constructor(
@@ -244,6 +245,51 @@ export class PostsQueryRepository {
     const mappedPosts = await this.postsMapping(post);
 
     return mappedPosts[0];
+  }
+
+  async findNewlyCreatedPost(postId: number): Promise<PostOutputModel> {
+    const post = await this.dataSource
+      .createQueryBuilder()
+      .select([
+        'p.id as id',
+        'p.title as title',
+        'p.shortDescription as "shortDescription"',
+        'p.content as content',
+        'b.id as "blogId"',
+        'b.name as "blogName"',
+        'p.createdAt as "createdAt"',
+      ])
+      .from(Post, 'p')
+      .leftJoin(Blog, 'b', 'b.id = p."blogId"')
+      .where('p.id = :postId', { postId })
+      .getRawOne();
+
+    return {
+      id: post.id.toString(),
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId.toString(),
+      blogName: post.blogName,
+      createdAt: post.createdAt,
+      extendedLikesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeStatus.NONE,
+        newestLikes: [],
+      },
+    };
+  }
+
+  async checkExistenceOfPost(postId: number): Promise<number | undefined> {
+    const post = await this.dataSource
+      .createQueryBuilder()
+      .select('p.id as id')
+      .from(Post, 'p')
+      .where('p.id = :postId', { postId })
+      .getRawOne();
+
+    return post?.id;
   }
 
   private async postsMapping(posts: any): Promise<PostViewModel[]> {
