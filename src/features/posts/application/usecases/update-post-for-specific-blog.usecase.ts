@@ -50,11 +50,11 @@ export class PostUpdatePostForSpecificBlogUseCase
       };
     }
 
-    const post = await this.postsQueryRepository.findPostByPostId(
+    const postId = await this.postsQueryRepository.checkExistenceOfPost(
       +command.postId,
     );
 
-    if (!post) {
+    if (!postId) {
       return {
         data: false,
         code: ResultCode.NotFound,
@@ -63,7 +63,7 @@ export class PostUpdatePostForSpecificBlogUseCase
       };
     }
 
-    await this.postsRepository.updatePost(command.postInputModel, +post.id);
+    await this.postsRepository.updatePost(command.postInputModel, postId);
 
     return {
       data: true,
