@@ -35,7 +35,7 @@ export class CommentUpdateUseCase
       throw new NotFoundException();
     }
 
-    const comment = await this.commentsQueryRepository.findComment(
+    const comment = await this.commentsQueryRepository.checkExistenceOfComment(
       +command.commentId,
     );
 
@@ -48,7 +48,7 @@ export class CommentUpdateUseCase
       };
     }
 
-    if (+command.userId !== +comment.commentatorInfo.userId) {
+    if (+command.userId !== +comment.userId) {
       throw new ForbiddenException();
     }
 
