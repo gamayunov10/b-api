@@ -39,7 +39,7 @@ export class PostCreateCommentUseCase
       throw new ForbiddenException();
     }
 
-    const post = await this.postsQueryRepository.findPostByPostId(
+    const post = await this.postsQueryRepository.checkExistenceOfPost(
       +command.postId,
     );
 
