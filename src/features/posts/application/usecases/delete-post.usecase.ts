@@ -43,11 +43,11 @@ export class PostDeleteUseCase implements ICommandHandler<PostDeleteCommand> {
       };
     }
 
-    const post = await this.postsQueryRepository.findPostByPostId(
+    const postId = await this.postsQueryRepository.checkExistenceOfPost(
       +command.postId,
     );
 
-    if (!post) {
+    if (!postId) {
       return {
         data: false,
         code: ResultCode.NotFound,
@@ -56,7 +56,7 @@ export class PostDeleteUseCase implements ICommandHandler<PostDeleteCommand> {
       };
     }
 
-    await this.postsRepository.deletePost(+post.id);
+    await this.postsRepository.deletePost(+postId);
 
     return {
       data: true,
