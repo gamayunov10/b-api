@@ -43,7 +43,7 @@ export class PostLikeOperationUseCase
       throw new UnauthorizedException();
     }
 
-    const post = await this.postsQueryRepository.findPostByPostId(
+    const post = await this.postsQueryRepository.checkExistenceOfPost(
       +command.postId,
     );
 
