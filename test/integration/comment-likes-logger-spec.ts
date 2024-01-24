@@ -150,11 +150,13 @@ describe('Comment likes', () => {
         postId1,
         tokenUser1,
       );
+
       await usersTestManager.createCommentForPost(
         createCommentInput,
         postId1,
         tokenUser2,
       );
+
       await usersTestManager.createCommentForPost(
         createCommentInput,
         postId1,
