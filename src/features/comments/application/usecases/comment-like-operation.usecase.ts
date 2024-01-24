@@ -43,7 +43,7 @@ export class CommentLikeOperationUseCase
       throw new UnauthorizedException();
     }
 
-    const comment = await this.commentsQueryRepository.findComment(
+    const comment = await this.commentsQueryRepository.checkExistenceOfComment(
       +command.commentId,
     );
 
