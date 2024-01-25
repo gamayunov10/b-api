@@ -1,16 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as process from 'process';
 
-import { Blog } from '../features/blogs/domain/blog.entity';
-import { CommentLike } from '../features/comments/domain/comment-like.entity';
-import { Comment } from '../features/comments/domain/comment.entity';
-import { DeviceAuthSessions } from '../features/devices/domain/device.entity';
-import { Post } from '../features/posts/domain/post.entity';
-import { PostLike } from '../features/posts/domain/post-like.entity';
-import { UserEmailConfirmation } from '../features/users/domain/user-email-confirmation.entity';
-import { UserPasswordRecovery } from '../features/users/domain/user-password-recovery.entity';
-import { User } from '../features/users/domain/user.entity';
-
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   host: process.env.POSTGRES_HOST,
@@ -19,20 +9,11 @@ export const postgresConfig: TypeOrmModuleOptions = {
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
   autoLoadEntities: true,
-  synchronize: true,
+  synchronize: false,
   logging: 'all',
   logger: 'debug',
-  entities: [
-    User,
-    Blog,
-    CommentLike,
-    Comment,
-    DeviceAuthSessions,
-    Post,
-    PostLike,
-    UserEmailConfirmation,
-    UserPasswordRecovery,
-  ],
+  entities: ['src/**/*/.entity{.ts, .js}'],
+
   // ssl: true,
   // extra: {
   //   ssl: {
