@@ -11,6 +11,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
 
+import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.use-case';
+import { QuestionsRepository } from '../../features/quiz/infrastructure/questions.repository';
+import { QuestionsQueryRepository } from '../../features/quiz/infrastructure/questions.query.repository';
+import { GameRepository } from '../../features/quiz/infrastructure/game.repository';
+import { GameQueryRepository } from '../../features/quiz/infrastructure/game.query.repository';
+import { QuizQuestion } from '../../features/quiz/domain/quiz-question.entity';
+import { QuizAnswer } from '../../features/quiz/domain/quiz-answer.entity';
+import { QuizGame } from '../../features/quiz/domain/quiz-game.entity';
+import { QuizPlayer } from '../../features/quiz/domain/quiz-player';
+import { QuizController } from '../../features/quiz/api/quiz.controller';
+import { SAQuizController } from '../../features/quiz/api/sa-quiz.controller';
 import { TestingController } from '../../testing/testing.controller';
 import { RegistrationUseCase } from '../../features/auth/api/public/application/usecases/registration/registration.usecase';
 import { RegistrationEmailResendUseCase } from '../../features/auth/api/public/application/usecases/registration/registration-email-resend.usecase';
@@ -83,6 +94,8 @@ const controllers = [
   AuthController,
   TestingController,
   CommentsController,
+  SAQuizController,
+  QuizController,
 ];
 
 const services = [JwtService, AuthService];
@@ -97,6 +110,10 @@ const entities = [
   PostLike,
   UserEmailConfirmation,
   UserPasswordRecovery,
+  QuizAnswer,
+  QuizGame,
+  QuizPlayer,
+  QuizQuestion,
 ];
 
 const typeORMRepositories = [
@@ -132,6 +149,7 @@ const useCases = [
   CommentDeleteUseCase,
   PostLikeOperationUseCase,
   CommentLikeOperationUseCase,
+  QuestionCreateUseCase,
 ];
 
 const repositories = [
@@ -140,6 +158,8 @@ const repositories = [
   BlogsRepository,
   PostsRepository,
   CommentsRepository,
+  QuestionsRepository,
+  GameRepository,
 ];
 
 const queryRepositories = [
@@ -148,6 +168,8 @@ const queryRepositories = [
   BlogsQueryRepository,
   PostsQueryRepository,
   CommentsQueryRepository,
+  QuestionsQueryRepository,
+  GameQueryRepository,
 ];
 
 const constraints = [
