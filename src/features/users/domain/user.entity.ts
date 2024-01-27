@@ -10,6 +10,7 @@ import { PostLike } from '../../posts/domain/post-like.entity';
 import { CommentLike } from '../../comments/domain/comment-like.entity';
 import { Comment } from '../../comments/domain/comment.entity';
 import { DeviceAuthSessions } from '../../devices/domain/device.entity';
+import { QuizPlayer } from '../../quiz/domain/quiz-player';
 
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
 import { UserPasswordRecovery } from './user-password-recovery.entity';
@@ -69,4 +70,7 @@ export class User {
     onUpdate: 'CASCADE',
   })
   commentLike: CommentLike[];
+
+  @OneToMany(() => QuizPlayer, (player) => player.user)
+  player: QuizPlayer[];
 }
