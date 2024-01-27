@@ -84,6 +84,9 @@ import { CommentLike } from '../../features/comments/domain/comment-like.entity'
 import { PostLike } from '../../features/posts/domain/post-like.entity';
 import { UserEmailConfirmation } from '../../features/users/domain/user-email-confirmation.entity';
 import { UserPasswordRecovery } from '../../features/users/domain/user-password-recovery.entity';
+import { QuestionUpdateUseCase } from '../../features/quiz/applications/usecases/question-update.use-case';
+import { QuestionDeleteUseCase } from '../../features/quiz/applications/usecases/question-delete.use-case';
+import { QuestionPublishUseCase } from '../../features/quiz/applications/usecases/question-publish.use-case';
 
 const controllers = [
   SAUsersController,
@@ -150,6 +153,9 @@ const useCases = [
   PostLikeOperationUseCase,
   CommentLikeOperationUseCase,
   QuestionCreateUseCase,
+  QuestionUpdateUseCase,
+  QuestionDeleteUseCase,
+  QuestionPublishUseCase,
 ];
 
 const repositories = [
