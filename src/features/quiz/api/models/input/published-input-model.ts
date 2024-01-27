@@ -1,11 +1,12 @@
-import { IsBoolean, IsNotEmpty } from 'class-validator';
+import { IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PublishedInputModel {
   @ApiProperty({
     type: Boolean,
+    description:
+      'True if question is completed and can be used in the Quiz game',
   })
-  @IsNotEmpty()
   @IsBoolean()
   published: boolean;
 }
