@@ -16,6 +16,9 @@ export const security_devices_uri = '/security/devices/';
 export const users_uri = '/sa/users/';
 export const sa_users_uri = '/sa/users/';
 
+//quiz
+export const sa_quiz_questions_uri = '/sa/quiz/questions/';
+
 //blogs
 export const blogs_uri = '/blogs/';
 export const sa_blogs_uri = '/sa/blogs/';
