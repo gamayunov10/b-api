@@ -41,11 +41,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
     QuizPlayer,
     QuizQuestion,
   ],
-
-  // ssl: true,
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 };
