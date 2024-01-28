@@ -21,11 +21,11 @@ export class QueryModel {
   @IsOptional()
   sortDirection = SortDirection.DESC;
 
-  @ApiProperty({ required: false, default: 1 })
+  @ApiProperty({ type: Number, required: false, default: 1 })
   @IsOptional()
   pageNumber = 1;
 
-  @ApiProperty({ required: false, default: 10 })
+  @ApiProperty({ type: Number, required: false, default: 10 })
   @IsOptional()
   pageSize = 10;
 }

@@ -6,7 +6,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
@@ -47,7 +47,6 @@ export class BlogsController {
     false,
     false,
   )
-  @ApiQuery({ type: BlogQueryModel, required: false })
   async findBlogs(@Query() query: BlogQueryModel) {
     return this.blogsQueryRepository.findBlogs(query);
   }
@@ -67,7 +66,6 @@ export class BlogsController {
     'If specified blog is not exists',
     false,
   )
-  @ApiQuery({ type: SABlogQueryModel, required: false })
   async findPostsByBlogId(
     @Query() query: SABlogQueryModel,
     @Param('id') blogId: string,

@@ -9,7 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
 
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
@@ -103,7 +103,6 @@ export class CommentsController {
     true,
     false,
   )
-  @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
   async updateComment(
@@ -137,7 +136,6 @@ export class CommentsController {
     "If comment with specified id doesn't exists",
     false,
   )
-  @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
   async commentLikeStatus(
@@ -171,7 +169,6 @@ export class CommentsController {
     true,
     false,
   )
-  @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
   async deleteComment(

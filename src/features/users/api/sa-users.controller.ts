@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { UserCreateCommand } from '../application/usecases/create-user.usecase';
 import { UserDeleteCommand } from '../application/usecases/delete-user.usecase';
@@ -49,7 +49,6 @@ export class SAUsersController {
     false,
     false,
   )
-  @ApiQuery({ type: UserQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findUsers(@Query() query: UserQueryModel) {
     return this.usersQueryRepository.findUsers(query);

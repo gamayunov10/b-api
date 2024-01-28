@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
 
 import { PostsQueryRepository } from '../infrastructure/posts.query.repository';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
@@ -57,7 +57,6 @@ export class PostsController {
     false,
     false,
   )
-  @ApiQuery({ type: PostQueryModel, required: false })
   async findPosts(
     @Query() query: PostQueryModel,
     @UserIdFromHeaders('id') userId: string,
@@ -129,7 +128,6 @@ export class PostsController {
     "If post for passed postId doesn't exist",
     false,
   )
-  @ApiQuery({ type: CommentQueryModel, required: false })
   async findCommentsByPostId(
     @Param('id') postId: string,
     @UserIdFromHeaders('id') userId: string,

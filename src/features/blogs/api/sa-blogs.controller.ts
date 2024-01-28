@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
@@ -62,7 +62,6 @@ export class SABlogsController {
     false,
     false,
   )
-  @ApiQuery({ type: BlogQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findBlogs(@Query() query: BlogQueryModel) {
     return this.blogsQueryRepository.findBlogs(query);
@@ -83,7 +82,6 @@ export class SABlogsController {
     true,
     false,
   )
-  @ApiQuery({ type: PostQueryModel, required: false })
   @UseGuards(BasicAuthGuard)
   async findPostsByBlogId(
     @Query() query: PostQueryModel,
