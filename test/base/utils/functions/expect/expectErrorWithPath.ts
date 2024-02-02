@@ -1,4 +1,4 @@
-export const expectFilteredMessages = (response, statusCode, path) => {
+export const expectErrorWithPath = (response, statusCode, path) => {
   expect(response.body).toHaveProperty('statusCode');
   expect(response.body).toHaveProperty('timestamp');
   expect(response.body).toHaveProperty('path');
