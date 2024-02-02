@@ -19,6 +19,7 @@ export const emailField = 'email';
 export const loginField = 'email';
 export const questionField = 'question';
 export const gameField = 'game';
+export const gameIDField = 'gameId';
 
 // Unique user
 export const loginNotUnique = 'Login already exists';
@@ -30,3 +31,6 @@ export const confirmCodeIsIncorrect =
 export const recoveryCodeIsIncorrect = 'Recovery code is incorrect or expired';
 export const userNotFoundOrConfirmed =
   'User with provided email not found or already confirmed';
+
+// UUID
+export const uuidNotValid = 'Id must be valid uuid';
