@@ -5,7 +5,7 @@ import { UsersTestManager } from '../../base/managers/users.manager';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
 import { createBlogInput } from '../../base/utils/constants/blogs.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { createPostInput } from '../../base/utils/constants/posts.constants';
 import {
   createUserInput,
@@ -61,7 +61,7 @@ describe('Posts: POST posts/:id/comments', () => {
         .send(createCommentInput)
         .expect(401);
 
-      expectFilteredMessages(response, 401, `/posts/${postId}/comments`);
+      expectErrorWithPath(response, 401, `/posts/${postId}/comments`);
     });
 
     it(`should not Create new comment if bearer token is incorrect`, async () => {
@@ -89,7 +89,7 @@ describe('Posts: POST posts/:id/comments', () => {
         .send(createCommentInput)
         .expect(401);
 
-      expectFilteredMessages(response, 401, `/posts/${postId}/comments`);
+      expectErrorWithPath(response, 401, `/posts/${postId}/comments`);
     });
 
     it(`should not Create new comment If the inputModel has incorrect values`, async () => {

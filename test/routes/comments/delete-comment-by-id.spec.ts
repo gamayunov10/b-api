@@ -16,7 +16,7 @@ import {
   createUserInput4,
 } from '../../base/utils/constants/users.constants';
 import { createCommentInput } from '../../base/utils/constants/comments.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 
@@ -64,7 +64,7 @@ describe('Comments: DELETE comments/:id', () => {
         // .set('Authorization', `Bearer ${token}`)
         .expect(401);
 
-      expectFilteredMessages(response, 401, comments_uri + commentId);
+      expectErrorWithPath(response, 401, comments_uri + commentId);
     });
 
     it(`should not delete comment by id if token is incorrect`, async () => {
@@ -96,7 +96,7 @@ describe('Comments: DELETE comments/:id', () => {
         .set('Authorization', `Bearer ${randomAccessToken}`) // randomAccessToken
         .expect(401);
 
-      expectFilteredMessages(response, 401, comments_uri + commentId);
+      expectErrorWithPath(response, 401, comments_uri + commentId);
     });
 
     it(`should not delete comment by id if comment does not exist`, async () => {
@@ -164,7 +164,7 @@ describe('Comments: DELETE comments/:id', () => {
         .set('Authorization', `Bearer ${token2}`)
         .expect(403);
 
-      expectFilteredMessages(response, 403, comments_uri + commentId);
+      expectErrorWithPath(response, 403, comments_uri + commentId);
     });
   });
 

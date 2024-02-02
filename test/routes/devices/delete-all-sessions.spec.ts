@@ -16,7 +16,7 @@ import {
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { expectGetDevices } from '../../base/utils/functions/expect/devices/expectGetDevices';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
@@ -48,7 +48,7 @@ describe('Devices: DELETE all sessions security/devices', () => {
         // .set('Cookie', refreshToken) // missing
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri);
+      expectErrorWithPath(response, 401, security_devices_uri);
     }, 10000);
 
     it(`should not Terminate all other sessions (exclude current) 
@@ -64,7 +64,7 @@ describe('Devices: DELETE all sessions security/devices', () => {
         .set('Cookie', refreshToken) // expired
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri);
+      expectErrorWithPath(response, 401, security_devices_uri);
     }, 30000);
 
     it(`should not Terminate all other sessions (exclude current)  
@@ -78,7 +78,7 @@ describe('Devices: DELETE all sessions security/devices', () => {
         .set('Cookie', invalidRefreshToken) // incorrect
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri);
+      expectErrorWithPath(response, 401, security_devices_uri);
     }, 10000);
   });
 

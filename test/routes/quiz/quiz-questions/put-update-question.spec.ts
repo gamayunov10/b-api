@@ -13,7 +13,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../../base/utils/functions/expect/expectErrorWithPath';
 import { expectErrorsMessages } from '../../../base/utils/functions/expect/expectErrorsMessages';
 import { expectCreatedQuestion } from '../../../base/utils/functions/expect/quiz/expectCreatedQuestion';
 import { expectFirstPaginatedQuestion } from '../../../base/utils/functions/expect/quiz/expectFirstPaginatedQuestion';
@@ -62,7 +62,7 @@ describe('QuizQuestions: PUT /sa/quiz/questions/{id}', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri + questionId);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri + questionId);
     });
 
     it(`should not Update question if login is incorrect`, async () => {
@@ -75,7 +75,7 @@ describe('QuizQuestions: PUT /sa/quiz/questions/{id}', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri + questionId);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri + questionId);
     });
 
     it(`should not Update question if password is incorrect`, async () => {
@@ -88,7 +88,7 @@ describe('QuizQuestions: PUT /sa/quiz/questions/{id}', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri + questionId);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri + questionId);
     });
 
     it(`should not Update question if password is incorrect`, async () => {
@@ -101,7 +101,7 @@ describe('QuizQuestions: PUT /sa/quiz/questions/{id}', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri + questionId);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri + questionId);
     });
 
     it(`should not Update question If the inputModel has incorrect values

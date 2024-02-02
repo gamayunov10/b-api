@@ -12,7 +12,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../../base/utils/functions/expect/expectErrorWithPath';
 import { expectErrorsMessages } from '../../../base/utils/functions/expect/expectErrorsMessages';
 import { expectCreatedQuestion } from '../../../base/utils/functions/expect/quiz/expectCreatedQuestion';
 
@@ -43,7 +43,7 @@ describe('QuizQuestions: POST /sa/quiz/questions', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Create question if login is incorrect`, async () => {
@@ -56,7 +56,7 @@ describe('QuizQuestions: POST /sa/quiz/questions', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Create question if password is incorrect`, async () => {
@@ -69,7 +69,7 @@ describe('QuizQuestions: POST /sa/quiz/questions', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Create question if password is incorrect`, async () => {
@@ -82,7 +82,7 @@ describe('QuizQuestions: POST /sa/quiz/questions', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Create question If the inputModel has incorrect values

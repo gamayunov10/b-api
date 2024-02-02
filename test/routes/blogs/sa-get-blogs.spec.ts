@@ -12,7 +12,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import {
   createBlogInput,
   createBlogInput2,
@@ -48,7 +48,7 @@ describe('Blogs: GET sa/blogs', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_blogs_uri);
+      expectErrorWithPath(response, 401, sa_blogs_uri);
     });
 
     it(`should not Return all blogs with paging if login is incorrect`, async () => {
@@ -57,7 +57,7 @@ describe('Blogs: GET sa/blogs', () => {
         .auth('', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_blogs_uri);
+      expectErrorWithPath(response, 401, sa_blogs_uri);
     });
 
     it(`should not Return all blogs with paging if password is incorrect`, async () => {
@@ -67,7 +67,7 @@ describe('Blogs: GET sa/blogs', () => {
         .query({ pageSize: 3, sortDirection: 'asc' })
         .expect(401);
 
-      expectFilteredMessages(
+      expectErrorWithPath(
         response,
         401,
         '/sa/blogs/?pageSize=3&sortDirection=asc',
@@ -80,7 +80,7 @@ describe('Blogs: GET sa/blogs', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_blogs_uri);
+      expectErrorWithPath(response, 401, sa_blogs_uri);
     });
   });
 

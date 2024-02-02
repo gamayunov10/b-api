@@ -19,7 +19,7 @@ import {
   createCommentInput,
   createCommentInput2,
 } from '../../base/utils/constants/comments.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
 import { lorem10, lorem1000 } from '../../base/utils/constants/lorems';
 import { waitForIt } from '../../base/utils/functions/wait';
@@ -70,7 +70,7 @@ describe('Comments: PUT comments/:id', () => {
         .send(createCommentInput2)
         .expect(401);
 
-      expectFilteredMessages(response, 401, comments_uri + commentId);
+      expectErrorWithPath(response, 401, comments_uri + commentId);
     });
 
     it(`should not update comment by id if token is incorrect`, async () => {
@@ -103,7 +103,7 @@ describe('Comments: PUT comments/:id', () => {
         .send(createCommentInput2)
         .expect(401);
 
-      expectFilteredMessages(response, 401, comments_uri + commentId);
+      expectErrorWithPath(response, 401, comments_uri + commentId);
     });
 
     it(`should not update comment by id if comment does not exist`, async () => {
@@ -239,7 +239,7 @@ describe('Comments: PUT comments/:id', () => {
         .send(createCommentInput2)
         .expect(403);
 
-      expectFilteredMessages(response, 403, comments_uri + commentId);
+      expectErrorWithPath(response, 403, comments_uri + commentId);
     });
   });
 

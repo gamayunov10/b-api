@@ -12,7 +12,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../../base/utils/functions/expect/expectErrorWithPath';
 import { expectPaginatedQuestions } from '../../../base/utils/functions/expect/quiz/expectPaginatedQuestions';
 
 describe('QuizQuestions: GET /sa/quiz/questions/', () => {
@@ -53,7 +53,7 @@ describe('QuizQuestions: GET /sa/quiz/questions/', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Get question if login is incorrect`, async () => {
@@ -62,7 +62,7 @@ describe('QuizQuestions: GET /sa/quiz/questions/', () => {
         .auth('', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Get question if password is incorrect`, async () => {
@@ -71,7 +71,7 @@ describe('QuizQuestions: GET /sa/quiz/questions/', () => {
         .auth(basicAuthLogin, 'incorrect')
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
 
     it(`should not Get question if password is incorrect`, async () => {
@@ -80,7 +80,7 @@ describe('QuizQuestions: GET /sa/quiz/questions/', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_quiz_questions_uri);
+      expectErrorWithPath(response, 401, sa_quiz_questions_uri);
     });
   });
 

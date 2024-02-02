@@ -10,7 +10,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
 import { createPostInput } from '../../base/utils/constants/posts.constants';
 
@@ -46,11 +46,7 @@ describe('Blogs: DELETE sa/blogs/:blogId/posts/:postId', () => {
         .auth('', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Delete post specified by id if login is incorrect`, async () => {
@@ -68,11 +64,7 @@ describe('Blogs: DELETE sa/blogs/:blogId/posts/:postId', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Delete post specified by id if password is incorrect`, async () => {
@@ -90,11 +82,7 @@ describe('Blogs: DELETE sa/blogs/:blogId/posts/:postId', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Delete post specified by id if password is incorrect`, async () => {
@@ -112,11 +100,7 @@ describe('Blogs: DELETE sa/blogs/:blogId/posts/:postId', () => {
         .auth(basicAuthLogin, '123')
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Delete post specified by id If specified blog is not exists`, async () => {

@@ -12,7 +12,7 @@ import { expectErrorsMessages } from '../../base/utils/functions/expect/expectEr
 import { createPostInput } from '../../base/utils/constants/posts.constants';
 import { createUserInput3 } from '../../base/utils/constants/users.constants';
 import { createCommentInput } from '../../base/utils/constants/comments.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
 import { waitForIt } from '../../base/utils/functions/wait';
 import {
@@ -64,11 +64,7 @@ describe('Comments: PUT posts/:id/like-status', () => {
         .send(likeStatusInput_like)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `${posts_uri}${postId}/like-status`,
-      );
+      expectErrorWithPath(response, 401, `${posts_uri}${postId}/like-status`);
     });
 
     it(`should not update post like-status if token is incorrect`, async () => {
@@ -100,11 +96,7 @@ describe('Comments: PUT posts/:id/like-status', () => {
         .send(likeStatusInput_like)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `${posts_uri}${postId}/like-status`,
-      );
+      expectErrorWithPath(response, 401, `${posts_uri}${postId}/like-status`);
     });
 
     it(`should not update post like-status if If the inputModel has incorrect values`, async () => {

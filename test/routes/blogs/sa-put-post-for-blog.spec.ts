@@ -14,7 +14,7 @@ import {
   createPostInput,
   updatedPostInput,
 } from '../../base/utils/constants/posts.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import {
   lorem100,
   lorem1000,
@@ -58,11 +58,7 @@ describe('Blogs: PUT sa/blogs/:blogId/posts/:postId', () => {
         .send(updatedPostInput)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Update existing post by id with InputModel if password is incorrect`, async () => {
@@ -81,11 +77,7 @@ describe('Blogs: PUT sa/blogs/:blogId/posts/:postId', () => {
         .send(updatedPostInput)
         .expect(401);
 
-      expectFilteredMessages(
-        response,
-        401,
-        `/sa/blogs/${blogId}/posts/${postId}`,
-      );
+      expectErrorWithPath(response, 401, `/sa/blogs/${blogId}/posts/${postId}`);
     });
 
     it(`should not Update existing post by id with InputModel If the inputModel has incorrect values`, async () => {

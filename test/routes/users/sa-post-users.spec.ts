@@ -18,7 +18,7 @@ import {
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { lorem20, lorem30 } from '../../base/utils/constants/lorems';
 import { expectCreatedUser } from '../../base/utils/functions/expect/users/expectCreatedUser';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
@@ -51,7 +51,7 @@ describe('Users: POST sa/users', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Add new user to the system if login is incorrect`, async () => {
@@ -65,7 +65,7 @@ describe('Users: POST sa/users', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Add new user to the system if password is incorrect`, async () => {
@@ -79,7 +79,7 @@ describe('Users: POST sa/users', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Add new user to the system if password is incorrect`, async () => {
@@ -93,7 +93,7 @@ describe('Users: POST sa/users', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Add new user to the system If the inputModel has incorrect values

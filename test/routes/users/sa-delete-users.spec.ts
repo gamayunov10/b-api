@@ -18,7 +18,7 @@ import {
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Users: DELETE sa/users/:id', () => {
@@ -47,7 +47,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth('', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectErrorWithPath(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if login is incorrect`, async () => {
@@ -59,7 +59,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectErrorWithPath(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if password is incorrect`, async () => {
@@ -71,7 +71,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectErrorWithPath(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id if password is incorrect`, async () => {
@@ -83,7 +83,7 @@ describe('Users: DELETE sa/users/:id', () => {
         .auth(basicAuthLogin, '123')
         .expect(401);
 
-      expectFilteredMessages(response, 401, `${sa_users_uri}${id}`);
+      expectErrorWithPath(response, 401, `${sa_users_uri}${id}`);
     });
 
     it(`should not Delete user specified by id If specified user is not exists`, async () => {

@@ -17,7 +17,7 @@ import {
   createBlogInput,
   createBlogInput2,
 } from '../../base/utils/constants/blogs.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { lorem1000, lorem15, lorem20 } from '../../base/utils/constants/lorems';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
@@ -50,7 +50,7 @@ describe('Blogs: PUT sa/blogs/:id', () => {
         .send(createBlogInput)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_blogs_uri + id);
+      expectErrorWithPath(response, 401, sa_blogs_uri + id);
     });
 
     it(`should not Update existing Blog by id with InputModel if password is incorrect`, async () => {
@@ -63,7 +63,7 @@ describe('Blogs: PUT sa/blogs/:id', () => {
         .send(createBlogInput)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_blogs_uri + id);
+      expectErrorWithPath(response, 401, sa_blogs_uri + id);
     });
 
     it(`should not Update existing Blog by id with InputModel If the inputModel has incorrect values`, async () => {

@@ -20,7 +20,7 @@ import {
   basicAuthLogin,
   basicAuthPassword,
 } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { expectFirstPaginatedUser } from '../../base/utils/functions/expect/users/expectFirstPaginatedUser';
 import { expectPaginatedUsers } from '../../base/utils/functions/expect/users/expectPaginatedUsers';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
@@ -48,7 +48,7 @@ describe('Users: GET sa/users', () => {
         .auth('incorrect', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if login is incorrect`, async () => {
@@ -57,7 +57,7 @@ describe('Users: GET sa/users', () => {
         .auth('', basicAuthPassword)
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if password is incorrect`, async () => {
@@ -66,7 +66,7 @@ describe('Users: GET sa/users', () => {
         .auth(basicAuthLogin, 'incorrect')
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
 
     it(`should not Returns all users if password is incorrect`, async () => {
@@ -75,7 +75,7 @@ describe('Users: GET sa/users', () => {
         .auth(basicAuthLogin, '')
         .expect(401);
 
-      expectFilteredMessages(response, 401, sa_users_uri);
+      expectErrorWithPath(response, 401, sa_users_uri);
     });
   });
 

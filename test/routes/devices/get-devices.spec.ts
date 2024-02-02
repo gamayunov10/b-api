@@ -12,7 +12,7 @@ import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { expectGetDevices } from '../../base/utils/functions/expect/devices/expectGetDevices';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
@@ -44,7 +44,7 @@ describe('Devices: GET security/devices', () => {
         // .set('Cookie', refreshToken) // missing
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri);
+      expectErrorWithPath(response, 401, security_devices_uri);
     });
 
     it(`should not Return all devices with active sessions for current user if the JWT refreshToken inside cookie is missing, expired or incorrect`, async () => {
@@ -59,7 +59,7 @@ describe('Devices: GET security/devices', () => {
         .set('Cookie', refreshToken) // expired
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri);
+      expectErrorWithPath(response, 401, security_devices_uri);
     }, 38000);
   });
 

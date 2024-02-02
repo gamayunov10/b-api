@@ -10,7 +10,7 @@ import {
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/logout', () => {
@@ -81,13 +81,13 @@ describe('Auth: auth/logout', () => {
         .post(auth_refreshToken_uri)
         .set('Cookie', refreshToken)
         .expect(401);
-      expectFilteredMessages(response, 401, auth_refreshToken_uri);
+      expectErrorWithPath(response, 401, auth_refreshToken_uri);
 
       const response2 = await agent
         .post(auth_logout_uri)
         .set('Cookie', refreshToken)
         .expect(401);
-      expectFilteredMessages(response2, 401, auth_logout_uri);
+      expectErrorWithPath(response2, 401, auth_logout_uri);
     });
   });
 

@@ -15,7 +15,7 @@ import {
   blogName,
   createBlogInput,
 } from '../../base/utils/constants/blogs.constant';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import {
   lorem100,
   lorem1000,
@@ -54,7 +54,7 @@ describe('Blogs: POST sa/blogs/:id/posts', () => {
         .send(createPostInput)
         .expect(401);
 
-      expectFilteredMessages(response, 401, `/sa/blogs/${id}/posts`);
+      expectErrorWithPath(response, 401, `/sa/blogs/${id}/posts`);
     });
 
     it(`should not Create new post for specific blog if password is incorrect`, async () => {
@@ -71,7 +71,7 @@ describe('Blogs: POST sa/blogs/:id/posts', () => {
         })
         .expect(401);
 
-      expectFilteredMessages(response, 401, `/sa/blogs/${id}/posts`);
+      expectErrorWithPath(response, 401, `/sa/blogs/${id}/posts`);
     });
 
     it(`should not Create new post for specific blog If the inputModel has incorrect values`, async () => {

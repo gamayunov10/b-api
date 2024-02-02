@@ -18,7 +18,7 @@ import {
   security_devices_uri,
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
-import { expectFilteredMessages } from '../../base/utils/functions/expect/expectFilteredMessages';
+import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Devices: DELETE session security/devices/:id', () => {
@@ -52,7 +52,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
         .set('Cookie', refreshToken) // expired
         .expect(401);
 
-      expectFilteredMessages(response, 401, security_devices_uri + deviceId);
+      expectErrorWithPath(response, 401, security_devices_uri + deviceId);
     }, 30000);
 
     it(`should not Terminate specified device session 
@@ -70,7 +70,7 @@ describe('Devices: DELETE session security/devices/:id', () => {
         .set('Cookie', refreshTokenUser1)
         .expect(403);
 
-      expectFilteredMessages(
+      expectErrorWithPath(
         response,
         403,
         security_devices_uri + otherUserDeviceId,
