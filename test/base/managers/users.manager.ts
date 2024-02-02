@@ -33,7 +33,7 @@ export class UsersTestManager {
   async createUser(createModel: any): Promise<Response> {
     return supertest(this.app.getHttpServer())
       .post('/sa/users')
-      .auth('admin', 'qwerty')
+      .auth(basicAuthLogin, basicAuthPassword)
       .send(createModel)
       .expect(201);
   }
@@ -49,6 +49,10 @@ export class UsersTestManager {
       })
       .send(updateModel)
       .expect(204);
+  }
+
+  async getUserIdByLogin(login: string): Promise<number> {
+    return await this.usersQueryRepository.findUserByLogin(login);
   }
 
   async createCommentForPost(
