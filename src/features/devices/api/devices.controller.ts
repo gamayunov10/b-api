@@ -32,7 +32,7 @@ export class DevicesController {
   ) {}
   @Get('devices')
   @SwaggerOptions(
-    'Terminate all other (exclude current) devices sessions',
+    'Get all other devices sessions',
     false,
     false,
     200,
