@@ -13,7 +13,7 @@ import {
   userLogin03,
   userLogin04,
 } from '../base/utils/constants/users.constants';
-import { waitForIt } from '../base/utils/functions/wait';
+import { waitForIt } from '../../src/base/utils/wait';
 import { posts_uri, testing_allData_uri } from '../base/utils/constants/routes';
 import { createBlogInput } from '../base/utils/constants/blogs.constant';
 import {

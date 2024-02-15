@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import {
   posts_uri,
   testing_allData_uri,

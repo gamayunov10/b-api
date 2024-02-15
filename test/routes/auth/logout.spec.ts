@@ -3,7 +3,7 @@ import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
 import { createUserInput } from '../../base/utils/constants/users.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import {
   auth_logout_uri,
   auth_refreshToken_uri,

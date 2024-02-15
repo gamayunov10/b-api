@@ -22,7 +22,7 @@ import {
 import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
 import { lorem10, lorem1000 } from '../../base/utils/constants/lorems';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { expectUpdatedComment } from '../../base/utils/functions/expect/comments/expectUpdatedComment';
 
 describe('Comments: PUT comments/:id', () => {

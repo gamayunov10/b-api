@@ -14,8 +14,8 @@ import { QuizGame } from './quiz-game.entity';
 
 @Entity('quiz_players')
 export class QuizPlayer {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({
     name: 'score',
@@ -26,7 +26,9 @@ export class QuizPlayer {
   @OneToOne(() => QuizGame)
   game: QuizGame;
 
-  @OneToMany(() => QuizAnswer, (answer) => answer.player)
+  @OneToMany(() => QuizAnswer, (answer) => answer.player, {
+    onDelete: 'CASCADE',
+  })
   answers: QuizAnswer[];
 
   @ManyToOne(() => User, (user) => user.player, {

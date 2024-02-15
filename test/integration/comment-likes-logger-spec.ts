@@ -10,7 +10,7 @@ import {
   createUserInput4,
   createUserInput5,
 } from '../base/utils/constants/users.constants';
-import { waitForIt } from '../base/utils/functions/wait';
+import { waitForIt } from '../../src/base/utils/wait';
 import {
   comments_uri,
   posts_uri,

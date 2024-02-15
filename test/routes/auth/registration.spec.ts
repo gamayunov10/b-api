@@ -13,7 +13,7 @@ import {
   userPassword,
 } from '../../base/utils/constants/users.constants';
 import { SendRegistrationMailUseCase } from '../../../src/features/mail/application/usecases/send-registration-mail.usecase';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { userAgent1 } from '../../base/utils/constants/auth.constants';
 import {
   lorem10,

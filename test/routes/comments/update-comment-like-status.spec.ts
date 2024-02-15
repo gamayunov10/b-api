@@ -14,7 +14,7 @@ import { createUserInput3 } from '../../base/utils/constants/users.constants';
 import { createCommentInput } from '../../base/utils/constants/comments.constant';
 import { expectErrorWithPath } from '../../base/utils/functions/expect/expectErrorWithPath';
 import { randomAccessToken } from '../../base/utils/constants/auth.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import {
   likeStatusInput_like,
   likeStatusInput_like_lowerCase,

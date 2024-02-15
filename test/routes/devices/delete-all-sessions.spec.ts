@@ -10,7 +10,7 @@ import {
   createUserInput5,
   userLogin02,
 } from '../../base/utils/constants/users.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import {
   security_devices_uri,
   testing_allData_uri,

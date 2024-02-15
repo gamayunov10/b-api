@@ -11,7 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
 
-import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.use-case';
+import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.usecase';
 import { QuestionsRepository } from '../../features/quiz/infrastructure/questions.repository';
 import { QuestionsQueryRepository } from '../../features/quiz/infrastructure/questions.query.repository';
 import { GameRepository } from '../../features/quiz/infrastructure/game.repository';
@@ -84,9 +84,14 @@ import { CommentLike } from '../../features/comments/domain/comment-like.entity'
 import { PostLike } from '../../features/posts/domain/post-like.entity';
 import { UserEmailConfirmation } from '../../features/users/domain/user-email-confirmation.entity';
 import { UserPasswordRecovery } from '../../features/users/domain/user-password-recovery.entity';
-import { QuestionUpdateUseCase } from '../../features/quiz/applications/usecases/question-update.use-case';
-import { QuestionDeleteUseCase } from '../../features/quiz/applications/usecases/question-delete.use-case';
-import { QuestionPublishUseCase } from '../../features/quiz/applications/usecases/question-publish.use-case';
+import { QuestionUpdateUseCase } from '../../features/quiz/applications/usecases/question-update.usecase';
+import { QuestionDeleteUseCase } from '../../features/quiz/applications/usecases/question-delete.usecase';
+import { QuestionPublishUseCase } from '../../features/quiz/applications/usecases/question-publish.usecase';
+import { QuizConnectUserUseCase } from '../../features/quiz/applications/usecases/connect-user.usecase';
+import { TransactionsRepository } from '../infrastructure/transactions.repository';
+import { QuizSendAnswerUseCase } from '../../features/quiz/applications/usecases/send-answer.usecase';
+import { GameFindUseCase } from '../../features/quiz/applications/usecases/find-game.usecase';
+import { CurrentGameFindUseCase } from '../../features/quiz/applications/usecases/find-current-game.usecase';
 
 const controllers = [
   SAUsersController,
@@ -156,6 +161,10 @@ const useCases = [
   QuestionUpdateUseCase,
   QuestionDeleteUseCase,
   QuestionPublishUseCase,
+  QuizConnectUserUseCase,
+  QuizSendAnswerUseCase,
+  GameFindUseCase,
+  CurrentGameFindUseCase,
 ];
 
 const repositories = [
@@ -166,6 +175,7 @@ const repositories = [
   CommentsRepository,
   QuestionsRepository,
   GameRepository,
+  TransactionsRepository,
 ];
 
 const queryRepositories = [

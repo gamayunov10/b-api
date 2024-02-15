@@ -13,7 +13,7 @@ import {
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { invalidConfirmationCode } from '../../base/utils/constants/auth.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
 
 describe('Auth: auth/registration-confirmation', () => {

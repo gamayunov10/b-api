@@ -10,7 +10,7 @@ import {
   testing_allData_uri,
 } from '../../base/utils/constants/routes';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { expectPaginatedComments } from '../../base/utils/functions/expect/comments/expectPaginatedComments';
 import { createUserInput3 } from '../../base/utils/constants/users.constants';
 import { createCommentInput } from '../../base/utils/constants/comments.constant';

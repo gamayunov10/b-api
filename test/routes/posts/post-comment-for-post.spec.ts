@@ -15,7 +15,7 @@ import {
 import { createCommentInput } from '../../base/utils/constants/comments.constant';
 import { lorem10, lorem1000 } from '../../base/utils/constants/lorems';
 import { expectErrorsMessages } from '../../base/utils/functions/expect/expectErrorsMessages';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { testing_allData_uri } from '../../base/utils/constants/routes';
 import { expectCreatedComment } from '../../base/utils/functions/expect/comments/expectCreatedComment';
 

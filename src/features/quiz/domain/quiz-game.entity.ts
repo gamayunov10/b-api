@@ -15,8 +15,8 @@ import { QuizPlayer } from './quiz-player';
 
 @Entity('quiz_games')
 export class QuizGame {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ type: 'varchar' })
   status: GameStatuses;
@@ -61,6 +61,8 @@ export class QuizGame {
   @JoinColumn()
   playerTwo: QuizPlayer;
 
-  @ManyToMany(() => QuizQuestion, (question) => question.games)
+  @ManyToMany(() => QuizQuestion, (question) => question.games, {
+    onDelete: 'CASCADE',
+  })
   questions: QuizQuestion[];
 }

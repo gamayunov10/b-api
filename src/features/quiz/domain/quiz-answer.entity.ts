@@ -26,6 +26,7 @@ export class QuizAnswer {
   @ManyToOne(() => QuizPlayer, (player) => player.answers, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn()
   player: QuizPlayer;
 
   @ManyToOne(() => QuizQuestion, (question) => question.answers, {

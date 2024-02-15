@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 
 import { QuizQuestion } from '../domain/quiz-question.entity';
 import { QuestionViewModel } from '../api/models/output/question-view-model';
@@ -15,6 +15,19 @@ export class QuestionsQueryRepository {
     private readonly questionsQueryRepository: Repository<QuizQuestion>,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
+
+  async findRandomQuestions(
+    manager: EntityManager,
+  ): Promise<QuizQuestion[] | null> {
+    const result = await manager
+      .createQueryBuilder(QuizQuestion, 'q')
+      .where('q.published = true')
+      .orderBy('RANDOM()')
+      .take(5)
+      .getMany();
+
+    return result;
+  }
 
   async findQuestions(
     query: QuestionQueryModel,

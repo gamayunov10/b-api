@@ -16,7 +16,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { BasicAuthGuard } from '../../auth/guards/basic-auth.guard';
 import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
-import { QuestionCreateCommand } from '../applications/usecases/question-create.use-case';
+import { QuestionCreateCommand } from '../applications/usecases/question-create.usecase';
 import { QuestionsQueryRepository } from '../infrastructure/questions.query.repository';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
 import { ResultCode } from '../../../base/enums/result-code.enum';
@@ -24,9 +24,9 @@ import {
   questionNotFound,
   questionField,
 } from '../../../base/constants/constants';
-import { QuestionUpdateCommand } from '../applications/usecases/question-update.use-case';
-import { QuestionDeleteCommand } from '../applications/usecases/question-delete.use-case';
-import { QuestionPublishCommand } from '../applications/usecases/question-publish.use-case';
+import { QuestionUpdateCommand } from '../applications/usecases/question-update.usecase';
+import { QuestionDeleteCommand } from '../applications/usecases/question-delete.usecase';
+import { QuestionPublishCommand } from '../applications/usecases/question-publish.usecase';
 import { QuestionsSchema } from '../../../base/schemas/questions.schema';
 
 import { QuestionInputModel } from './models/input/question-input-model';

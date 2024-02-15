@@ -8,7 +8,7 @@ import {
   createUserInput3,
   createUserInput4,
 } from '../../base/utils/constants/users.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import {
   sa_users_uri,
   testing_allData_uri,

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -71,6 +72,9 @@ export class User {
   })
   commentLike: CommentLike[];
 
-  @OneToMany(() => QuizPlayer, (player) => player.user)
+  @OneToMany(() => QuizPlayer, (player) => player.user, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   player: QuizPlayer[];
 }

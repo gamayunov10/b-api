@@ -4,7 +4,7 @@ import { SuperAgentTest } from 'supertest';
 import { UsersTestManager } from '../../../base/managers/users.manager';
 import { beforeAllConfig } from '../../../base/settings/beforeAllConfig';
 import { testing_allData_uri } from '../../../base/utils/constants/routes';
-import { waitForIt } from '../../../base/utils/functions/wait';
+import { waitForIt } from '../../../../src/base/utils/wait';
 import {
   createUserInput,
   createUserInput2,

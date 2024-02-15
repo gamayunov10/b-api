@@ -8,7 +8,7 @@ import {
   sa_quiz_questions_uri,
   testing_allData_uri,
 } from '../../../base/utils/constants/routes';
-import { waitForIt } from '../../../base/utils/functions/wait';
+import { waitForIt } from '../../../../src/base/utils/wait';
 import {
   basicAuthLogin,
   basicAuthPassword,

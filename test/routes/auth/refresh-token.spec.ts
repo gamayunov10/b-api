@@ -6,7 +6,7 @@ import {
   createUserInput,
   createUserInput3,
 } from '../../base/utils/constants/users.constants';
-import { waitForIt } from '../../base/utils/functions/wait';
+import { waitForIt } from '../../../src/base/utils/wait';
 import { invalidRefreshToken } from '../../base/utils/constants/auth.constants';
 import {
   auth_refreshToken_uri,

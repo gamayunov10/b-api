@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -19,7 +20,7 @@ export class QuizQuestion {
   body: string;
 
   @Column({ name: 'correct_answers', type: 'jsonb', default: [] })
-  correctAnswers: string[] | [];
+  correctAnswers;
 
   @Column({ type: 'boolean', default: false })
   published: boolean;
@@ -34,9 +35,14 @@ export class QuizQuestion {
   })
   updatedAt: Date;
 
-  @OneToMany(() => QuizAnswer, (answer) => answer.question)
+  @OneToMany(() => QuizAnswer, (answer) => answer.question, {
+    onDelete: 'CASCADE',
+  })
   answers: QuizAnswer[];
 
-  @ManyToMany(() => QuizGame, (game) => game.questions)
+  @ManyToMany(() => QuizGame, (game) => game.questions, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable()
   games: QuizGame[];
 }

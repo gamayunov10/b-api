@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, ILike, Like } from 'typeorm';
+import { DataSource, EntityManager, ILike, Like } from 'typeorm';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { SuperAdminUserViewModel } from '../api/models/output/sa-user-view.model';
@@ -16,6 +16,21 @@ import { DeviceAuthSessions } from '../../devices/domain/device.entity';
 @Injectable()
 export class UsersQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
+
+  async findUserEntityById(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<User | null> {
+    try {
+      return await manager
+        .createQueryBuilder(User, 'u')
+        .where('u.id = :userId', { userId })
+        .getOne();
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
 
   async findUsers(query: UserQueryModel) {
     const filter = usersFilter(query.searchLoginTerm, query.searchEmailTerm);
@@ -70,6 +85,18 @@ export class UsersQueryRepository {
     return mappedUsers[0];
   }
 
+  // async findUserEntityById(userId: number): Promise<User | null> {
+  //   try {
+  //     return await this.usersRepository
+  //       .createQueryBuilder('u')
+  //       .where(`u.id = :userId`, { userId })
+  //       .getOne();
+  //   } catch (e) {
+  //     console.log(e);
+  //     return null;
+  //   }
+  // }
+
   async findUserByIdBool(id: number): Promise<boolean> {
     if (isNaN(id)) {
       return false;
@@ -85,7 +112,7 @@ export class UsersQueryRepository {
     return users.length !== 0;
   }
 
-  async findUserByLogin(login: string): Promise<User[] | null> {
+  async findUserByLogin(login: string): Promise<number | null> {
     const users = await this.dataSource
       .createQueryBuilder()
       .select('id')
@@ -96,7 +123,8 @@ export class UsersQueryRepository {
     if (users.length === 0) {
       return null;
     }
-    return users;
+
+    return users[0].id;
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
