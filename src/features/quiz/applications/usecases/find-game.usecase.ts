@@ -13,7 +13,6 @@ import {
   uuidNotValid,
 } from '../../../../base/constants/constants';
 import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
-import { GameRepository } from '../../infrastructure/game.repository';
 
 export class GameFinder {
   constructor(public gameId: string, public userId: string) {}
@@ -24,7 +23,6 @@ export class GameFindUseCase implements IQueryHandler<GameFinder> {
   constructor(
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly gameQueryRepository: GameQueryRepository,
-    private readonly gameRepository: GameRepository,
   ) {}
 
   async execute(query: GameFinder): Promise<ExceptionResultType<boolean>> {
