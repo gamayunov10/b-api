@@ -27,17 +27,23 @@ export class TestingController {
   )
   @HttpCode(204)
   async deleteAll() {
-    await this.dataSource.query(`DELETE FROM public.users;`);
-    await this.dataSource.query(`DELETE FROM public.device_auth_sessions;`);
-    await this.dataSource.query(`DELETE FROM public.user_email_confirmation;`);
-    await this.dataSource.query(`DELETE FROM public.user_password_recovery;`);
-    await this.dataSource.query(`DELETE FROM public.blogs;`);
-    await this.dataSource.query(`DELETE FROM public.posts;`);
-    await this.dataSource.query(`DELETE FROM public.post_likes;`);
-    await this.dataSource.query(`DELETE FROM public.comment_likes;`);
-    await this.dataSource.query(`DELETE FROM public.quiz_answers;`);
-    await this.dataSource.query(`DELETE FROM public.quiz_games;`);
-    await this.dataSource.query(`DELETE FROM public.quiz_players;`);
-    await this.dataSource.query(`DELETE FROM public.quiz_questions;`);
+    await this.dataSource.query(
+      `
+        DELETE FROM public.comment_likes;
+        DELETE FROM public.comments;
+        DELETE FROM public.user_email_confirmation;
+        DELETE FROM public.user_password_recovery;
+        DELETE FROM public.users; 
+        DELETE FROM public.device_auth_sessions;
+        DELETE FROM public.blogs;
+        DELETE FROM public.post_likes;
+        DELETE FROM public.posts;
+        DELETE FROM public.quiz_answers;
+        DELETE FROM public.quiz_games;
+        DELETE FROM public.quiz_players;
+        DELETE FROM public.quiz_questions;
+        DELETE FROM public.quiz_questions_games_quiz_games;
+        `,
+    );
   }
 }
