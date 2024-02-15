@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, EntityManager, ILike, Like } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { SuperAdminUserViewModel } from '../api/models/output/sa-user-view.model';

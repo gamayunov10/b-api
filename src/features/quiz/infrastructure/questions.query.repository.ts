@@ -19,14 +19,12 @@ export class QuestionsQueryRepository {
   async findRandomQuestions(
     manager: EntityManager,
   ): Promise<QuizQuestion[] | null> {
-    const result = await manager
+    return await manager
       .createQueryBuilder(QuizQuestion, 'q')
       .where('q.published = true')
       .orderBy('RANDOM()')
       .take(5)
       .getMany();
-
-    return result;
   }
 
   async findQuestions(

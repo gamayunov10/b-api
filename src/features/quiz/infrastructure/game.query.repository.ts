@@ -19,9 +19,6 @@ import { Paginator } from '../../../base/pagination/_paginator';
 import { QuizQuestion } from '../domain/quiz-question.entity';
 import { PlayerTopQueryModel } from '../api/models/input/player-top.query.model';
 import { TopGamePlayerViewModel } from '../api/models/output/top-game-player-view-model';
-import { Blog } from '../../blogs/domain/blog.entity';
-import { Comment } from '../../comments/domain/comment.entity';
-import { User } from '../../users/domain/user.entity';
 
 @Injectable()
 export class GameQueryRepository {

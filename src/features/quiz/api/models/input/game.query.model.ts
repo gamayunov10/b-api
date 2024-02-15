@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
-import { QueryParamsEnum } from '../../../../../base/enums/query-params.enum';
 import { SortDirection } from '../../../../../base/enums/sort-direction.enum';
 import { QueryGameParams } from '../../../../../base/enums/query-game-params.enum';
 
