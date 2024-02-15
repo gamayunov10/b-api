@@ -40,7 +40,7 @@ export class QuestionPublishUseCase
     );
 
     if (!result) {
-      throw new Error('Unexpected error ocurred while updating question');
+      throw new Error('Unexpected error occurred while updating question');
     }
 
     return result;
