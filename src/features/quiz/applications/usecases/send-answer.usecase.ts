@@ -2,6 +2,7 @@ import { CommandHandler } from '@nestjs/cqrs';
 import { DataSource, EntityManager } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { add } from 'date-fns';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
 import { ResultCode } from '../../../../base/enums/result-code.enum';
@@ -17,7 +18,7 @@ import { AnswerInputModel } from '../../api/models/input/answer-input-model';
 import { AnswerStatuses } from '../../../../base/enums/answer-statuses';
 import { QuizAnswer } from '../../domain/quiz-answer.entity';
 import { GameStatuses } from '../../../../base/enums/game-statuses';
-import { GameRepository } from '../../infrastructure/game.repository';
+import { GameFinishedEvent } from '../../event-emitter/events/game-finished.event';
 
 export class QuizSendAnswerCommand {
   constructor(
@@ -37,7 +38,7 @@ export class QuizSendAnswerUseCase extends TransactionBaseUseCase<
     private readonly transactionsRepository: TransactionsRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly gameQueryRepository: GameQueryRepository,
-    private readonly gameRepository: GameRepository,
+    private eventEmitter: EventEmitter2,
   ) {
     super(dataSource);
   }
@@ -138,8 +139,8 @@ export class QuizSendAnswerUseCase extends TransactionBaseUseCase<
           currentGame.playerTwo.id === currentPlayer.id)
       ) {
         if (
-          currentGame.finishingExpirationDate !== null &&
-          date > currentGame.finishingExpirationDate
+          currentGame.expGameDate !== null &&
+          date > currentGame.expGameDate
         ) {
           currentGame.finishGameDate = date;
           currentGame.status = GameStatuses.FINISHED;
@@ -167,7 +168,7 @@ export class QuizSendAnswerUseCase extends TransactionBaseUseCase<
 
         currentGame.status = GameStatuses.ACTIVE;
         currentGame.finishGameDate = null;
-        currentGame.finishingExpirationDate = add(new Date(), {
+        currentGame.expGameDate = add(new Date(), {
           seconds: 10,
         });
         await this.transactionsRepository.save(currentGame, manager);
@@ -177,30 +178,18 @@ export class QuizSendAnswerUseCase extends TransactionBaseUseCase<
     } finally {
       const date = new Date();
 
-      if (
-        currentGame.finishingExpirationDate !== null &&
-        date > currentGame.finishingExpirationDate
-      ) {
+      if (currentGame.expGameDate !== null && date > currentGame.expGameDate) {
         currentGame.finishGameDate = date;
         currentGame.status = GameStatuses.FINISHED;
 
         await this.transactionsRepository.save(currentGame, manager);
       }
 
-      setTimeout(async () => {
-        if (
-          currentGame.finishingExpirationDate !== null &&
-          date < currentGame.finishingExpirationDate
-        ) {
-          currentGame.finishGameDate = date;
-          currentGame.status = GameStatuses.FINISHED;
-
-          await this.gameRepository.finishGame(
-            currentGame.id,
-            currentGame.finishingExpirationDate,
-          );
-        }
-      }, 10000);
+      const gameFinishedEvent = new GameFinishedEvent();
+      gameFinishedEvent.gameId = currentGame.id;
+      gameFinishedEvent.expDate = currentGame.expGameDate;
+      gameFinishedEvent.date = date;
+      this.eventEmitter.emit('game.finished', gameFinishedEvent);
     }
 
     return {

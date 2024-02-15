@@ -10,6 +10,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.usecase';
 import { QuestionsRepository } from '../../features/quiz/infrastructure/questions.repository';
@@ -92,6 +93,7 @@ import { TransactionsRepository } from '../infrastructure/transactions.repositor
 import { QuizSendAnswerUseCase } from '../../features/quiz/applications/usecases/send-answer.usecase';
 import { GameFindUseCase } from '../../features/quiz/applications/usecases/find-game.usecase';
 import { CurrentGameFindUseCase } from '../../features/quiz/applications/usecases/find-current-game.usecase';
+import { GameFinishedListener } from '../../features/quiz/event-emitter/listeners/game-finished.listener';
 
 const controllers = [
   SAUsersController,
@@ -209,6 +211,7 @@ const strategies = [
     TypeOrmModule.forFeature([...entities]),
     CqrsModule,
     PassportModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [...controllers],
   providers: [
@@ -219,6 +222,7 @@ const strategies = [
     ...queryRepositories,
     ...typeORMRepositories,
     ...constraints,
+    GameFinishedListener,
   ],
 })
 export class MainModule implements NestModule {
