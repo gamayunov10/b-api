@@ -2,11 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Post } from '../../posts/domain/post.entity';
+import { User } from '../../users/domain/user.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -33,4 +36,11 @@ export class Blog {
     onUpdate: 'CASCADE',
   })
   post: Post;
+
+  @ManyToOne(() => User, (user) => user.blog, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user: User;
 }

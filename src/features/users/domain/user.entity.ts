@@ -11,6 +11,7 @@ import { CommentLike } from '../../comments/domain/comment-like.entity';
 import { Comment } from '../../comments/domain/comment.entity';
 import { DeviceAuthSessions } from '../../devices/domain/device.entity';
 import { QuizPlayer } from '../../quiz/domain/quiz-player';
+import { Blog } from '../../blogs/domain/blog.entity';
 
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
 import { UserPasswordRecovery } from './user-password-recovery.entity';
@@ -76,4 +77,10 @@ export class User {
     onUpdate: 'CASCADE',
   })
   player: QuizPlayer[];
+
+  @OneToMany(() => Blog, (blog) => blog.user, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  blog: Blog[];
 }
