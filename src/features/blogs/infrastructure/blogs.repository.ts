@@ -32,6 +32,21 @@ export class BlogsRepository {
     });
   }
 
+  async bindBlogWithUser(blogId: number, userId: number): Promise<boolean> {
+    return this.dataSource.transaction(async () => {
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .update(Blog)
+        .set({
+          ownerId: userId,
+        })
+        .where('id = :blogId', { blogId })
+        .execute();
+
+      return result.affected === 1;
+    });
+  }
+
   async updateBlog(
     blogInputModel: BlogInputModel,
     blogId: number,
@@ -45,7 +60,7 @@ export class BlogsRepository {
           description: blogInputModel.description,
           websiteUrl: blogInputModel.websiteUrl,
         })
-        .where('id = :id', { id: blogId })
+        .where('id = :blogId', { blogId })
         .execute();
 
       return result.affected === 1;
@@ -57,7 +72,7 @@ export class BlogsRepository {
       .createQueryBuilder()
       .delete()
       .from(Blog)
-      .where('id= :id', { id: blogId })
+      .where('id= :blogId', { blogId })
       .execute();
 
     return result.affected === 1;

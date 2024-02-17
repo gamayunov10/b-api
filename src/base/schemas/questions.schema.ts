@@ -6,7 +6,7 @@ import { PaginatorSchema } from './paginator.schema';
 
 export class QuestionsSchema extends PaginatorSchema {
   @ApiProperty({
-    type: QuestionViewModel,
+    type: Array(QuestionViewModel),
   })
   'items': QuestionViewModel[];
 }

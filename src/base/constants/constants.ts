@@ -1,5 +1,6 @@
 // Not found
 export const blogNotFound = 'Blog not found';
+export const blogIsAlreadyBounded = 'Cannot bound one blog twice';
 export const postNotFound = 'Post not found';
 export const commentNotFound = 'Comment not found';
 export const userNotFound = 'User not found';

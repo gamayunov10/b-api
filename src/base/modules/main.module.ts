@@ -94,6 +94,8 @@ import { QuizSendAnswerUseCase } from '../../features/quiz/applications/usecases
 import { GameFindUseCase } from '../../features/quiz/applications/usecases/find-game.usecase';
 import { CurrentGameFindUseCase } from '../../features/quiz/applications/usecases/find-current-game.usecase';
 import { GameFinishedListener } from '../../features/quiz/event-emitter/listeners/game-finished.listener';
+import { BlogBindWithUserUseCase } from '../../features/blogs/application/usecases/bind-blog-with-user.usecase';
+import { BloggerBlogsController } from '../../features/blogs/api/blogger-blogs.controller';
 
 const controllers = [
   SAUsersController,
@@ -106,6 +108,7 @@ const controllers = [
   CommentsController,
   SAQuizController,
   QuizController,
+  BloggerBlogsController,
 ];
 
 const services = [JwtService, AuthService];
@@ -167,6 +170,7 @@ const useCases = [
   QuizSendAnswerUseCase,
   GameFindUseCase,
   CurrentGameFindUseCase,
+  BlogBindWithUserUseCase,
 ];
 
 const repositories = [

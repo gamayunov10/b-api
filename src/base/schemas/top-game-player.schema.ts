@@ -6,7 +6,7 @@ import { PaginatorSchema } from './paginator.schema';
 
 export class TopGamePlayerSchema extends PaginatorSchema {
   @ApiProperty({
-    type: TopGamePlayerViewModel,
+    type: Array(TopGamePlayerViewModel),
   })
   'items': TopGamePlayerViewModel[];
 }

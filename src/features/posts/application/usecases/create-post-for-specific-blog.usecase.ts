@@ -9,10 +9,19 @@ import { ExceptionResultType } from '../../../../infrastructure/types/exceptions
 import {
   blogIdField,
   blogNotFound,
+  userIdField,
+  userNotFound,
 } from '../../../../base/constants/constants';
+import { Role } from '../../../../base/enums/roles.enum';
+import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 export class PostCreatePostForSpecificBlogCommand {
-  constructor(public postInputModel: PostInputModel, public blogId: string) {}
+  constructor(
+    public postInputModel: PostInputModel,
+    public blogId: string,
+    public userId?: string,
+    public role?: Role,
+  ) {}
 }
 
 @CommandHandler(PostCreatePostForSpecificBlogCommand)
@@ -22,6 +31,7 @@ export class PostCreatePostForSpecificBlogUseCase
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(
@@ -31,7 +41,9 @@ export class PostCreatePostForSpecificBlogUseCase
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogWithOwner(
+      +command.blogId,
+    );
 
     if (!blog) {
       return {
@@ -43,6 +55,32 @@ export class PostCreatePostForSpecificBlogUseCase
     }
 
     const blogName = blog.name;
+
+    if (command.role === Role.BLOGGER) {
+      if (isNaN(+command.userId)) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.usersQueryRepository.findUserById(
+        +command.userId,
+      );
+
+      if (!user) {
+        return {
+          data: false,
+          code: ResultCode.BadRequest,
+          field: userIdField,
+          message: userNotFound,
+        };
+      }
+
+      if (blog.userId !== +command.userId) {
+        return {
+          data: false,
+          code: ResultCode.Forbidden,
+        };
+      }
+    }
 
     const postId = await this.postsRepository.createPostForSpecificBlog(
       command.postInputModel,

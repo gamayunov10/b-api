@@ -17,6 +17,8 @@ import { blogIdField, blogNotFound } from '../../../base/constants/constants';
 import { UserIdFromHeaders } from '../../auth/decorators/user-id-from-headers.decorator';
 import { UsersQueryRepository } from '../../users/infrastructure/users.query.repository';
 import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
+import { BlogSchema } from '../../../base/schemas/blog-schema';
+import { PostSchema } from '../../../base/schemas/post-schema';
 
 import { SABlogQueryModel } from './models/input/sa-blog.query.model';
 import { BlogQueryModel } from './models/input/blog.query.model';
@@ -39,7 +41,7 @@ export class BlogsController {
     false,
     200,
     'Success',
-    false,
+    BlogSchema,
     false,
     false,
     false,
@@ -51,14 +53,14 @@ export class BlogsController {
     return this.blogsQueryRepository.findBlogs(query);
   }
 
-  @Get(':id/posts')
+  @Get(':blogId/posts')
   @SwaggerOptions(
     'Returns all posts for specified blog',
     true,
     false,
     200,
     'Success',
-    false,
+    PostSchema,
     false,
     false,
     false,
@@ -95,7 +97,7 @@ export class BlogsController {
     );
   }
 
-  @Get(':id')
+  @Get(':blogId')
   @SwaggerOptions(
     'Returns blog by id',
     true,
@@ -110,7 +112,7 @@ export class BlogsController {
     true,
     false,
   )
-  async findBlogById(@Param('id') blogId: string) {
+  async findBlogById(@Param('blogId') blogId: string) {
     if (isNaN(+blogId)) {
       throw new NotFoundException();
     }

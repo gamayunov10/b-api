@@ -1,29 +1,28 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 
-import { BlogsRepository } from '../../infrastructure/blogs.repository';
-import { BlogInputModel } from '../../api/models/input/blog-input-model';
-import { BlogsQueryRepository } from '../../infrastructure/blogs.query.repository';
+import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import {
   blogIdField,
+  blogIsAlreadyBounded,
   blogNotFound,
   userIdField,
   userNotFound,
 } from '../../../../base/constants/constants';
-import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
 import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
+import { BlogsQueryRepository } from '../../infrastructure/blogs.query.repository';
+import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { BlogOwnerStatus } from '../../../../base/enums/blog-owner.enum';
 
-export class BlogUpdateCommand {
-  constructor(
-    public blogInputModel: BlogInputModel,
-    public blogId: string,
-    public userId: string,
-  ) {}
+export class BlogBindWithUserCommand {
+  constructor(public blogId: string, public userId: string) {}
 }
 
-@CommandHandler(BlogUpdateCommand)
-export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
+@CommandHandler(BlogBindWithUserCommand)
+export class BlogBindWithUserUseCase
+  implements ICommandHandler<BlogBindWithUserCommand>
+{
   constructor(
     private readonly blogsRepository: BlogsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
@@ -31,7 +30,7 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
   ) {}
 
   async execute(
-    command: BlogUpdateCommand,
+    command: BlogBindWithUserCommand,
   ): Promise<ExceptionResultType<boolean>> {
     if (isNaN(+command.blogId) || isNaN(+command.userId)) {
       throw new NotFoundException();
@@ -40,11 +39,11 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
     const blog = await this.blogsQueryRepository.findBlogWithOwner(
       +command.blogId,
     );
-    console.log(blog);
+
     if (!blog) {
       return {
         data: false,
-        code: ResultCode.NotFound,
+        code: ResultCode.BadRequest,
         field: blogIdField,
         message: blogNotFound,
       };
@@ -61,16 +60,18 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
       };
     }
 
-    if (blog.userId !== +command.userId) {
+    if (blog.userId !== BlogOwnerStatus.NOT_BOUND) {
       return {
         data: false,
-        code: ResultCode.Forbidden,
+        code: ResultCode.BadRequest,
+        field: blogIdField,
+        message: blogIsAlreadyBounded,
       };
     }
 
-    await this.blogsRepository.updateBlog(
-      command.blogInputModel,
+    await this.blogsRepository.bindBlogWithUser(
       +command.blogId,
+      +command.userId,
     );
 
     return {

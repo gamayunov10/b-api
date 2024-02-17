@@ -11,14 +11,20 @@ import {
   blogNotFound,
   postIDField,
   postNotFound,
+  userIdField,
+  userNotFound,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
+import { Role } from '../../../../base/enums/roles.enum';
+import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 export class PostUpdatePostForSpecificBlogCommand {
   constructor(
     public postInputModel: PostInputModel,
     public blogId: string,
     public postId: string,
+    public userId?: string,
+    public role?: Role,
   ) {}
 }
 
@@ -30,6 +36,7 @@ export class PostUpdatePostForSpecificBlogUseCase
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(
@@ -39,7 +46,9 @@ export class PostUpdatePostForSpecificBlogUseCase
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogById(+command.blogId);
+    const blog = await this.blogsQueryRepository.findBlogWithOwner(
+      +command.blogId,
+    );
 
     if (!blog) {
       return {
@@ -61,6 +70,32 @@ export class PostUpdatePostForSpecificBlogUseCase
         field: postIDField,
         message: postNotFound,
       };
+    }
+
+    if (command.role === Role.BLOGGER) {
+      if (isNaN(+command.userId)) {
+        throw new NotFoundException();
+      }
+
+      const user = await this.usersQueryRepository.findUserById(
+        +command.userId,
+      );
+
+      if (!user) {
+        return {
+          data: false,
+          code: ResultCode.BadRequest,
+          field: userIdField,
+          message: userNotFound,
+        };
+      }
+
+      if (blog.userId !== +command.userId) {
+        return {
+          data: false,
+          code: ResultCode.Forbidden,
+        };
+      }
     }
 
     await this.postsRepository.updatePost(command.postInputModel, postId);

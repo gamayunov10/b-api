@@ -6,7 +6,7 @@ import { PaginatorSchema } from './paginator.schema';
 
 export class GameSchema extends PaginatorSchema {
   @ApiProperty({
-    type: GamePairViewModel,
+    type: Array(GamePairViewModel),
   })
   'items': GamePairViewModel[];
 }

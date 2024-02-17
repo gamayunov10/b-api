@@ -77,25 +77,13 @@ export class UsersQueryRepository {
         'u."createdAt" as "createdAt"',
       ])
       .from(User, 'u')
-      .where('id = :id', { id })
+      .where('u.id = :id', { id })
       .execute();
 
     const mappedUsers = await this.usersMapping(users);
 
     return mappedUsers[0];
   }
-
-  // async findUserEntityById(userId: number): Promise<User | null> {
-  //   try {
-  //     return await this.usersRepository
-  //       .createQueryBuilder('u')
-  //       .where(`u.id = :userId`, { userId })
-  //       .getOne();
-  //   } catch (e) {
-  //     console.log(e);
-  //     return null;
-  //   }
-  // }
 
   async findUserByIdBool(id: number): Promise<boolean> {
     if (isNaN(id)) {
