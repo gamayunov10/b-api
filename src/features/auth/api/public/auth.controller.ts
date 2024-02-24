@@ -309,7 +309,9 @@ export class AuthController {
       body.password,
     );
 
-    if (!userId) {
+    const userBanStatus = await this.usersQueryRepository.findUserById(+userId);
+
+    if (!userId || userBanStatus.banInfo.isBanned === true) {
       throw new UnauthorizedException();
     }
 

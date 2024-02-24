@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -15,6 +16,8 @@ import { Blog } from '../../blogs/domain/blog.entity';
 
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
 import { UserPasswordRecovery } from './user-password-recovery.entity';
+import { UserBanInfo } from './user-ban.entity';
+import { UserBanByBlogger } from './user-ban-by-blogger.entity';
 
 @Entity('users')
 export class User {
@@ -35,6 +38,22 @@ export class User {
 
   @Column({ type: 'boolean' })
   isConfirmed: boolean;
+
+  @OneToOne(() => UserBanInfo, (b) => b.user, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  userBanInfo: UserBanInfo;
+
+  @OneToOne(
+    () => UserBanByBlogger,
+    (userBanByBlogger) => userBanByBlogger.user,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+  )
+  userBanByBlogger: UserBanByBlogger;
 
   @OneToMany(() => DeviceAuthSessions, (d) => d.user, {
     onDelete: 'CASCADE',

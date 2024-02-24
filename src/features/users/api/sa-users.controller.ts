@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -21,10 +22,12 @@ import { ResultCode } from '../../../base/enums/result-code.enum';
 import { userIdField, userNotFound } from '../../../base/constants/constants';
 import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
+import { UserBanCommand } from '../application/usecases/ban-user.usecase';
 
 import { UserInputModel } from './models/input/user-input-model';
 import { UserQueryModel } from './models/input/user.query.model';
 import { SuperAdminUserViewModel } from './models/output/sa-user-view.model';
+import { UserBanInputModel } from './models/input/user-ban.input.model';
 
 @ApiTags('sa/users')
 @Controller('sa/users')
@@ -76,6 +79,38 @@ export class SAUsersController {
     );
 
     return this.usersQueryRepository.findUserById(userId);
+  }
+
+  @Put(':id/ban')
+  @SwaggerOptions(
+    'Ban/unban user',
+    false,
+    true,
+    204,
+    'No Content',
+    false,
+    'If the inputModel has incorrect values',
+    ErrorsMessages,
+    true,
+    false,
+    false,
+    false,
+  )
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(204)
+  async ban(
+    @Param('id') userId: string,
+    @Body() userBanInputModel: UserBanInputModel,
+  ) {
+    const result = await this.commandBus.execute(
+      new UserBanCommand(userBanInputModel, userId),
+    );
+
+    if (!result) {
+      return exceptionHandler(ResultCode.NotFound, userNotFound, userIdField);
+    }
+
+    return result;
   }
 
   @Delete(':id')

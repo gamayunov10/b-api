@@ -12,7 +12,16 @@ import { PostsQueryRepository } from '../../../src/features/posts/infrastructure
 import { PostViewModel } from '../../../src/features/posts/api/models/output/post-view.model';
 import { CommentInputModel } from '../../../src/features/comments/api/models/input/comment-input.model';
 import { createCommentInput } from '../utils/constants/comments.constant';
-import { userPassword } from '../utils/constants/users.constants';
+import {
+  createUserInput,
+  createUserInput2,
+  createUserInput3,
+  createUserInput4,
+  createUserInput5,
+  createUserInput6,
+  createUserInput7,
+  userPassword,
+} from '../utils/constants/users.constants';
 import { CommentsQueryRepository } from '../../../src/features/comments/infrastructure/comments.query.repository';
 import { CommentViewModel } from '../../../src/features/comments/api/models/output/comment-view.model';
 
@@ -38,17 +47,54 @@ export class UsersTestManager {
       .expect(201);
   }
 
-  async updateUser(
-    adminAccessToken: string,
-    updateModel: any,
-  ): Promise<Response> {
-    return supertest(this.app.getHttpServer())
-      .put('/sa/users')
-      .auth(adminAccessToken, {
-        type: 'bearer',
+  async createAndLoginUser(user: number) {
+    let createModel = createUserInput;
+
+    if (user === 2) {
+      createModel = createUserInput2;
+    }
+
+    if (user === 3) {
+      createModel = createUserInput3;
+    }
+
+    if (user === 4) {
+      createModel = createUserInput4;
+    }
+
+    if (user === 5) {
+      createModel = createUserInput5;
+    }
+
+    if (user === 6) {
+      createModel = createUserInput6;
+    }
+
+    if (user === 7) {
+      createModel = createUserInput7;
+    }
+
+    await supertest(this.app.getHttpServer())
+      .post('/sa/users')
+      .auth(basicAuthLogin, basicAuthPassword)
+      .send(createModel)
+      .expect(201);
+
+    const login = await supertest(this.app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        loginOrEmail: createModel.login,
+        password: createModel.password,
       })
-      .send(updateModel)
-      .expect(204);
+      .expect(200);
+
+    const token = login.body.accessToken;
+    const id = await this.getUserIdByLogin(createModel.login);
+
+    return {
+      token,
+      id,
+    };
   }
 
   async getUserIdByLogin(login: string): Promise<number> {
@@ -121,24 +167,6 @@ export class UsersTestManager {
       );
 
     return user?.passwordRecoveryCode;
-  }
-
-  async getEmailExpirationDate(loginOrEmail: string): Promise<Date | null> {
-    const user =
-      await this.usersQueryRepository.getUserByLoginOrEmailForTesting(
-        loginOrEmail,
-      );
-
-    return user?.emailExpirationDate;
-  }
-
-  async getPasswordExpirationDate(loginOrEmail: string): Promise<Date | null> {
-    const user =
-      await this.usersQueryRepository.getUserByLoginOrEmailForTesting(
-        loginOrEmail,
-      );
-
-    return user?.passwordExpirationDate;
   }
 
   async getDeviceId(loginOrEmail: string): Promise<string | null> {

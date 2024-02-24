@@ -215,7 +215,7 @@ describe('Users: POST sa/users', () => {
         .send(createUserInput)
         .expect(201);
 
-      expectCreatedUser(response, createUserInput);
+      expectCreatedUser(response, createUserInput, false, null);
     });
   });
 

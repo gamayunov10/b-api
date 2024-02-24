@@ -1,35 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { BlogInputModel } from '../api/models/input/blog-input-model';
 import { Blog } from '../domain/blog.entity';
+import { User } from '../../users/domain/user.entity';
 
 @Injectable()
 export class BlogsRepository {
+  private readonly logger = new Logger(BlogsRepository.name);
   constructor(
     @InjectRepository(Blog)
     private readonly blogsRepository: Repository<Blog>,
     @InjectDataSource() private dataSource: DataSource,
+    private readonly configService: ConfigService,
   ) {}
 
-  async createBlog(blogInputModel: BlogInputModel): Promise<number> {
-    return this.dataSource.transaction(async () => {
-      const blog = await this.dataSource
-        .createQueryBuilder()
-        .insert()
-        .into(Blog)
-        .values({
-          name: blogInputModel.name,
-          description: blogInputModel.description,
-          websiteUrl: blogInputModel.websiteUrl,
-          isMembership: false,
-        })
-        .returning('id')
-        .execute();
+  async createBlog(
+    blogInputModel: BlogInputModel,
+    user: User,
+  ): Promise<number | boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      return blog.identifiers[0].id;
-    });
+    try {
+      const blog = new Blog();
+      blog.user = user;
+      blog.name = blogInputModel.name;
+      blog.description = blogInputModel.description;
+      blog.websiteUrl = blogInputModel.websiteUrl;
+      blog.createdAt = new Date();
+      blog.isMembership = false;
+
+      const savedBlog = await queryRunner.manager.save(blog);
+
+      await queryRunner.commitTransaction();
+      return savedBlog.id;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(error);
+      }
+      return false;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async bindBlogWithUser(blogId: number, userId: number): Promise<boolean> {

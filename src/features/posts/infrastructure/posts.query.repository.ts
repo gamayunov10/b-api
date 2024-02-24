@@ -8,6 +8,7 @@ import { SABlogQueryModel } from '../../blogs/api/models/input/sa-blog.query.mod
 import { Post } from '../domain/post.entity';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { PostOutputModel } from '../api/models/output/post-output.model';
+import { PostLike } from '../domain/post-like.entity';
 
 export class PostsQueryRepository {
   constructor(
@@ -187,42 +188,42 @@ export class PostsQueryRepository {
     postId: number,
     userId?: number | null,
   ): Promise<PostViewModel | null> {
-    const post = await this.dataSource
-      .createQueryBuilder()
-      .select([
-        'p.id as id',
-        'p.title as title',
-        'p.shortDescription as "shortDescription"',
-        'p.content as content',
-        'b.id as "blogId"',
-        'b.name as "blogName"',
-        'p.createdAt as "createdAt"',
-      ])
-      .from(Post, 'p')
-      .leftJoin(Blog, 'b', 'b.id = p."blogId"')
+    const post = await this.postsRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.blog', 'b')
+      .leftJoinAndSelect('b.user', 'u')
+      .leftJoinAndSelect('u.userBanInfo', 'ubi')
       .addSelect(
-        `( SELECT COUNT(*)
-                    FROM (
-                        SELECT pl."postId"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."likeStatus" = 'Like'
-                    ))`,
+        (qb) =>
+          qb
+            .select(`COUNT(*)`)
+            .from(PostLike, 'pl')
+            .leftJoin('pl.user', 'u')
+            .leftJoin('u.userBanInfo', 'ubi')
+            .where('pl.postId = p.id')
+            .andWhere('ubi.isBanned = false')
+            .andWhere(`pl.likeStatus = 'Like'`),
         'likesCount',
       )
       .addSelect(
-        `( SELECT COUNT(*)
-                    FROM (
-                        SELECT pl."postId"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."likeStatus" = 'Dislike'
-                    ))`,
+        (qb) =>
+          qb
+            .select(`COUNT(*)`)
+            .from(PostLike, 'pl')
+            .leftJoin('pl.user', 'u')
+            .leftJoin('u.userBanInfo', 'ubi')
+            .where('pl.postId = p.id')
+            .andWhere('ubi.isBanned = false')
+            .andWhere(`pl.likeStatus = 'Dislike'`),
         'dislikesCount',
       )
       .addSelect(
-        `(SELECT pl."likeStatus"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."userId" = ${userId}
-                  )`,
+        (qb) =>
+          qb
+            .select('pl.likeStatus')
+            .from(PostLike, 'pl')
+            .where('pl.postId = p.id')
+            .andWhere('pl.userId = :userId', { userId }),
         'myStatus',
       )
       .addSelect(
@@ -232,7 +233,8 @@ export class PostsQueryRepository {
                         SELECT pl."addedAt", pl."userId", u."login"
                         FROM post_likes pl
                         LEFT JOIN users u on pl."userId" = u.id
-                        WHERE pl."postId" = p."id" AND pl."likeStatus" = 'Like'
+                        LEFT JOIN user_ban_info ubi on ubi.userId = u.id
+                        WHERE pl."postId" = p."id" AND pl."likeStatus" = 'Like' AND ubi.isBanned = false
                         ORDER BY "addedAt" DESC
                         LIMIT 3
                     ) row
@@ -240,8 +242,8 @@ export class PostsQueryRepository {
         'newestLikes',
       )
       .where('p.id = :postId', { postId })
+      .andWhere('ubi.isBanned = false')
       .getRawMany();
-
     const mappedPosts = await this.postsMapping(post);
 
     return mappedPosts[0];
@@ -292,22 +294,38 @@ export class PostsQueryRepository {
     return post?.id;
   }
 
+  async findPost(postId: number): Promise<Post | null> {
+    return await this.postsRepository
+      .createQueryBuilder('p')
+      .select([
+        'id as id',
+        'title as title',
+        '"shortDescription" as "shortDescription"',
+        'content as content',
+        '"blogId" as "blogId"',
+        '"blogName" as "blogName"',
+        '"createdAt" as "createdAt"',
+      ])
+      .where('p.id = :postId', { postId })
+      .getRawOne();
+  }
+
   private async postsMapping(posts: any): Promise<PostViewModel[]> {
     return posts.map((p) => {
       return {
-        id: p.id.toString(),
+        id: p.id?.toString(),
         title: p.title,
         shortDescription: p.shortDescription,
         content: p.content,
-        blogId: p.blogId.toString(),
+        blogId: p.blogId?.toString(),
         blogName: p.blogName,
         createdAt: p.createdAt,
         extendedLikesInfo: {
-          likesCount: +p.likesCount ?? 0,
-          dislikesCount: +p.dislikesCount ?? 0,
-          myStatus: p.myStatus ?? LikeStatus.NONE,
+          likesCount: +p.likesCount || 0,
+          dislikesCount: +p.dislikesCount || 0,
+          myStatus: p.myStatus || LikeStatus.NONE,
           newestLikes: p.newestLikes.map((l) => {
-            return { ...l, userId: l.userId.toString() };
+            return { ...l, userId: l.userId?.toString() };
           }),
         },
       };

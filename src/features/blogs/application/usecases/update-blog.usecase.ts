@@ -40,7 +40,7 @@ export class BlogUpdateUseCase implements ICommandHandler<BlogUpdateCommand> {
     const blog = await this.blogsQueryRepository.findBlogWithOwner(
       +command.blogId,
     );
-    console.log(blog);
+
     if (!blog) {
       return {
         data: false,

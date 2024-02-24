@@ -7,6 +7,7 @@ export const userNotFound = 'User not found';
 export const deviceNotFound = 'Device not found';
 export const questionNotFound = 'Question not found';
 export const gameNotFound = 'Game not found';
+export const userIsBanned = 'Current User is Banned';
 
 // Fields
 export const blogIdField = 'blogId';

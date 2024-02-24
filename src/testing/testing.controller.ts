@@ -32,6 +32,7 @@ export class TestingController {
         DELETE FROM public.comment_likes;
         DELETE FROM public.comments;
         DELETE FROM public.user_email_confirmation;
+        DELETE FROM public.user_ban_info;
         DELETE FROM public.user_password_recovery;
         DELETE FROM public.users; 
         DELETE FROM public.device_auth_sessions;

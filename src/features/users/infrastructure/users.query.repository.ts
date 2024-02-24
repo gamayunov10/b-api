@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource, EntityManager } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { UserQueryModel } from '../api/models/input/user.query.model';
 import { SuperAdminUserViewModel } from '../api/models/output/sa-user-view.model';
@@ -12,10 +13,18 @@ import { UserPasswordRecovery } from '../domain/user-password-recovery.entity';
 import { isValidUuid } from '../../../base/utils/is-valid-uuid';
 import { UserEmailConfirmation } from '../domain/user-email-confirmation.entity';
 import { DeviceAuthSessions } from '../../devices/domain/device.entity';
+import { BanStatus } from '../../../base/enums/ban-status.enum';
+import { UserBloggerQueryModel } from '../api/models/input/user-blogger.query.model';
+import { BloggerUserViewModel } from '../api/models/output/blogger-user-view.model';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  private readonly logger = new Logger(UsersQueryRepository.name);
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly configService: ConfigService,
+  ) {}
 
   async findUserEntityById(
     userId: string,
@@ -27,56 +36,151 @@ export class UsersQueryRepository {
         .where('u.id = :userId', { userId })
         .getOne();
     } catch (e) {
-      console.error(e);
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
+      return null;
+    }
+  }
+
+  async findUserEntityByIdWithoutManager(userId: number): Promise<User | null> {
+    try {
+      return await this.usersRepository
+        .createQueryBuilder('u')
+        .where('u.id = :userId', { userId })
+        .getOne();
+    } catch (e) {
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
+      return null;
+    }
+  }
+
+  async findUsersBannedByBlogger(
+    query: UserBloggerQueryModel,
+    blogId: string,
+  ): Promise<Paginator<BloggerUserViewModel[]>> {
+    const sortDirection = query.sortDirection.toUpperCase();
+
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.userBanByBlogger', 'ban')
+      .leftJoinAndSelect('ban.blog', 'b')
+      .where(`${query.searchLoginTerm ? 'u.login ILIKE :loginTerm' : ''}`, {
+        loginTerm: `%${query.searchLoginTerm}%`,
+      })
+      .andWhere(`ban.isBanned = true`)
+      .andWhere(`b.id = :blogId`, {
+        blogId,
+      })
+      .orderBy(
+        `u."${query.sortBy}" ${
+          query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
+        }`,
+        sortDirection as 'ASC' | 'DESC',
+      )
+      .limit(+query.pageSize)
+      .offset((+query.pageNumber - 1) * +query.pageSize);
+
+    const users = await queryBuilder.getMany();
+    const totalCount = await queryBuilder.getCount();
+
+    return Paginator.paginate({
+      pageNumber: query.pageNumber,
+      pageSize: query.pageSize,
+      totalCount: totalCount,
+      items: await this.usersMappingByBlogger(users),
+    });
+  }
+
+  async findUserBanInfo(userId: number, blogId: number): Promise<User | null> {
+    try {
+      return await this.usersRepository
+        .createQueryBuilder('u')
+        .leftJoinAndSelect('u.userBanByBlogger', 'ban')
+        .leftJoinAndSelect('ban.blog', 'b')
+        .where(`ban.isBanned = true`)
+        .andWhere(`ban."blogId" = :blogId`, {
+          blogId,
+        })
+        .getOne();
+    } catch (e) {
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
       return null;
     }
   }
 
   async findUsers(query: UserQueryModel) {
-    const filter = usersFilter(query.searchLoginTerm, query.searchEmailTerm);
-    const sortDirection = query.sortDirection.toUpperCase();
-    const users = await this.dataSource
-      .createQueryBuilder()
-      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
-      .from(User, 'u')
-      .where('u.login ILike :login', { login: filter.login })
-      .orWhere('u.email ILike :email', { email: filter.email })
-      .orderBy(
-        `"${query.sortBy}" ${
-          query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
-        }`,
-        sortDirection as 'ASC' | 'DESC',
-      )
-      .skip((+query.pageNumber - 1) * +query.pageSize)
-      .take(+query.pageSize)
-      .getMany();
+    try {
+      const filter = usersFilter(
+        query.searchLoginTerm,
+        query.searchEmailTerm,
+        query.banStatus,
+      );
+      const sortDirection = query.sortDirection.toUpperCase();
 
-    const totalCount = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(User, 'u')
-      .where('u.login ILIKE :login', { login: filter.login })
-      .orWhere('u.email ILIKE :email', { email: filter.email })
-      .getCount();
+      const queryBuilder = this.usersRepository
+        .createQueryBuilder('u')
+        .leftJoinAndSelect('u.userBanInfo', 'ubi')
+        .where(
+          query.searchLoginTerm || query.searchEmailTerm
+            ? `(u.login ILIKE :login OR u.email ILIKE :email)`
+            : 'u.login IS NOT NULL',
+          {
+            login: `%${query.searchLoginTerm}%`,
+            email: `%${query.searchEmailTerm}%`,
+          },
+        )
+        .andWhere(
+          `${
+            query.banStatus === BanStatus.BANNED ||
+            query.banStatus === BanStatus.NOT_BANNED
+              ? 'ubi.isBanned = :banStatus'
+              : 'ubi.isBanned IS NOT NULL'
+          }`,
+          { banStatus: filter.banStatus },
+        )
+        .orderBy(
+          `u.${query.sortBy} ${
+            query.sortBy.toLowerCase() !== 'createdat' ? 'COLLATE "C"' : ''
+          }`,
+          sortDirection as 'ASC' | 'DESC',
+        )
+        .limit(+query.pageSize)
+        .offset((+query.pageNumber - 1) * +query.pageSize);
 
-    return Paginator.paginate({
-      pageNumber: +query.pageNumber,
-      pageSize: +query.pageSize,
-      totalCount: totalCount,
-      items: await this.usersMapping(users),
-    });
+      const users = await queryBuilder.getMany();
+      const totalCount = await queryBuilder.getCount();
+
+      return Paginator.paginate({
+        pageNumber: +query.pageNumber,
+        pageSize: +query.pageSize,
+        totalCount: totalCount,
+        items: await this.usersEntityMapping(users),
+      });
+    } catch (e) {
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
+    }
   }
 
   async findUserById(id: number): Promise<SuperAdminUserViewModel> {
-    const users = await this.dataSource
-      .createQueryBuilder()
+    const users = await this.usersRepository
+      .createQueryBuilder('u')
       .select([
         'u.id as id',
         'u.login as login',
         'u.email as email',
         'u."createdAt" as "createdAt"',
+        'b.isBanned as "isBanned"',
+        'b.banReason as "banReason"',
+        'b.banDate as "banDate"',
       ])
-      .from(User, 'u')
+      .leftJoin('u.userBanInfo', 'b')
       .where('u.id = :id', { id })
       .execute();
 
@@ -232,6 +336,22 @@ export class UsersQueryRepository {
     return users[0] as UserTestManagerModel;
   }
 
+  private async usersMappingByBlogger(
+    array: User[],
+  ): Promise<BloggerUserViewModel[]> {
+    return array.map((u) => {
+      return {
+        id: u.id.toString(),
+        login: u.login,
+        banInfo: {
+          isBanned: u.userBanByBlogger.isBanned,
+          banDate: u.userBanByBlogger.banDate,
+          banReason: u.userBanByBlogger.banReason,
+        },
+      };
+    });
+  }
+
   private async usersMapping(array: any): Promise<SuperAdminUserViewModel[]> {
     return array.map((u) => {
       return {
@@ -239,6 +359,29 @@ export class UsersQueryRepository {
         login: u.login,
         email: u.email,
         createdAt: u.createdAt,
+        banInfo: {
+          isBanned: u.isBanned,
+          banDate: u.banDate,
+          banReason: u.banReason,
+        },
+      };
+    });
+  }
+
+  private async usersEntityMapping(
+    array: any,
+  ): Promise<SuperAdminUserViewModel[]> {
+    return array.map((u) => {
+      return {
+        id: u.id.toString(),
+        login: u.login,
+        email: u.email,
+        createdAt: u.createdAt,
+        banInfo: {
+          isBanned: u.userBanInfo.isBanned,
+          banDate: u.userBanInfo.banDate,
+          banReason: u.userBanInfo.banReason,
+        },
       };
     });
   }

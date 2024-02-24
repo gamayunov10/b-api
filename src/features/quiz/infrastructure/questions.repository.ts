@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { PublishedStatuses } from 'src/base/enums/published-statuses';
 
 import { QuizQuestion } from '../domain/quiz-question.entity';
 import { QuestionInputModel } from '../api/models/input/question-input-model';

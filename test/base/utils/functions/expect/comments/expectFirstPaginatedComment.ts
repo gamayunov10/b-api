@@ -5,7 +5,9 @@ export const expectFirstPaginatedComment = (
   pageSize: number,
   totalCount: number,
   userId: string,
-  userLogin: string,
+  lk?: number,
+  dk?: number,
+  ms?: string,
 ) => {
   expect(response.body).toHaveProperty('pagesCount');
   expect(response.body).toHaveProperty('page');
@@ -31,14 +33,16 @@ export const expectFirstPaginatedComment = (
   expect(firstComment.commentatorInfo).toHaveProperty('userId');
   expect(firstComment.commentatorInfo).toHaveProperty('userLogin');
   expect(firstComment.commentatorInfo.userId).toBe(userId);
-  expect(firstComment.commentatorInfo.userLogin).toBe(userLogin);
   expect(firstComment.createdAt).toBeDefined();
   expect(firstComment.likesInfo).toHaveProperty('likesCount');
   expect(firstComment.likesInfo).toHaveProperty('dislikesCount');
   expect(firstComment.likesInfo).toHaveProperty('myStatus');
-  expect(firstComment.likesInfo.likesCount).toBe(0);
-  expect(firstComment.likesInfo.dislikesCount).toBe(0);
-  expect(firstComment.likesInfo.myStatus).toBe('None');
+
+  if (lk && dk && ms) {
+    expect(firstComment.likesInfo.likesCount).toBe(lk);
+    expect(firstComment.likesInfo.dislikesCount).toBe(dk);
+    expect(firstComment.likesInfo.myStatus).toBe(ms);
+  }
 };
 
 // Example

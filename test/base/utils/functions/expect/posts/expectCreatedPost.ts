@@ -41,7 +41,7 @@ export const expectCreatedPost = (
 //   "blogName": "string",
 //   "createdAt": "2024-01-04T06:41:46.304Z",
 //   "extendedLikesInfo": {
-//   "likesCount": 0,
+//     "likesCount": 0,
 //     "dislikesCount": 0,
 //     "myStatus": "None",
 //     "newestLikes": [

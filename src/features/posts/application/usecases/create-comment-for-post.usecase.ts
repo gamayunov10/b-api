@@ -5,11 +5,16 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 import { ResultCode } from '../../../../base/enums/result-code.enum';
 import { ExceptionResultType } from '../../../../infrastructure/types/exceptions.types';
 import {
+  blogIdField,
+  blogNotFound,
   postIDField,
   postNotFound,
+  userIsBanned,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
 import { CommentInputModel } from '../../../comments/api/models/input/comment-input.model';
+import { BlogsQueryRepository } from '../../../blogs/infrastructure/blogs.query.repository';
+import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
 
 export class PostCreateCommentCommand {
   constructor(
@@ -26,6 +31,8 @@ export class PostCreateCommentUseCase
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async execute(
@@ -39,9 +46,7 @@ export class PostCreateCommentUseCase
       throw new ForbiddenException();
     }
 
-    const post = await this.postsQueryRepository.checkExistenceOfPost(
-      +command.postId,
-    );
+    const post = await this.postsQueryRepository.findPost(+command.postId);
 
     if (!post) {
       return {
@@ -49,6 +54,34 @@ export class PostCreateCommentUseCase
         code: ResultCode.NotFound,
         field: postIDField,
         message: postNotFound,
+      };
+    }
+
+    const blog = await this.blogsQueryRepository.findBlogEntity(post.blogId);
+
+    if (!blog) {
+      return {
+        data: false,
+        code: ResultCode.NotFound,
+        field: blogIdField,
+        message: blogNotFound,
+      };
+    }
+
+    const blogBan = await this.usersQueryRepository.findUserBanInfo(
+      +command.userId,
+      blog.id,
+    );
+
+    if (
+      blogBan.userBanByBlogger.isBanned === true &&
+      blogBan.id === +command.userId &&
+      blogBan.userBanByBlogger.blog.id === blog.id
+    ) {
+      return {
+        data: false,
+        code: ResultCode.Forbidden,
+        message: userIsBanned,
       };
     }
 

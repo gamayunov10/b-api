@@ -5,6 +5,9 @@ export const expectCreatedComment = (
   commentInputModel: CommentInputModel,
   userId: string,
   userLogin: string,
+  likesCount = 0,
+  dislikesCount = 0,
+  myStatus = 'None',
 ) => {
   expect(response.body).toHaveProperty('id');
   expect(response.body).toHaveProperty('content');
@@ -24,9 +27,9 @@ export const expectCreatedComment = (
   expect(response.body.commentatorInfo.userId).toBe(userId);
   expect(response.body.commentatorInfo.userLogin).toBe(userLogin);
   expect(response.body.createdAt).toBeDefined();
-  expect(response.body.likesInfo.likesCount).toBe(0);
-  expect(response.body.likesInfo.dislikesCount).toBe(0);
-  expect(response.body.likesInfo.myStatus).toBe('None');
+  expect(response.body.likesInfo.likesCount).toBe(likesCount);
+  expect(response.body.likesInfo.dislikesCount).toBe(dislikesCount);
+  expect(response.body.likesInfo.myStatus).toBe(myStatus);
 };
 
 // Example

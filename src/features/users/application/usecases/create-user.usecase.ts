@@ -12,7 +12,7 @@ export class UserCreateCommand {
 export class UserCreateUseCase implements ICommandHandler<UserCreateCommand> {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async execute(command: UserCreateCommand): Promise<number> {
+  async execute(command: UserCreateCommand) {
     const hash = await bcrypt.hash(command.userInputModel.password, 10);
     return this.usersRepository.createUser(command.userInputModel, hash);
   }

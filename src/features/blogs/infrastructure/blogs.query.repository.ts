@@ -186,6 +186,20 @@ export class BlogsQueryRepository {
     return blog[0];
   }
 
+  async findBlogEntity(blogId: number): Promise<Blog | null> {
+    const blog = await this.blogsRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.user', 'u')
+      .where('b.id = :blogId', { blogId })
+      .getOne();
+
+    if (!blog) {
+      return null;
+    }
+
+    return blog;
+  }
+
   private async blogsMapping(array: any): Promise<BlogViewModel[]> {
     return array.map((b) => {
       return {

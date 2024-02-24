@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ConfigService } from '@nestjs/config';
 
 import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.usecase';
 import { QuestionsRepository } from '../../features/quiz/infrastructure/questions.repository';
@@ -96,6 +97,10 @@ import { CurrentGameFindUseCase } from '../../features/quiz/applications/usecase
 import { GameFinishedListener } from '../../features/quiz/event-emitter/listeners/game-finished.listener';
 import { BlogBindWithUserUseCase } from '../../features/blogs/application/usecases/bind-blog-with-user.usecase';
 import { BloggerBlogsController } from '../../features/blogs/api/blogger-blogs.controller';
+import { UserBanUseCase } from '../../features/users/application/usecases/ban-user.usecase';
+import { BloggerUsersController } from '../../features/users/api/blogger-users.controller';
+import { UserBanByBloggerUseCase } from '../../features/users/application/usecases/ban-user-by-blogger.usecase';
+import { BloggerGetBannedUsersUseCase } from '../../features/users/application/usecases/blogger-get-banned-users.usecase';
 
 const controllers = [
   SAUsersController,
@@ -109,6 +114,7 @@ const controllers = [
   SAQuizController,
   QuizController,
   BloggerBlogsController,
+  BloggerUsersController,
 ];
 
 const services = [JwtService, AuthService];
@@ -171,6 +177,9 @@ const useCases = [
   GameFindUseCase,
   CurrentGameFindUseCase,
   BlogBindWithUserUseCase,
+  UserBanUseCase,
+  UserBanByBloggerUseCase,
+  BloggerGetBannedUsersUseCase,
 ];
 
 const repositories = [
@@ -227,6 +236,7 @@ const strategies = [
     ...typeORMRepositories,
     ...constraints,
     GameFinishedListener,
+    ConfigService,
   ],
 })
 export class MainModule implements NestModule {

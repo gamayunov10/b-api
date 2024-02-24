@@ -10,6 +10,7 @@ import {
 
 import { Post } from '../../posts/domain/post.entity';
 import { User } from '../../users/domain/user.entity';
+import { UserBanByBlogger } from '../../users/domain/user-ban-by-blogger.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -30,6 +31,16 @@ export class Blog {
 
   @Column({ type: 'boolean' })
   isMembership: boolean;
+
+  @OneToMany(
+    () => UserBanByBlogger,
+    (userBanByBlogger) => userBanByBlogger.blog,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+  )
+  userBanByBlogger: UserBanByBlogger[];
 
   @OneToMany(() => Post, (post) => post.blog, {
     onDelete: 'CASCADE',

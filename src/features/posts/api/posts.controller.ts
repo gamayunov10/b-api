@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { PostsQueryRepository } from '../infrastructure/posts.query.repository';
 import { exceptionHandler } from '../../../infrastructure/exception-filters/exception.handler';
@@ -207,7 +207,6 @@ export class PostsController {
     "If post with specified postId doesn't exists",
     false,
   )
-  @ApiBasicAuth('Bearer')
   @UseGuards(JwtBearerGuard)
   @HttpCode(204)
   async postLikeStatus(
