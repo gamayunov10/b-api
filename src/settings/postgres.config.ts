@@ -47,10 +47,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
     UserBanByBlogger,
     BlogBan,
   ],
-  // ssl: true,
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 };
