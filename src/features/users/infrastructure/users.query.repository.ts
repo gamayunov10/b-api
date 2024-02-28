@@ -16,6 +16,7 @@ import { DeviceAuthSessions } from '../../devices/domain/device.entity';
 import { BanStatus } from '../../../base/enums/ban-status.enum';
 import { UserBloggerQueryModel } from '../api/models/input/user-blogger.query.model';
 import { BloggerUserViewModel } from '../api/models/output/blogger-user-view.model';
+import { IUsersSelect } from '../api/models/select/users.select';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -370,7 +371,9 @@ export class UsersQueryRepository {
     });
   }
 
-  private async usersMapping(array: any): Promise<SuperAdminUserViewModel[]> {
+  private async usersMapping(
+    array: IUsersSelect[],
+  ): Promise<SuperAdminUserViewModel[]> {
     return array.map((u) => {
       return {
         id: u.id.toString(),
@@ -387,7 +390,7 @@ export class UsersQueryRepository {
   }
 
   private async usersEntityMapping(
-    array: any,
+    array: User[],
   ): Promise<SuperAdminUserViewModel[]> {
     return array.map((u) => {
       return {

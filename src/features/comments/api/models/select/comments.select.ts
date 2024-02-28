@@ -1,6 +1,6 @@
 import { LikeStatus } from '../../../../../base/enums/like_status.enum';
 
-export interface ICommentsForBlog {
+export interface ICommentsSelect {
   id: number;
   content: string;
   userId: number;
@@ -9,8 +9,4 @@ export interface ICommentsForBlog {
   likesCount?: number;
   dislikesCount?: number;
   myStatus?: LikeStatus;
-  postId: number;
-  title: string;
-  blogId: number;
-  blogName: string;
 }

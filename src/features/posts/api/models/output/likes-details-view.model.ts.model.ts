@@ -1,5 +1,5 @@
 export class LikesDetailsViewModel {
   addedAt: Date;
-  userId: number;
+  userId: string;
   login: string;
 }

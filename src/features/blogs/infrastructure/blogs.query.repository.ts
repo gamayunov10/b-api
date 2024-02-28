@@ -9,6 +9,8 @@ import { blogsFilter } from '../../../base/pagination/blogs-filter.paginator';
 import { Blog } from '../domain/blog.entity';
 import { BlogOwnerStatus } from '../../../base/enums/blog-owner.enum';
 import { BlogWithOwnerViewModel } from '../api/models/output/blog-with-owner-view.model';
+import { IFindBlogsWithBanInfoSelect } from '../api/models/select/find-blogs-with-ban-info.select';
+import { IBlogsSelect } from '../api/models/select/blogs.select';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -196,8 +198,8 @@ export class BlogsQueryRepository {
     return blog;
   }
 
-  private async blogsMapping(array: any): Promise<BlogViewModel[]> {
-    return array.map((b) => {
+  private async blogsMapping(array: IBlogsSelect[]): Promise<BlogViewModel[]> {
+    return array.map((b: IBlogsSelect) => {
       return {
         id: b.id.toString(),
         name: b.name,
@@ -209,8 +211,10 @@ export class BlogsQueryRepository {
     });
   }
 
-  private async SABlogsMapping(array: any): Promise<BlogViewModel[]> {
-    return array.map((b) => {
+  private async SABlogsMapping(
+    array: IFindBlogsWithBanInfoSelect[],
+  ): Promise<BlogViewModel[]> {
+    return array.map((b: IFindBlogsWithBanInfoSelect) => {
       return {
         id: b.id.toString(),
         name: b.name,

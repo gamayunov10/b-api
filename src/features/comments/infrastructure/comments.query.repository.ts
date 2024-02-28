@@ -10,7 +10,8 @@ import { User } from '../../users/domain/user.entity';
 import { Comment } from '../domain/comment.entity';
 import { CommentLike } from '../domain/comment-like.entity';
 import { BloggerCommentsViewModel } from '../../blogs/api/models/output/blogger-comments-view.model';
-import { ICommentsForBlog } from '../../blogs/api/models/select/comments-for-blogger.select';
+import { ICommentsForBlogSelect } from '../api/models/select/comments-for-blogger.select';
+import { ICommentsSelect } from '../api/models/select/comments.select';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -265,7 +266,9 @@ export class CommentsQueryRepository {
     };
   }
 
-  private async commentsMapping(comments: any): Promise<CommentViewModel[]> {
+  private async commentsMapping(
+    comments: ICommentsSelect[],
+  ): Promise<CommentViewModel[]> {
     return comments.map((c) => {
       return {
         id: c.id.toString(),
@@ -285,9 +288,9 @@ export class CommentsQueryRepository {
   }
 
   private async commentsMappingForBlogger(
-    comments: ICommentsForBlog[],
+    comments: ICommentsForBlogSelect[],
   ): Promise<BloggerCommentsViewModel[]> {
-    return comments.map((c: ICommentsForBlog) => {
+    return comments.map((c: ICommentsForBlogSelect) => {
       return {
         id: c.id.toString(),
         content: c.content,

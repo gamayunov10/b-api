@@ -1,4 +1,4 @@
 export class CommentatorInfoViewModel {
-  userId: number;
+  userId: string;
   userLogin: string;
 }
