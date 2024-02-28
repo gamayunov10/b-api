@@ -70,7 +70,7 @@ export class BlogsController {
   )
   async findPostsByBlogId(
     @Query() query: SABlogQueryModel,
-    @Param('id') blogId: string,
+    @Param('blogId') blogId: string,
     @UserIdFromHeaders('id') userId: string,
   ) {
     if (isNaN(+blogId)) {
@@ -90,7 +90,7 @@ export class BlogsController {
       checkedUserId = +userId;
     }
 
-    return await this.postsQueryRepository.findPostsByBlogId(
+    return await this.postsQueryRepository.findPostsForBlog(
       query,
       +blogId,
       checkedUserId,

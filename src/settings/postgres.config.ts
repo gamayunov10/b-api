@@ -16,6 +16,7 @@ import { QuizGame } from '../features/quiz/domain/quiz-game.entity';
 import { QuizPlayer } from '../features/quiz/domain/quiz-player';
 import { UserBanInfo } from '../features/users/domain/user-ban.entity';
 import { UserBanByBlogger } from '../features/users/domain/user-ban-by-blogger.entity';
+import { BlogBan } from '../features/blogs/domain/blog-ban.entity';
 
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -44,6 +45,7 @@ export const postgresConfig: TypeOrmModuleOptions = {
     QuizQuestion,
     UserBanInfo,
     UserBanByBlogger,
+    BlogBan,
   ],
   ssl: true,
   extra: {

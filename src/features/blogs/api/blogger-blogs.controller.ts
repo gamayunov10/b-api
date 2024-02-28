@@ -40,6 +40,8 @@ import { PostCreatePostForSpecificBlogCommand } from '../../posts/application/us
 import { PostUpdatePostForSpecificBlogCommand } from '../../posts/application/usecases/update-post-for-specific-blog.usecase';
 import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
 import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.usecase';
+import { BlogCommentSchema } from '../../../base/schemas/blog-comment-schema';
+import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
 
 import { BlogQueryModel } from './models/input/blog.query.model';
 import { BlogViewModel } from './models/output/blog-view.model';
@@ -52,6 +54,7 @@ export class BloggerBlogsController {
     private commandBus: CommandBus,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get()
@@ -79,6 +82,33 @@ export class BloggerBlogsController {
     }
 
     return this.blogsQueryRepository.findBlogsByOwnerId(query, +userId);
+  }
+
+  @Get('comments')
+  @SwaggerOptions(
+    'Returns all comments for all posts inside all current user blogs',
+    true,
+    false,
+    200,
+    'Success',
+    BlogCommentSchema,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+  )
+  @UseGuards(JwtBearerGuard)
+  async findCommentsForBlogger(
+    @Query() query: BlogQueryModel,
+    @UserIdFromGuard() userId: string,
+  ) {
+    if (isNaN(+userId)) {
+      throw new UnauthorizedException();
+    }
+
+    return this.commentsQueryRepository.findCommentsForBlogger(query, +userId);
   }
 
   @Get(':blogId/posts')

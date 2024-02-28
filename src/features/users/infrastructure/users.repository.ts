@@ -275,7 +275,7 @@ export class UsersRepository {
       } else {
         await this.usersRepository
           .createQueryBuilder('u')
-          .update('u.userBanByBlogger')
+          .update('u.userBanInfo')
           .set({
             isBanned: true,
             banReason: query.banReason,

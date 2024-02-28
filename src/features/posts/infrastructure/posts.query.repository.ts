@@ -1,5 +1,7 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { PostViewModel } from '../api/models/output/post-view.model';
 import { LikeStatus } from '../../../base/enums/like_status.enum';
@@ -9,13 +11,108 @@ import { Post } from '../domain/post.entity';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { PostOutputModel } from '../api/models/output/post-output.model';
 import { PostLike } from '../domain/post-like.entity';
+import { PostQueryModel } from '../api/models/input/post.query.model';
 
 export class PostsQueryRepository {
+  private readonly logger = new Logger(PostsQueryRepository.name);
   constructor(
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
     @InjectDataSource() private dataSource: DataSource,
+    private readonly configService: ConfigService,
   ) {}
+
+  async findPostsForBlog(
+    query: PostQueryModel,
+    blogId: number,
+    userId: number,
+  ): Promise<Paginator<PostViewModel[]>> {
+    try {
+      const sortDirection = query.sortDirection.toUpperCase();
+
+      const queryBuilder = this.postsRepository
+        .createQueryBuilder('p')
+        .select([
+          'p.id as id',
+          'p.title as title',
+          'p.shortDescription as "shortDescription"',
+          'p.content as content',
+          'b.id as "blogId"',
+          'b.name as "blogName"',
+          'p.createdAt as "createdAt"',
+        ])
+        .addSelect(
+          (qb) =>
+            qb
+              .select(`COUNT(*)`)
+              .from(PostLike, 'pl')
+              .where('p."id" = pl."postId"')
+              .andWhere('pl."likeStatus" = \'Like\''),
+          'likesCount',
+        )
+        .addSelect(
+          (qb) =>
+            qb
+              .select(`COUNT(*)`)
+              .from(PostLike, 'pl')
+              .where('p."id" = pl."postId"')
+              .andWhere('pl."likeStatus" = \'Dislike\''),
+          'dislikesCount',
+        )
+        .addSelect(
+          (qb) =>
+            qb
+              .select('pl.likeStatus')
+              .from(PostLike, 'pl')
+              .where('p."id" = pl."postId"')
+              .andWhere('pl."userId" = :userId', { userId }),
+          'myStatus',
+        )
+        .addSelect(
+          `COALESCE((
+                    SELECT json_agg(row)
+                    FROM (
+                        SELECT pl."addedAt", pl."userId", u."login"
+                        FROM post_likes pl
+                        LEFT JOIN users u on pl."userId" = u.id
+                        LEFT JOIN user_ban_info ubi ON ubi.userId =  u.id
+                        WHERE pl."postId" = p."id" AND pl."likeStatus" = 'Like' AND ubi.is_banned = false
+                        ORDER BY "addedAt" DESC
+                        LIMIT 3
+                    ) row
+                ),'[]')`,
+          'newestLikes',
+        )
+        .leftJoin('p.blog', 'b')
+        .leftJoin('b.blogBan', 'bb')
+        .leftJoin('b.user', 'u')
+        .leftJoin('u.userBanInfo', 'ubi')
+        .where('b.id = :blogId', { blogId })
+        .orderBy(
+          `p."${query.sortBy}" ${
+            query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
+          }`,
+          sortDirection as 'ASC' | 'DESC',
+        )
+        .limit(+query.pageSize)
+        .offset((+query.pageNumber - 1) * +query.pageSize);
+
+      const posts = await queryBuilder.getRawMany();
+      const totalCount = await queryBuilder.getCount();
+
+      return Paginator.paginate({
+        pageNumber: Number(query.pageNumber),
+        pageSize: Number(query.pageSize),
+        totalCount: totalCount,
+        items: await this.postsMapping(posts),
+      });
+    } catch (e) {
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
+      return null;
+    }
+  }
 
   async findPosts(
     query: SABlogQueryModel,
@@ -190,9 +287,19 @@ export class PostsQueryRepository {
   ): Promise<PostViewModel | null> {
     const post = await this.postsRepository
       .createQueryBuilder('p')
-      .leftJoinAndSelect('p.blog', 'b')
-      .leftJoinAndSelect('b.user', 'u')
-      .leftJoinAndSelect('u.userBanInfo', 'ubi')
+      .select([
+        'p.id as id',
+        'p.title as title',
+        'p.shortDescription as "shortDescription"',
+        'p.content as content',
+        'b.id as "blogId"',
+        'b.name as "blogName"',
+        'p.createdAt as "createdAt"',
+      ])
+      .leftJoin('p.blog', 'b')
+      .leftJoin('b.blogBan', 'bb')
+      .leftJoin('b.user', 'u')
+      .leftJoin('u.userBanInfo', 'ubi')
       .addSelect(
         (qb) =>
           qb
@@ -243,7 +350,9 @@ export class PostsQueryRepository {
       )
       .where('p.id = :postId', { postId })
       .andWhere('ubi.isBanned = false')
+      .andWhere('bb.isBanned = false')
       .getRawMany();
+
     const mappedPosts = await this.postsMapping(post);
 
     return mappedPosts[0];

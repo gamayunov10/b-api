@@ -59,7 +59,7 @@ export class UserBanByBloggerUseCase
       +command.userBanByBloggerInputModel.blogId,
     );
 
-    if (blog?.user.id !== +command.bloggerId) {
+    if (blog?.user?.id !== +command.bloggerId) {
       return {
         data: false,
         code: ResultCode.Forbidden,

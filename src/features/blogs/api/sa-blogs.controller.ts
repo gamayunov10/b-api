@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -18,8 +19,10 @@ import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 import { ErrorsMessages } from '../../../base/schemas/api-errors-messages.schema';
 import { BlogBindWithUserCommand } from '../application/usecases/bind-blog-with-user.usecase';
 import { SABlogSchema } from '../../../base/schemas/sa-blog-schema';
+import { SABlogBanCommand } from '../application/usecases/blog-ban.usecase';
 
 import { BlogQueryModel } from './models/input/blog.query.model';
+import { BanBlogInputModel } from './models/input/ban-blog-input.model';
 
 @ApiTags('sa/blogs')
 @Controller('sa/blogs')
@@ -45,7 +48,39 @@ export class SABlogsController {
   )
   @UseGuards(BasicAuthGuard)
   async findBlogs(@Query() query: BlogQueryModel) {
-    return this.blogsQueryRepository.findBlogsWithOwnerInfo(query);
+    return this.blogsQueryRepository.findBlogsWithBanInfo(query);
+  }
+
+  @Put(':blogId/ban')
+  @SwaggerOptions(
+    'Ban/unban blog',
+    false,
+    true,
+    204,
+    'No Content',
+    SABlogSchema,
+    true,
+    ErrorsMessages,
+    true,
+    false,
+    false,
+    false,
+  )
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(204)
+  async banOperation(
+    @Param('blogId') blogId: string,
+    @Body() banBlogInputModel: BanBlogInputModel,
+  ) {
+    const result = await this.commandBus.execute(
+      new SABlogBanCommand(banBlogInputModel, blogId),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return result;
   }
 
   // @Get(':id/posts')

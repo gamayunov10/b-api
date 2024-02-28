@@ -21,8 +21,9 @@ export class BlogsQueryRepository {
   async findBlogs(query: BlogQueryModel) {
     const filter = blogsFilter(query.searchNameTerm);
     const sortDirection = query.sortDirection.toUpperCase();
-    const blogs = await this.dataSource
-      .createQueryBuilder()
+
+    const queryBuilder = this.blogsRepository
+      .createQueryBuilder('b')
       .select([
         'b.id',
         'b.name',
@@ -31,8 +32,9 @@ export class BlogsQueryRepository {
         'b.createdAt',
         'b.isMembership',
       ])
-      .from(Blog, 'b')
+      .leftJoin('b.blogBan', 'bb')
       .where('b.name ILIKE :name', { name: filter.name })
+      .andWhere('bb.isBanned = false')
       .orderBy(
         `"${query.sortBy}" ${
           query.sortBy.toLowerCase() !== 'createdat' ? 'COLLATE "C"' : ''
@@ -40,15 +42,10 @@ export class BlogsQueryRepository {
         sortDirection as 'ASC' | 'DESC',
       )
       .limit(+query.pageSize)
-      .offset((+query.pageNumber - 1) * +query.pageSize)
-      .getMany();
+      .offset((+query.pageNumber - 1) * +query.pageSize);
 
-    const totalCount = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(Blog, 'b')
-      .where('b.name ILIKE :name', { name: filter.name })
-      .getCount();
+    const blogs = await queryBuilder.getMany();
+    const totalCount = await queryBuilder.getCount();
 
     return Paginator.paginate({
       pageNumber: +query.pageNumber,
@@ -58,18 +55,22 @@ export class BlogsQueryRepository {
     });
   }
 
-  async findBlogsWithOwnerInfo(
+  async findBlogsWithBanInfo(
     query: BlogQueryModel,
   ): Promise<Paginator<BlogViewModel[]>> {
     const sortDirection = query.sortDirection.toUpperCase();
-    const blogs = await this.blogsRepository
+
+    const queryBuilder = this.blogsRepository
       .createQueryBuilder('b')
       .where(`${query.searchNameTerm ? 'b.name ILIKE :nameTerm' : ''}`, {
         nameTerm: `%${query.searchNameTerm}%`,
       })
       .addSelect('u.id')
       .addSelect('u.login')
+      .addSelect('bb.isBanned')
+      .addSelect('bb.banDate')
       .leftJoin('b.user', 'u')
+      .leftJoin('b.blogBan', 'bb')
       .orderBy(
         `b."${query.sortBy}" ${
           query.sortBy.toLowerCase() !== 'createdat' ? 'COLLATE "C"' : ''
@@ -77,16 +78,10 @@ export class BlogsQueryRepository {
         sortDirection as 'ASC' | 'DESC',
       )
       .limit(+query.pageSize)
-      .offset((+query.pageNumber - 1) * +query.pageSize)
-      .getMany();
+      .offset((+query.pageNumber - 1) * +query.pageSize);
 
-    const totalCount = await this.blogsRepository
-      .createQueryBuilder('b')
-      .where(`${query.searchNameTerm ? 'b.name ilike :nameTerm' : ''}`, {
-        nameTerm: `%${query.searchNameTerm}%`,
-      })
-      .leftJoinAndSelect('b.user', 'u')
-      .getCount();
+    const blogs = await queryBuilder.getMany();
+    const totalCount = await queryBuilder.getCount();
 
     return Paginator.paginate({
       pageNumber: query.pageNumber,
@@ -97,8 +92,8 @@ export class BlogsQueryRepository {
   }
 
   async findBlogById(blogId: number): Promise<BlogViewModel | null> {
-    const blog = await this.dataSource
-      .createQueryBuilder()
+    const blog = await this.blogsRepository
+      .createQueryBuilder('b')
       .select([
         'b.id',
         'b.name',
@@ -107,8 +102,9 @@ export class BlogsQueryRepository {
         'b.createdAt',
         'b.isMembership',
       ])
-      .from(Blog, 'b')
+      .leftJoin('b.blogBan', 'bb')
       .where('b.id = :blogId', { blogId })
+      .andWhere('bb.isBanned = false')
       .getOne();
 
     if (!blog) {
@@ -225,6 +221,10 @@ export class BlogsQueryRepository {
         blogOwnerInfo: {
           userId: b.user.id.toString() ?? BlogOwnerStatus.NOT_BOUND,
           userLogin: b.user.login ?? BlogOwnerStatus.NOT_BOUND,
+        },
+        banInfo: {
+          isBanned: b.blogBan.isBanned ?? false,
+          banDate: b.blogBan.banDate ?? null,
         },
       };
     });

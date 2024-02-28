@@ -101,6 +101,7 @@ import { UserBanUseCase } from '../../features/users/application/usecases/ban-us
 import { BloggerUsersController } from '../../features/users/api/blogger-users.controller';
 import { UserBanByBloggerUseCase } from '../../features/users/application/usecases/ban-user-by-blogger.usecase';
 import { BloggerGetBannedUsersUseCase } from '../../features/users/application/usecases/blogger-get-banned-users.usecase';
+import { BlogBanUseCase } from '../../features/blogs/application/usecases/blog-ban.usecase';
 
 const controllers = [
   SAUsersController,
@@ -180,6 +181,7 @@ const useCases = [
   UserBanUseCase,
   UserBanByBloggerUseCase,
   BloggerGetBannedUsersUseCase,
+  BlogBanUseCase,
 ];
 
 const repositories = [

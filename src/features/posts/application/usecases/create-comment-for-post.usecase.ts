@@ -9,6 +9,7 @@ import {
   blogNotFound,
   postIDField,
   postNotFound,
+  userIdField,
   userIsBanned,
 } from '../../../../base/constants/constants';
 import { PostsQueryRepository } from '../../infrastructure/posts.query.repository';
@@ -46,6 +47,19 @@ export class PostCreateCommentUseCase
       throw new ForbiddenException();
     }
 
+    const user = await this.usersQueryRepository.findUserByIdWithBanInfo(
+      +command.userId,
+    );
+
+    if (!user) {
+      return {
+        data: false,
+        code: ResultCode.NotFound,
+        field: postIDField,
+        message: postNotFound,
+      };
+    }
+
     const post = await this.postsQueryRepository.findPost(+command.postId);
 
     if (!post) {
@@ -68,19 +82,11 @@ export class PostCreateCommentUseCase
       };
     }
 
-    const blogBan = await this.usersQueryRepository.findUserBanInfo(
-      +command.userId,
-      blog.id,
-    );
-
-    if (
-      blogBan.userBanByBlogger.isBanned === true &&
-      blogBan.id === +command.userId &&
-      blogBan.userBanByBlogger.blog.id === blog.id
-    ) {
+    if (user.isBannedByBlogger) {
       return {
         data: false,
         code: ResultCode.Forbidden,
+        field: userIdField,
         message: userIsBanned,
       };
     }

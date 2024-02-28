@@ -4,7 +4,8 @@ export const expectFirstPaginatedComment = (
   page: number,
   pageSize: number,
   totalCount: number,
-  userId: string,
+  items: boolean,
+  userId?: string,
   lk?: number,
   dk?: number,
   ms?: string,
@@ -21,27 +22,30 @@ export const expectFirstPaginatedComment = (
   expect(response.body.totalCount).toBe(totalCount);
   expect(response.body.items).toBeInstanceOf(Array);
 
-  const firstComment = response.body.items[0];
+  if (items) {
+    const firstComment = response.body.items[0];
 
-  expect(firstComment).toHaveProperty('id');
-  expect(firstComment).toHaveProperty('content');
-  expect(firstComment).toHaveProperty('commentatorInfo');
-  expect(firstComment.likesInfo).toBeInstanceOf(Object);
-  expect(firstComment).toHaveProperty('likesInfo');
-  expect(firstComment.commentatorInfo).toBeInstanceOf(Object);
+    expect(firstComment).toHaveProperty('id');
+    expect(firstComment).toHaveProperty('content');
+    expect(firstComment).toHaveProperty('commentatorInfo');
+    expect(firstComment.likesInfo).toBeInstanceOf(Object);
+    expect(firstComment).toHaveProperty('likesInfo');
+    expect(firstComment.commentatorInfo).toBeInstanceOf(Object);
 
-  expect(firstComment.commentatorInfo).toHaveProperty('userId');
-  expect(firstComment.commentatorInfo).toHaveProperty('userLogin');
-  expect(firstComment.commentatorInfo.userId).toBe(userId);
-  expect(firstComment.createdAt).toBeDefined();
-  expect(firstComment.likesInfo).toHaveProperty('likesCount');
-  expect(firstComment.likesInfo).toHaveProperty('dislikesCount');
-  expect(firstComment.likesInfo).toHaveProperty('myStatus');
+    expect(firstComment.createdAt).toBeDefined();
+    expect(firstComment.likesInfo).toHaveProperty('likesCount');
+    expect(firstComment.likesInfo).toHaveProperty('dislikesCount');
+    expect(firstComment.likesInfo).toHaveProperty('myStatus');
 
-  if (lk && dk && ms) {
-    expect(firstComment.likesInfo.likesCount).toBe(lk);
-    expect(firstComment.likesInfo.dislikesCount).toBe(dk);
-    expect(firstComment.likesInfo.myStatus).toBe(ms);
+    if (lk && dk && ms && userId) {
+      expect(firstComment.commentatorInfo).toHaveProperty('userId');
+      expect(firstComment.commentatorInfo).toHaveProperty('userLogin');
+      expect(firstComment.commentatorInfo.userId).toBe(userId);
+
+      expect(firstComment.likesInfo.likesCount).toBe(lk);
+      expect(firstComment.likesInfo.dislikesCount).toBe(dk);
+      expect(firstComment.likesInfo.myStatus).toBe(ms);
+    }
   }
 };
 

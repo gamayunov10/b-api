@@ -83,7 +83,7 @@ describe('Posts: GET posts/:id/comments', () => {
         .get(`${posts_uri}${postId}/comments`)
         .expect(200);
 
-      expectFirstPaginatedComment(response, 1, 1, 10, 1, userId);
+      expectFirstPaginatedComment(response, 1, 1, 10, 1, true, userId);
     });
 
     it(`should Return comments for specified post`, async () => {

@@ -94,16 +94,12 @@ export class UsersQueryRepository {
     });
   }
 
-  async findUserBanInfo(userId: number, blogId: number): Promise<User | null> {
+  async findUserBanInfo(userId: number): Promise<User | null> {
     try {
       return await this.usersRepository
         .createQueryBuilder('u')
-        .leftJoinAndSelect('u.userBanByBlogger', 'ban')
-        .leftJoinAndSelect('ban.blog', 'b')
-        .where(`ban.isBanned = true`)
-        .andWhere(`ban."blogId" = :blogId`, {
-          blogId,
-        })
+        .leftJoinAndSelect('u.userBanInfo', 'ubi')
+        .where('u.id = :userId', { userId })
         .getOne();
     } catch (e) {
       if (this.configService.get('ENV') === 'DEVELOPMENT') {
@@ -187,6 +183,28 @@ export class UsersQueryRepository {
     const mappedUsers = await this.usersMapping(users);
 
     return mappedUsers[0];
+  }
+
+  async findUserByIdWithBanInfo(id: number) {
+    const result = await this.usersRepository
+      .createQueryBuilder('u')
+      .select([
+        'u.id as id',
+        'u.login as login',
+        'u.email as email',
+        'u."createdAt" as "createdAt"',
+        'b.isBanned as "isBanned"',
+        'b.banReason as "banReason"',
+        'b.banDate as "banDate"',
+        'ban_by_blogger.isBanned as "isBannedByBlogger"',
+        'ban_by_blogger.banReason as "banReasonByBlogger"',
+      ])
+      .leftJoin('u.userBanInfo', 'b')
+      .leftJoin('u.userBanByBlogger', 'ban_by_blogger')
+      .where('u.id = :id', { id })
+      .execute();
+
+    return result ? result[0] : false;
   }
 
   async findUserByIdBool(id: number): Promise<boolean> {
