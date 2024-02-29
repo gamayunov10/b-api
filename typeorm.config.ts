@@ -15,6 +15,10 @@ import { QuizAnswer } from './src/features/quiz/domain/quiz-answer.entity';
 import { QuizGame } from './src/features/quiz/domain/quiz-game.entity';
 import { QuizPlayer } from './src/features/quiz/domain/quiz-player';
 import { QuizQuestion } from './src/features/quiz/domain/quiz-question.entity';
+import { UserBanInfo } from './src/features/users/domain/user-ban.entity';
+import { UserBanByBlogger } from './src/features/users/domain/user-ban-by-blogger.entity';
+import { BlogBan } from './src/features/blogs/domain/blog-ban.entity';
+import { BlogMainImage } from './src/features/blogs/domain/blog-main-image';
 
 config();
 
@@ -25,7 +29,7 @@ export default new DataSource({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  synchronize: false,
+  migrations: ['migrations/*.ts'],
   entities: [
     User,
     Blog,
@@ -40,6 +44,9 @@ export default new DataSource({
     QuizGame,
     QuizPlayer,
     QuizQuestion,
+    UserBanInfo,
+    UserBanByBlogger,
+    BlogBan,
+    BlogMainImage,
   ],
-  migrations: ['migrations/*.ts'],
 });
