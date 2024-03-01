@@ -11,6 +11,7 @@ import { Comment } from '../../comments/domain/comment.entity';
 import { Blog } from '../../blogs/domain/blog.entity';
 
 import { PostLike } from './post-like.entity';
+import { PostMainImage } from './post-main-image.entity';
 
 @Entity('posts')
 export class Post {
@@ -46,6 +47,12 @@ export class Post {
     onUpdate: 'CASCADE',
   })
   comment: Comment;
+
+  @OneToMany(() => PostMainImage, (i) => i.post, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  postMainImages: PostMainImage[];
 
   @OneToMany(() => PostLike, (postLike) => postLike.post, {
     onDelete: 'CASCADE',
