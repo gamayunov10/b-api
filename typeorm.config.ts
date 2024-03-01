@@ -18,7 +18,9 @@ import { QuizQuestion } from './src/features/quiz/domain/quiz-question.entity';
 import { UserBanInfo } from './src/features/users/domain/user-ban.entity';
 import { UserBanByBlogger } from './src/features/users/domain/user-ban-by-blogger.entity';
 import { BlogBan } from './src/features/blogs/domain/blog-ban.entity';
-import { BlogMainImage } from './src/features/blogs/domain/blog-main-image';
+import { BlogMainImage } from './src/features/blogs/domain/blog-main-image.entity';
+import { BlogWallpaperImage } from './src/features/blogs/domain/blog-wallpaper-image.entity';
+import { PostMainImage } from './src/features/posts/domain/post-main-image.entity';
 
 config();
 
@@ -48,5 +50,7 @@ export default new DataSource({
     UserBanByBlogger,
     BlogBan,
     BlogMainImage,
+    BlogWallpaperImage,
+    PostMainImage,
   ],
 });
