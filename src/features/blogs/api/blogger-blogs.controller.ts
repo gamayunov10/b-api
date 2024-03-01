@@ -6,14 +6,19 @@ import {
   HttpCode,
   NotFoundException,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Query,
   UnauthorizedException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
 import { BlogCreateCommand } from '../application/usecases/create-blog.usecase';
@@ -42,10 +47,17 @@ import { PostQueryModel } from '../../posts/api/models/input/post.query.model';
 import { PostDeleteCommand } from '../../posts/application/usecases/delete-post.usecase';
 import { BlogCommentSchema } from '../../../base/schemas/blog-comment-schema';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query.repository';
+import { exceptionImagesFactory } from '../../../infrastructure/exception-filters/exception-images.factory';
+import { ImageValidator } from '../../../infrastructure/validators/image.validator';
+import { BlogAddMainImageCommand } from '../application/usecases/blog-add-main-image.usecase';
+import { BlogAddWallpaperImageCommand } from '../application/usecases/blog-add-wallpaper-image.usecase';
+import { PostAddMainImageCommand } from '../application/usecases/post-add-main-image.usecase';
 
 import { BlogQueryModel } from './models/input/blog.query.model';
 import { BlogViewModel } from './models/output/blog-view.model';
 import { BlogInputModel } from './models/input/blog-input-model';
+import { BlogImagesViewModel } from './models/output/blog-images-view.model';
+import { PostImagesViewModel } from './models/output/post-images-view.model';
 
 @ApiTags('blogger/blogs')
 @Controller('blogger/blogs')
@@ -292,6 +304,171 @@ export class BloggerBlogsController {
     }
 
     return result;
+  }
+
+  @Post(':blogId/images/wallpaper')
+  @SwaggerOptions(
+    'Upload background wallpaper for Blog (.png or .jpg (.jpeg) file (max size is 100KB, width must be 1028, height must be 312px))',
+    true,
+    false,
+    201,
+    'Uploaded image information object',
+    BlogImagesViewModel,
+    'If file format is incorrect',
+    ErrorsMessages,
+    true,
+    "If user try to update blog that doesn't belong to current user",
+    false,
+    false,
+  )
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtBearerGuard)
+  async uploadBlogWallpaper(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new ImageValidator(1028, 312, 100 * 1024)],
+        exceptionFactory: exceptionImagesFactory,
+      }),
+    )
+    file: Express.Multer.File,
+    @Param('blogId') blogId: string,
+    @UserIdFromGuard() userId: string,
+  ) {
+    if (isNaN(+blogId)) {
+      throw new NotFoundException();
+    }
+
+    if (isNaN(+userId)) {
+      throw new UnauthorizedException();
+    }
+
+    const result = await this.commandBus.execute(
+      new BlogAddWallpaperImageCommand(
+        blogId,
+        userId,
+        file.buffer,
+        file.mimetype,
+        file.originalname,
+      ),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return this.blogsQueryRepository.findBlogImages(+blogId);
+  }
+
+  @Post(':blogId/images/main')
+  @SwaggerOptions(
+    'Upload main square image for Blog (.png or .jpg (.jpeg) file (max size is 100KB, width must be 156, height must be 156))',
+    true,
+    false,
+    201,
+    'Uploaded image information object',
+    BlogImagesViewModel,
+    'If file format is incorrect',
+    ErrorsMessages,
+    true,
+    "If user try to update blog that doesn't belong to current user",
+    false,
+    false,
+  )
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtBearerGuard)
+  async uploadBlogMainImage(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new ImageValidator(156, 156, 100 * 1024)],
+        exceptionFactory: exceptionImagesFactory,
+      }),
+    )
+    file: Express.Multer.File,
+    @Param('blogId') blogId: string,
+    @UserIdFromGuard() userId: string,
+  ) {
+    if (isNaN(+blogId)) {
+      throw new NotFoundException();
+    }
+
+    if (isNaN(+userId)) {
+      throw new UnauthorizedException();
+    }
+
+    const result = await this.commandBus.execute(
+      new BlogAddMainImageCommand(
+        blogId,
+        userId,
+        file.buffer,
+        file.mimetype,
+        file.originalname,
+      ),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return this.blogsQueryRepository.findBlogMainImages(+blogId);
+  }
+
+  @Post(':blogId/posts/:postId/images/main')
+  @SwaggerOptions(
+    'Upload main image for Post (.png or .jpg (.jpeg) file (max size is 100KB, width must be 940, height must be 432))',
+    true,
+    false,
+    201,
+    'Uploaded image information object',
+    PostImagesViewModel,
+    'If file format is incorrect',
+    ErrorsMessages,
+    true,
+    "If user try to update blog that doesn't belong to current user",
+    false,
+    false,
+  )
+  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtBearerGuard)
+  async uploadBlogMainImageForPost(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new ImageValidator(940, 432, 100 * 1024)],
+        exceptionFactory: exceptionImagesFactory,
+      }),
+    )
+    file: Express.Multer.File,
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @UserIdFromGuard() userId: string,
+  ) {
+    if (isNaN(+blogId)) {
+      throw new NotFoundException();
+    }
+
+    if (isNaN(+postId)) {
+      throw new NotFoundException();
+    }
+
+    if (isNaN(+userId)) {
+      throw new UnauthorizedException();
+    }
+
+    const result = await this.commandBus.execute(
+      new PostAddMainImageCommand(
+        blogId,
+        postId,
+        userId,
+        file.buffer,
+        file.mimetype,
+        file.originalname,
+      ),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return this.blogsQueryRepository.findBlogMainImages(+blogId);
   }
 
   @Delete(':id')
