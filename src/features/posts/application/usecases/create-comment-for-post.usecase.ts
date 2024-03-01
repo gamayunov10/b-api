@@ -60,7 +60,9 @@ export class PostCreateCommentUseCase
       };
     }
 
-    const post = await this.postsQueryRepository.findPost(+command.postId);
+    const post = await this.postsQueryRepository.findPostEntity(
+      +command.postId,
+    );
 
     if (!post) {
       return {
@@ -71,7 +73,7 @@ export class PostCreateCommentUseCase
       };
     }
 
-    const blog = await this.blogsQueryRepository.findBlogEntity(post.blogId);
+    const blog = await this.blogsQueryRepository.findBlogEntity(post.blog.id);
 
     if (!blog) {
       return {
