@@ -102,6 +102,11 @@ import { BloggerUsersController } from '../../features/users/api/blogger-users.c
 import { UserBanByBloggerUseCase } from '../../features/users/application/usecases/ban-user-by-blogger.usecase';
 import { BloggerGetBannedUsersUseCase } from '../../features/users/application/usecases/blogger-get-banned-users.usecase';
 import { BlogBanUseCase } from '../../features/blogs/application/usecases/blog-ban.usecase';
+import { BlogAddMainImageUseCase } from '../../features/blogs/application/usecases/blog-add-main-image.usecase';
+import { S3Adapter } from '../application/adapters/s3.adapter';
+import { TransactionHelper } from '../transactions/transaction.helper';
+import { BlogAddWallpaperImageUseCase } from '../../features/blogs/application/usecases/blog-add-wallpaper-image.usecase';
+import { PostAddMainImageUseCase } from '../../features/blogs/application/usecases/post-add-main-image.usecase';
 
 const controllers = [
   SAUsersController,
@@ -182,6 +187,9 @@ const useCases = [
   UserBanByBloggerUseCase,
   BloggerGetBannedUsersUseCase,
   BlogBanUseCase,
+  BlogAddMainImageUseCase,
+  BlogAddWallpaperImageUseCase,
+  PostAddMainImageUseCase,
 ];
 
 const repositories = [
@@ -210,6 +218,9 @@ const constraints = [
   IsLoginAlreadyExistConstraint,
 ];
 
+const adapters = [S3Adapter];
+const helpers = [TransactionHelper];
+
 const strategies = [
   BasicStrategy,
   JwtBearerStrategy,
@@ -237,6 +248,8 @@ const strategies = [
     ...queryRepositories,
     ...typeORMRepositories,
     ...constraints,
+    ...adapters,
+    ...helpers,
     GameFinishedListener,
     ConfigService,
   ],
