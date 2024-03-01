@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import sharp from 'sharp';
 
 import { PostInputModel } from '../api/models/input/post-input-model';
 import { CommentInputModel } from '../../comments/api/models/input/comment-input.model';
@@ -8,13 +9,14 @@ import { LikeStatusInputModel } from '../api/models/input/like-status-input.mode
 import { Post } from '../domain/post.entity';
 import { Comment } from '../../comments/domain/comment.entity';
 import { PostLike } from '../domain/post-like.entity';
+import { TransactionHelper } from '../../../base/transactions/transaction.helper';
+import { PostMainImage } from '../domain/post-main-image.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectRepository(Post)
-    private readonly postsRepository: Repository<Post>,
     @InjectDataSource() private dataSource: DataSource,
+    private readonly transactionHelper: TransactionHelper,
   ) {}
 
   async createPostForSpecificBlog(
@@ -118,6 +120,26 @@ export class PostsRepository {
         return newLike.identifiers[0].id;
       }
     });
+  }
+
+  async uploadPostMainImage(
+    metadata: sharp.Metadata,
+    s3Key: string,
+    post: Post,
+  ): Promise<number | boolean> {
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const image = new PostMainImage();
+        image.post = post;
+        image.url = s3Key;
+        image.width = metadata.width;
+        image.height = metadata.height;
+        image.size = metadata.size;
+
+        const savedImage = await entityManager.save(image);
+        return savedImage.id;
+      },
+    );
   }
 
   async deletePost(postId: number): Promise<boolean> {
