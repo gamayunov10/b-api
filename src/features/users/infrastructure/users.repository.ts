@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
+import { DataSource } from 'typeorm';
 
 import { UserInputModel } from '../api/models/input/user-input-model';
 import { User } from '../domain/user.entity';
@@ -12,55 +11,42 @@ import { UserBanInputModel } from '../api/models/input/user-ban.input.model';
 import { UserBanByBloggerInputModel } from '../api/models/input/user-ban-by-blogger.input.model';
 import { UserBanByBlogger } from '../domain/user-ban-by-blogger.entity';
 import { Blog } from '../../blogs/domain/blog.entity';
+import { TransactionHelper } from '../../../base/transactions/transaction.helper';
 
 @Injectable()
 export class UsersRepository {
-  private readonly logger = new Logger(UsersRepository.name);
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-    private readonly userEmailConfirmationRepository: Repository<UserEmailConfirmation>,
-    private readonly userPasswordRecoveryRepository: Repository<UserPasswordRecovery>,
-    @InjectDataSource() private dataSource: DataSource,
-    private readonly configService: ConfigService,
+    @InjectDataSource()
+    private dataSource: DataSource,
+    private readonly transactionHelper: TransactionHelper,
   ) {}
 
   async createUser(
     userInputModel: UserInputModel,
     hash: string,
   ): Promise<number | boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const user = new User();
+        user.login = userInputModel.login;
+        user.passwordHash = hash;
+        user.email = userInputModel.email;
+        user.isConfirmed = true;
 
-    try {
-      const user = new User();
-      user.login = userInputModel.login;
-      user.passwordHash = hash;
-      user.email = userInputModel.email;
-      user.isConfirmed = true;
+        const savedUser = await entityManager.save(user);
 
-      const savedUser = await queryRunner.manager.save(user);
+        const userBanInfo = new UserBanInfo();
+        userBanInfo.isBanned = false;
+        userBanInfo.banReason = null;
+        userBanInfo.banDate = null;
+        userBanInfo.user = savedUser;
 
-      const userBanInfo = new UserBanInfo();
-      userBanInfo.isBanned = false;
-      userBanInfo.banReason = null;
-      userBanInfo.banDate = null;
-      userBanInfo.user = savedUser;
+        await entityManager.save(userBanInfo);
 
-      await queryRunner.manager.save(userBanInfo);
-
-      await queryRunner.commitTransaction();
-      return savedUser.id;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return savedUser.id;
+      },
+    );
   }
 
   async confirmUser(userId: number): Promise<boolean> {
@@ -185,63 +171,40 @@ export class UsersRepository {
   }
 
   async banUser(userId: number, query: UserBanInputModel): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .update(UserBanInfo)
+          .set({
+            isBanned: true,
+            banReason: query.banReason,
+            banDate: new Date(),
+          })
+          .where('userId = :userId', { userId })
+          .execute();
 
-    try {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(UserBanInfo)
-        .set({
-          isBanned: true,
-          banReason: query.banReason,
-          banDate: new Date(),
-        })
-        .where('userId = :userId', { userId })
-        .execute();
-
-      await queryRunner.commitTransaction();
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return true;
+      },
+    );
   }
 
   async unBanUser(userId: number): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(UserBanInfo)
-        .set({
-          isBanned: false,
-          banReason: null,
-          banDate: null,
-        })
-        .where('userId = :userId', { userId })
-        .execute();
-      await queryRunner.commitTransaction();
-
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .update(UserBanInfo)
+          .set({
+            isBanned: false,
+            banReason: null,
+            banDate: null,
+          })
+          .where('userId = :userId', { userId })
+          .execute();
+        return true;
+      },
+    );
   }
 
   async banUserByBlogger(
@@ -251,83 +214,59 @@ export class UsersRepository {
     blog: Blog,
     user: User,
   ): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const existingRecord = await entityManager
+          .createQueryBuilder(UserBanByBlogger, 'b')
+          .where('b.blogId = :blogId', { blogId })
+          .andWhere('b.userId = :userId', { userId })
+          .getOne();
 
-    try {
-      const existingRecord = await this.dataSource
-        .createQueryBuilder()
-        .select()
-        .from(UserBanByBlogger, 'b')
-        .where('b.blogId = :blogId', { blogId })
-        .andWhere('b.userId = :userId', { userId })
-        .getOne();
+        if (!existingRecord) {
+          const userBanByBlogger = new UserBanByBlogger();
+          userBanByBlogger.blog = blog;
+          userBanByBlogger.user = user;
+          userBanByBlogger.banReason = query.banReason;
+          userBanByBlogger.banDate = new Date();
+          userBanByBlogger.isBanned = true;
+          await entityManager.save(userBanByBlogger);
+        } else {
+          await entityManager
+            .createQueryBuilder()
+            .update(UserBanByBlogger)
+            .set({
+              isBanned: true,
+              banReason: query.banReason,
+              banDate: new Date(),
+            })
+            .where('userId = :userId', { userId })
+            .andWhere('blogId = :blogId', { blogId })
+            .execute();
+        }
 
-      if (!existingRecord) {
-        const userBanByBlogger = new UserBanByBlogger();
-        userBanByBlogger.blog = blog;
-        userBanByBlogger.user = user;
-        userBanByBlogger.banReason = query.banReason;
-        userBanByBlogger.banDate = new Date();
-        userBanByBlogger.isBanned = true;
-        await queryRunner.manager.save(userBanByBlogger);
-      } else {
-        await this.usersRepository
-          .createQueryBuilder('u')
-          .update('u.userBanInfo')
+        return true;
+      },
+    );
+  }
+
+  async unBanUserByBlogger(userId: number, blogId: number): Promise<boolean> {
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .update(UserBanByBlogger)
           .set({
-            isBanned: true,
-            banReason: query.banReason,
-            banDate: new Date(),
+            isBanned: false,
+            banReason: null,
+            banDate: null,
           })
           .where('userId = :userId', { userId })
           .andWhere('blogId = :blogId', { blogId })
           .execute();
-      }
 
-      await queryRunner.commitTransaction();
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async unBanUserByBlogger(userId: number, blogId: number): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      await this.dataSource
-        .createQueryBuilder()
-        .update(UserBanByBlogger)
-        .set({
-          isBanned: false,
-          banReason: null,
-          banDate: null,
-        })
-        .where('userId = :userId', { userId })
-        .andWhere('blogId = :blogId', { blogId })
-        .execute();
-
-      await queryRunner.commitTransaction();
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return true;
+      },
+    );
   }
 
   async deleteUser(userId: number): Promise<boolean> {
