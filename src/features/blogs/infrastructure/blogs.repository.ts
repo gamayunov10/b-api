@@ -1,113 +1,80 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
+import { DataSource } from 'typeorm';
+import sharp from 'sharp';
 
 import { BlogInputModel } from '../api/models/input/blog-input-model';
 import { Blog } from '../domain/blog.entity';
 import { User } from '../../users/domain/user.entity';
 import { BlogBan } from '../domain/blog-ban.entity';
+import { BlogMainImage } from '../domain/blog-main-image.entity';
+import { TransactionHelper } from '../../../base/transactions/transaction.helper';
+import { BlogWallpaperImage } from '../domain/blog-wallpaper-image.entity';
 
 @Injectable()
 export class BlogsRepository {
-  private readonly logger = new Logger(BlogsRepository.name);
   constructor(
     @InjectRepository(Blog)
-    private readonly blogsRepository: Repository<Blog>,
-    @InjectDataSource() private dataSource: DataSource,
-    private readonly configService: ConfigService,
+    @InjectDataSource()
+    private dataSource: DataSource,
+    private readonly transactionHelper: TransactionHelper,
   ) {}
 
   async createBlog(
     blogInputModel: BlogInputModel,
     user: User,
   ): Promise<number | boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const blog = new Blog();
+        blog.user = user;
+        blog.name = blogInputModel.name;
+        blog.description = blogInputModel.description;
+        blog.websiteUrl = blogInputModel.websiteUrl;
+        blog.createdAt = new Date();
+        blog.isMembership = false;
 
-    try {
-      const blog = new Blog();
-      blog.user = user;
-      blog.name = blogInputModel.name;
-      blog.description = blogInputModel.description;
-      blog.websiteUrl = blogInputModel.websiteUrl;
-      blog.createdAt = new Date();
-      blog.isMembership = false;
+        const savedBlog = await entityManager.save(blog);
 
-      const savedBlog = await queryRunner.manager.save(blog);
+        const blogBan = new BlogBan();
+        blogBan.blog = blog;
+        blogBan.isBanned = false;
+        blogBan.banDate = null;
+        await entityManager.save(blogBan);
 
-      const blogBan = new BlogBan();
-      blogBan.blog = blog;
-      blogBan.isBanned = false;
-      blogBan.banDate = null;
-      await queryRunner.manager.save(blogBan);
-
-      await queryRunner.commitTransaction();
-      return savedBlog.id;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return savedBlog.id;
+      },
+    );
   }
 
   async banBlog(blog: Blog): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .update(BlogBan)
+          .set({ isBanned: true, banDate: new Date() })
+          .where('blogId = :blogId', { blogId: blog.id })
+          .execute();
 
-    try {
-      await this.blogsRepository
-        .createQueryBuilder()
-        .update(BlogBan)
-        .set({ isBanned: true, banDate: new Date() })
-        .where('blogId = :blogId', { blogId: blog.id })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return true;
+      },
+    );
   }
 
   async unBanBlog(blog: Blog): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .update(BlogBan)
+          .set({ isBanned: false, banDate: null })
+          .where('blogId = :blogId', { blogId: blog.id })
+          .execute();
 
-    try {
-      await this.blogsRepository
-        .createQueryBuilder()
-        .update(BlogBan)
-        .set({ isBanned: false, banDate: null })
-        .where('blogId = :blogId', { blogId: blog.id })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return true;
+      },
+    );
   }
 
   async bindBlogWithUser(blogId: number, userId: number): Promise<boolean> {
@@ -143,6 +110,68 @@ export class BlogsRepository {
 
       return result.affected === 1;
     });
+  }
+
+  async uploadBlogWallpaperImage(
+    metadata: sharp.Metadata,
+    s3Key: string,
+    blog: Blog,
+  ): Promise<number | boolean> {
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const wallpaperImage = new BlogWallpaperImage();
+        wallpaperImage.blog = blog;
+        wallpaperImage.url = s3Key;
+        wallpaperImage.width = metadata.width;
+        wallpaperImage.height = metadata.height;
+        wallpaperImage.size = metadata.size;
+
+        const savedMainImage = await entityManager.save(wallpaperImage);
+        return savedMainImage.id;
+      },
+    );
+  }
+
+  async updateBlogWallpaperImage(
+    metadata: sharp.Metadata,
+    s3Key: string,
+    blogId: number,
+  ): Promise<boolean> {
+    return this.dataSource.transaction(async () => {
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .update(BlogWallpaperImage)
+        .set({
+          url: s3Key,
+          width: metadata.width,
+          height: metadata.height,
+          size: metadata.size,
+        })
+        .where('blogId = :blogId', { blogId })
+        .execute();
+
+      return result.affected === 1;
+    });
+  }
+
+  async uploadBlogMainImage(
+    metadata: sharp.Metadata,
+    s3Key: string,
+    blog: Blog,
+  ): Promise<number | boolean> {
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        const mainImage = new BlogMainImage();
+        mainImage.blog = blog;
+        mainImage.url = s3Key;
+        mainImage.width = metadata.width;
+        mainImage.height = metadata.height;
+        mainImage.size = metadata.size;
+
+        const savedMainImage = await entityManager.save(mainImage);
+        return savedMainImage.id;
+      },
+    );
   }
 
   async deleteBlog(blogId: number): Promise<boolean> {
