@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 import { CommentInputModel } from '../api/models/input/comment-input.model';
 import { LikeStatusInputModel } from '../../posts/api/models/input/like-status-input.model';
@@ -9,11 +9,7 @@ import { CommentLike } from '../domain/comment-like.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectRepository(Comment)
-    private readonly commentsRepository: Repository<Comment>,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async updateComment(
     commentId: number,
