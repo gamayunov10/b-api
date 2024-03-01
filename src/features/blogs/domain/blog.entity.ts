@@ -14,7 +14,8 @@ import { User } from '../../users/domain/user.entity';
 import { UserBanByBlogger } from '../../users/domain/user-ban-by-blogger.entity';
 
 import { BlogBan } from './blog-ban.entity';
-import { BlogMainImage } from './blog-main-image';
+import { BlogMainImage } from './blog-main-image.entity';
+import { BlogWallpaperImage } from './blog-wallpaper-image.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -41,6 +42,16 @@ export class Blog {
     onUpdate: 'CASCADE',
   })
   blogBan: BlogBan;
+
+  @OneToOne(
+    () => BlogWallpaperImage,
+    (blogWallpaperImage) => blogWallpaperImage.blog,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+  )
+  blogWallpaperImage: BlogWallpaperImage;
 
   @OneToMany(() => BlogMainImage, (blogMainImages) => blogMainImages.blog, {
     onDelete: 'CASCADE',
