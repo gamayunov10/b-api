@@ -403,20 +403,18 @@ export class PostsQueryRepository {
     return post?.id;
   }
 
-  async findPost(postId: number): Promise<Post | null> {
-    return await this.postsRepository
+  async findPostEntity(postId: number): Promise<Post | false> {
+    const post = await this.postsRepository
       .createQueryBuilder('p')
-      .select([
-        'id as id',
-        'title as title',
-        '"shortDescription" as "shortDescription"',
-        'content as content',
-        '"blogId" as "blogId"',
-        '"blogName" as "blogName"',
-        '"createdAt" as "createdAt"',
-      ])
+      .leftJoinAndSelect('p.blog', 'b')
       .where('p.id = :postId', { postId })
-      .getRawOne();
+      .getOne();
+
+    if (!post) {
+      return false;
+    }
+
+    return post;
   }
 
   private async postsMapping(posts: any): Promise<PostViewModel[]> {
