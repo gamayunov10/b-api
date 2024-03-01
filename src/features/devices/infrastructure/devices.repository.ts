@@ -1,18 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DeviceAuthSessions } from '../domain/device.entity';
+import { TransactionHelper } from '../../../base/transactions/transaction.helper';
 
 @Injectable()
 export class DevicesRepository {
-  private readonly logger = new Logger(DevicesRepository.name);
   constructor(
-    @InjectRepository(DeviceAuthSessions)
-    private readonly devicesRepository: Repository<DeviceAuthSessions>,
     @InjectDataSource() private dataSource: DataSource,
-    private readonly configService: ConfigService,
+    private readonly transactionHelper: TransactionHelper,
   ) {}
 
   async createDevice(
@@ -85,29 +82,17 @@ export class DevicesRepository {
   }
 
   async deleteAllBannedUserDevices(userId: number): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.transactionHelper.executeInTransaction(
+      async (entityManager) => {
+        await entityManager
+          .createQueryBuilder()
+          .delete()
+          .from(DeviceAuthSessions)
+          .where('userId = :userId', { userId })
+          .execute();
 
-    try {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .delete()
-        .from(DeviceAuthSessions, 'd')
-        .where('userId = :userId', { userId })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return true;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (this.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(error);
-      }
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
+        return true;
+      },
+    );
   }
 }
