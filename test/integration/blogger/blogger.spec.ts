@@ -3,17 +3,16 @@ import { SuperAgentTest } from 'supertest';
 
 import { UsersTestManager } from '../../base/managers/users.manager';
 import { beforeAllConfig } from '../../base/settings/beforeAllConfig';
-import { createUserInput } from '../../base/utils/constants/users.constants';
 import { createBlogInput } from '../../base/utils/constants/blogs.constant';
 import { expectCreatedBlog } from '../../base/utils/functions/expect/blogs/expectCreatedBlog';
 import { testing_allData_uri } from '../../base/utils/constants/routes';
 import { lorem30 } from '../../base/utils/constants/lorems';
 import { expectFirstBannedPaginatedBlog } from '../../base/utils/functions/expect/blogs/expectFirstBannedPaginatedBlog';
 import { createPostInput } from '../../base/utils/constants/posts.constants';
-import { expectCreatedBlogForPost } from '../../base/utils/functions/expect/blogs/expectCreatedBlogForPost';
+import { expectCreatedPostForBlog } from '../../base/utils/functions/expect/blogs/expectCreatedPostForBlog';
 import { createCommentInput } from '../../base/utils/constants/comments.constant';
 
-describe('PairQuizGame: v3', () => {
+describe('Blogger: v1', () => {
   let app: INestApplication;
   let agent: SuperAgentTest;
   let usersTestManager: UsersTestManager;
@@ -53,7 +52,7 @@ describe('PairQuizGame: v3', () => {
         .send(createPostInput)
         .expect(201);
 
-      expectCreatedBlogForPost(
+      expectCreatedPostForBlog(
         createdPost,
         createPostInput,
         createdBlog.body.id,
