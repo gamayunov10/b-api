@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { BlogImagesViewModel } from './blog-images-view.model';
+
 export class BlogViewModel {
   @ApiProperty({
     type: String,
@@ -30,4 +32,9 @@ export class BlogViewModel {
     type: Boolean,
   })
   isMembership: boolean;
+
+  @ApiProperty({
+    type: BlogImagesViewModel,
+  })
+  images: BlogImagesViewModel;
 }
