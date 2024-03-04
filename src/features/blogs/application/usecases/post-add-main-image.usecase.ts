@@ -74,11 +74,20 @@ export class PostAddMainImageUseCase
 
     // Uploading original image
     const originalImageS3Key = `post/images/main/${command.postId}_original_${command.originalName}`;
-    await this.s3Adapter.uploadImage(
+    const uploadResult = await this.s3Adapter.uploadImage(
       originalImageS3Key,
       command.buffer,
       command.mimetype,
     );
+
+    if (!uploadResult) {
+      return {
+        data: false,
+        code: ResultCode.BadRequest,
+        field: 'Image',
+        message: 'Incorrect Format',
+      };
+    }
 
     const originalImageSharpInstance = sharp(command.buffer);
     const originalImageMetadata = await originalImageSharpInstance.metadata();
@@ -104,11 +113,20 @@ export class PostAddMainImageUseCase
       .toBuffer();
 
     const mediumImageS3Key = `post/images/main/${command.postId}_middle_${command.originalName}`;
-    await this.s3Adapter.uploadImage(
+    const uploadResult2 = await this.s3Adapter.uploadImage(
       mediumImageS3Key,
       mediumImageBuffer,
       command.mimetype,
     );
+
+    if (!uploadResult2) {
+      return {
+        data: false,
+        code: ResultCode.BadRequest,
+        field: 'Image',
+        message: 'Incorrect Format',
+      };
+    }
 
     const mediumImageSharpInstance = sharp(mediumImageBuffer);
     const mediumImageMetadata = await mediumImageSharpInstance.metadata();
@@ -134,18 +152,27 @@ export class PostAddMainImageUseCase
       .toBuffer();
 
     const smallImageS3Key = `post/images/main/${command.postId}_small_${command.originalName}`;
-    await this.s3Adapter.uploadImage(
+    const uploadResult3 = await this.s3Adapter.uploadImage(
       smallImageS3Key,
       smallImageBuffer,
       command.mimetype,
     );
+
+    if (!uploadResult3) {
+      return {
+        data: false,
+        code: ResultCode.BadRequest,
+        field: 'Image',
+        message: 'Incorrect Format',
+      };
+    }
 
     const smallImageSharpInstance = sharp(smallImageBuffer);
     const smallImageMetadata = await smallImageSharpInstance.metadata();
 
     const smallImageResult = await this.postsRepository.uploadPostMainImage(
       smallImageMetadata,
-      mediumImageS3Key,
+      smallImageS3Key,
       post,
     );
 
