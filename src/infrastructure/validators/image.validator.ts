@@ -10,11 +10,7 @@ type ImageOptions = {
 
 export class ImageValidator extends FileValidator<ImageOptions> {
   private readonly logger = new Logger(ImageValidator.name);
-  private static configService: ConfigService;
-
-  static setConfigService(configService: ConfigService) {
-    ImageValidator.configService = configService;
-  }
+  private readonly configService = new ConfigService();
 
   constructor(
     public width: number,
@@ -35,8 +31,8 @@ export class ImageValidator extends FileValidator<ImageOptions> {
     try {
       metadata = await image.metadata();
     } catch (e) {
-      if (ImageValidator.configService.get('ENV') === 'DEVELOPMENT') {
-        this.logger.error(e);
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.warn(e);
       }
 
       return false;
@@ -52,6 +48,6 @@ export class ImageValidator extends FileValidator<ImageOptions> {
     );
   }
   buildErrorMessage(): string {
-    return 'Format is incorrect';
+    return 'Input buffer contains unsupported image format';
   }
 }
