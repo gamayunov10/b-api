@@ -5,11 +5,10 @@ import { EntityManager } from 'typeorm';
 @Injectable()
 export class TransactionHelper {
   private readonly logger = new Logger(TransactionHelper.name);
-  private configService: ConfigService;
-  private entityManager: EntityManager;
+  private readonly configService = new ConfigService();
+  private readonly entityManager: EntityManager;
 
-  constructor(configService: ConfigService, entityManager: EntityManager) {
-    this.configService = configService;
+  constructor(entityManager: EntityManager) {
     this.entityManager = entityManager;
   }
 
