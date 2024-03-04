@@ -57,7 +57,20 @@ export class BlogAddWallpaperImageUseCase
 
     const s3Key = `blogger/images/wallpapers/${command.blogId}_${command.originalName}`;
 
-    await this.s3Adapter.uploadImage(s3Key, command.buffer, command.mimetype);
+    const uploadResult = await this.s3Adapter.uploadImage(
+      s3Key,
+      command.buffer,
+      command.mimetype,
+    );
+
+    if (!uploadResult) {
+      return {
+        data: false,
+        code: ResultCode.BadRequest,
+        field: 'Image',
+        message: 'Incorrect Format',
+      };
+    }
 
     const image = sharp(command.buffer);
     const metadata = await image.metadata();
