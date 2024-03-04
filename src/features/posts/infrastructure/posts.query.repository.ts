@@ -12,6 +12,7 @@ import { Blog } from '../../blogs/domain/blog.entity';
 import { PostOutputModel } from '../api/models/output/post-output.model';
 import { PostLike } from '../domain/post-like.entity';
 import { PostQueryModel } from '../api/models/input/post.query.model';
+import { PostMainImage } from '../domain/post-main-image.entity';
 
 export class PostsQueryRepository {
   private readonly logger = new Logger(PostsQueryRepository.name);
@@ -46,8 +47,11 @@ export class PostsQueryRepository {
             qb
               .select(`COUNT(*)`)
               .from(PostLike, 'pl')
-              .where('p."id" = pl."postId"')
-              .andWhere('pl."likeStatus" = \'Like\''),
+              .leftJoin('pl.user', 'u')
+              .leftJoin('u.userBanInfo', 'ubi')
+              .where('pl.postId = p.id')
+              .andWhere('ubi.isBanned = false')
+              .andWhere(`pl.likeStatus = 'Like'`),
           'likesCount',
         )
         .addSelect(
@@ -55,8 +59,11 @@ export class PostsQueryRepository {
             qb
               .select(`COUNT(*)`)
               .from(PostLike, 'pl')
-              .where('p."id" = pl."postId"')
-              .andWhere('pl."likeStatus" = \'Dislike\''),
+              .leftJoin('pl.user', 'u')
+              .leftJoin('u.userBanInfo', 'ubi')
+              .where('pl.postId = p.id')
+              .andWhere('ubi.isBanned = false')
+              .andWhere(`pl.likeStatus = 'Dislike'`),
           'dislikesCount',
         )
         .addSelect(
@@ -64,7 +71,10 @@ export class PostsQueryRepository {
             qb
               .select('pl.likeStatus')
               .from(PostLike, 'pl')
+              .leftJoin('pl.user', 'u')
+              .leftJoin('u.userBanInfo', 'ubi')
               .where('p."id" = pl."postId"')
+              .andWhere('ubi.isBanned = false')
               .andWhere('pl."userId" = :userId', { userId }),
           'myStatus',
         )
@@ -83,11 +93,30 @@ export class PostsQueryRepository {
                 ),'[]')`,
           'newestLikes',
         )
+        .addSelect(
+          (qb) =>
+            qb
+              .select(
+                `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+              )
+              .from((qb) => {
+                return qb
+                  .select(`url, width, height, size`)
+                  .from(PostMainImage, 'pmi')
+                  .where('pmi.postId = p.id');
+              }, 'agg'),
+
+          'mainImages',
+        )
+        .leftJoin('p.postMainImages', 'pmi')
         .leftJoin('p.blog', 'b')
         .leftJoin('b.blogBan', 'bb')
         .leftJoin('b.user', 'u')
         .leftJoin('u.userBanInfo', 'ubi')
         .where('b.id = :blogId', { blogId })
+        .andWhere(`bb.isBanned = false`)
+        .andWhere(`ubi.isBanned = false`)
         .orderBy(
           `p."${query.sortBy}" ${
             query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
@@ -95,7 +124,8 @@ export class PostsQueryRepository {
           sortDirection as 'ASC' | 'DESC',
         )
         .limit(+query.pageSize)
-        .offset((+query.pageNumber - 1) * +query.pageSize);
+        .offset((+query.pageNumber - 1) * +query.pageSize)
+        .groupBy(`p.id, b.id, bb.id, u.id, ubi.id`);
 
       const posts = await queryBuilder.getRawMany();
       const totalCount = await queryBuilder.getCount();
@@ -120,8 +150,8 @@ export class PostsQueryRepository {
   ): Promise<Paginator<PostViewModel[]>> {
     const sortDirection = query.sortDirection.toUpperCase();
 
-    const posts = await this.dataSource
-      .createQueryBuilder()
+    const queryBuilder = this.postsRepository
+      .createQueryBuilder('p')
       .select([
         'p.id as id',
         'p.title as title',
@@ -131,31 +161,37 @@ export class PostsQueryRepository {
         'b.name as "blogName"',
         'p.createdAt as "createdAt"',
       ])
-      .from(Post, 'p')
-      .leftJoin(Blog, 'b', 'b.id = p."blogId"')
       .addSelect(
-        `( SELECT COUNT(*)
-                    FROM (
-                        SELECT pl."postId"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."likeStatus" = 'Like'
-                    ))`,
+        (qb) =>
+          qb
+            .select(`COUNT(*)`)
+            .from(PostLike, 'pl')
+            .leftJoin('pl.user', 'u')
+            .leftJoin('u.userBanInfo', 'ubi')
+            .where('pl.postId = p.id')
+            .andWhere('ubi.isBanned = false')
+            .andWhere(`pl.likeStatus = 'Like'`),
         'likesCount',
       )
       .addSelect(
-        `( SELECT COUNT(*)
-                    FROM (
-                        SELECT pl."postId"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."likeStatus" = 'Dislike'
-                    ))`,
+        (qb) =>
+          qb
+            .select(`count(*)`)
+            .from(PostLike, 'pl')
+            .leftJoin('pl.user', 'u')
+            .leftJoin('u.userBanInfo', 'ubi')
+            .where('pl.postId = p.id')
+            .andWhere('ubi.isBanned = false')
+            .andWhere(`pl.likeStatus = 'Dislike'`),
         'dislikesCount',
       )
       .addSelect(
-        `(SELECT pl."likeStatus"
-                        FROM post_likes pl
-                        WHERE p."id" = pl."postId" AND pl."userId" = ${userId}
-                  )`,
+        (qb) =>
+          qb
+            .select('pl.likeStatus')
+            .from(PostLike, 'pl')
+            .where('pl.postId = p.id')
+            .andWhere('pl.userId = :userId', { userId }),
         'myStatus',
       )
       .addSelect(
@@ -172,6 +208,30 @@ export class PostsQueryRepository {
                 ),'[]')`,
         'newestLikes',
       )
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select(`url, width, height, size`)
+                .from(PostMainImage, 'pmi')
+                .where('pmi.postId = p.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
+      .leftJoin('p.postMainImages', 'pmi')
+      .leftJoin('p.blog', 'b', 'b.id = p."blogId"')
+      .leftJoinAndSelect('b.blogBan', 'bb')
+      .leftJoinAndSelect('b.user', 'u')
+      .leftJoinAndSelect('u.userBanInfo', 'ubi')
+      .leftJoin('p.postLike', 'pl')
+      .where(`bb.isBanned = false`)
+      .andWhere(`ubi.isBanned = false`)
       .orderBy(
         `"${query.sortBy}" ${
           query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
@@ -180,13 +240,10 @@ export class PostsQueryRepository {
       )
       .limit(+query.pageSize)
       .offset((+query.pageNumber - 1) * +query.pageSize)
-      .getRawMany();
+      .groupBy(`p.id, b.id, bb.id, u.id, ubi.id`);
 
-    const totalCount = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(Post, 'p')
-      .getCount();
+    const posts = await queryBuilder.getRawMany();
+    const totalCount = await queryBuilder.getCount();
 
     return Paginator.paginate({
       pageNumber: Number(query.pageNumber),
@@ -203,8 +260,8 @@ export class PostsQueryRepository {
   ): Promise<Paginator<PostViewModel[]>> {
     const sortDirection = query.sortDirection.toUpperCase();
 
-    const post = await this.dataSource
-      .createQueryBuilder()
+    const queryBuilder = this.postsRepository
+      .createQueryBuilder('p')
       .select([
         'p.id as id',
         'p.title as title',
@@ -214,8 +271,12 @@ export class PostsQueryRepository {
         'b.name as "blogName"',
         'p.createdAt as "createdAt"',
       ])
-      .from(Post, 'p')
-      .leftJoin(Blog, 'b', 'b.id = p."blogId"')
+      .leftJoin('p.postMainImages', 'pmi')
+      .leftJoin('p.blog', 'b')
+      .leftJoin('p.postLike', 'pl')
+      .leftJoin('b.blogBan', 'bb')
+      .leftJoin('b.user', 'u')
+      .leftJoin('u.userBanInfo', 'ubi')
       .addSelect(
         `( SELECT COUNT(*)
                     FROM (
@@ -255,7 +316,25 @@ export class PostsQueryRepository {
                 ),'[]')`,
         'newestLikes',
       )
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select(`url, width, height, size`)
+                .from(PostMainImage, 'pmi')
+                .where('pmi.postId = p.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
       .where('b.id = :blogId', { blogId })
+      .andWhere(`bb.isBanned = false`)
+      .andWhere(`ubi.isBanned = false`)
       .orderBy(
         `"${query.sortBy}" ${
           query.sortBy !== 'createdAt' ? 'COLLATE "C"' : ''
@@ -264,19 +343,14 @@ export class PostsQueryRepository {
       )
       .limit(+query.pageSize)
       .offset((+query.pageNumber - 1) * +query.pageSize)
-      .getRawMany();
+      .groupBy('p.id, b.id, bb.id');
 
-    const totalCount = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(Post, 'p')
-      .where('p."blogId" = :blogId', { blogId })
-      .getCount();
+    const post = await queryBuilder.getRawMany();
 
     return Paginator.paginate({
       pageNumber: Number(query.pageNumber),
       pageSize: Number(query.pageSize),
-      totalCount: totalCount,
+      totalCount: post.length,
       items: await this.postsMapping(post),
     });
   }
@@ -300,6 +374,7 @@ export class PostsQueryRepository {
       .leftJoin('b.blogBan', 'bb')
       .leftJoin('b.user', 'u')
       .leftJoin('u.userBanInfo', 'ubi')
+      .leftJoin('p.postMainImages', 'pmi')
       .addSelect(
         (qb) =>
           qb
@@ -348,6 +423,22 @@ export class PostsQueryRepository {
                 ),'[]')`,
         'newestLikes',
       )
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select(`url, width, height, size`)
+                .from(PostMainImage, 'pmi')
+                .where('pmi.postId = p.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
       .where('p.id = :postId', { postId })
       .andWhere('ubi.isBanned = false')
       .andWhere('bb.isBanned = false')
@@ -389,6 +480,9 @@ export class PostsQueryRepository {
         myStatus: LikeStatus.NONE,
         newestLikes: [],
       },
+      images: {
+        main: [],
+      },
     };
   }
 
@@ -417,8 +511,62 @@ export class PostsQueryRepository {
     return post;
   }
 
+  async findPostMainImages(postId: number) {
+    try {
+      const posts = await this.postsRepository
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.postMainImages', 'pmi')
+        .where(`pmi.postId = :postId`, {
+          postId,
+        })
+        .getMany();
+
+      const mappedPosts = await this.postsMainImagesMapping(posts);
+      return mappedPosts[0];
+    } catch (e) {
+      if (this.configService.get('ENV') === 'DEVELOPMENT') {
+        this.logger.error(e);
+      }
+      return false;
+    }
+  }
+
+  private async postsMainImagesMapping(posts: any): Promise<PostViewModel[]> {
+    return posts.map((p) => {
+      let mainImages = [];
+
+      if (p.postMainImages) {
+        mainImages = p.postMainImages.map((pmi) => {
+          return {
+            url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + pmi.url,
+            width: Number(pmi.width),
+            height: Number(pmi.height),
+            fileSize: Number(pmi.size),
+          };
+        });
+      }
+
+      return {
+        main: mainImages,
+      };
+    });
+  }
+
   private async postsMapping(posts: any): Promise<PostViewModel[]> {
     return posts.map((p) => {
+      let mainImages = [];
+
+      if (p.mainImages) {
+        mainImages = p.mainImages.map((pmi) => {
+          return {
+            url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + pmi.url,
+            width: Number(pmi.width),
+            height: Number(pmi.height),
+            fileSize: Number(pmi.size),
+          };
+        });
+      }
+
       return {
         id: p.id?.toString(),
         title: p.title,
@@ -434,6 +582,9 @@ export class PostsQueryRepository {
           newestLikes: p.newestLikes.map((l) => {
             return { ...l, userId: l.userId?.toString() };
           }),
+        },
+        images: {
+          main: mainImages,
         },
       };
     });
