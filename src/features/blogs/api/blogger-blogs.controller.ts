@@ -468,7 +468,7 @@ export class BloggerBlogsController {
       return exceptionHandler(result.code, result.message, result.field);
     }
 
-    return this.blogsQueryRepository.findBlogMainImages(+blogId);
+    return this.postsQueryRepository.findPostMainImages(+postId);
   }
 
   @Delete(':id')
