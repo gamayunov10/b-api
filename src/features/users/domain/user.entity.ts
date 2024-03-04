@@ -13,6 +13,7 @@ import { Comment } from '../../comments/domain/comment.entity';
 import { DeviceAuthSessions } from '../../devices/domain/device.entity';
 import { QuizPlayer } from '../../quiz/domain/quiz-player';
 import { Blog } from '../../blogs/domain/blog.entity';
+import { TgBlogSubscriber } from '../../integrations/telegram/domain/tg.blog.subscriber.entity';
 
 import { UserEmailConfirmation } from './user-email-confirmation.entity';
 import { UserPasswordRecovery } from './user-password-recovery.entity';
@@ -102,4 +103,10 @@ export class User {
     onUpdate: 'CASCADE',
   })
   blog: Blog[];
+
+  @OneToMany(() => TgBlogSubscriber, (s) => s.user, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  tgBlogSubscriber: TgBlogSubscriber[];
 }

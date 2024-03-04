@@ -12,6 +12,7 @@ import {
 import { Post } from '../../posts/domain/post.entity';
 import { User } from '../../users/domain/user.entity';
 import { UserBanByBlogger } from '../../users/domain/user-ban-by-blogger.entity';
+import { TgBlogSubscriber } from '../../integrations/telegram/domain/tg.blog.subscriber.entity';
 
 import { BlogBan } from './blog-ban.entity';
 import { BlogMainImage } from './blog-main-image.entity';
@@ -58,6 +59,13 @@ export class Blog {
     onUpdate: 'CASCADE',
   })
   blogMainImages: BlogMainImage[];
+
+  @OneToMany(() => TgBlogSubscriber, (s) => s.blog, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    nullable: true,
+  })
+  tgBlogSubscriber: TgBlogSubscriber[];
 
   @OneToMany(
     () => UserBanByBlogger,
