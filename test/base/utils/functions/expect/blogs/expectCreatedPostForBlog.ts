@@ -1,6 +1,6 @@
 import { PostInputModel } from '../../../../../../src/features/posts/api/models/input/post-input-model';
 
-export const expectCreatedBlogForPost = (
+export const expectCreatedPostForBlog = (
   response: any,
   createPostInput: PostInputModel,
   blogId: number,
