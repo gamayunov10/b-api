@@ -7,7 +7,7 @@ import { createBlogInput } from '../../base/utils/constants/blogs.constant';
 import { expectCreatedBlog } from '../../base/utils/functions/expect/blogs/expectCreatedBlog';
 import { testing_allData_uri } from '../../base/utils/constants/routes';
 import { lorem30 } from '../../base/utils/constants/lorems';
-import { expectCreatedBlogForPost } from '../../base/utils/functions/expect/blogs/expectCreatedBlogForPost';
+import { expectCreatedPostForBlog } from '../../base/utils/functions/expect/blogs/expectCreatedPostForBlog';
 import { createPostInput } from '../../base/utils/constants/posts.constants';
 import { expectFirstPaginatedPost } from '../../base/utils/functions/expect/posts/expectFirstPaginatedPost';
 import { expectCreatedPost } from '../../base/utils/functions/expect/posts/expectCreatedPost';
@@ -57,7 +57,7 @@ describe('Public ban', () => {
         .send(createPostInput)
         .expect(201);
 
-      expectCreatedBlogForPost(
+      expectCreatedPostForBlog(
         createdPost,
         createPostInput,
         createdBlog.body.id,
@@ -106,7 +106,7 @@ describe('Public ban', () => {
         .send(createPostInput)
         .expect(201);
 
-      expectCreatedBlogForPost(
+      expectCreatedPostForBlog(
         createdPost,
         createPostInput,
         createdBlog.body.id,
@@ -157,7 +157,7 @@ describe('Public ban', () => {
         .send(createPostInput)
         .expect(201);
 
-      expectCreatedBlogForPost(
+      expectCreatedPostForBlog(
         createdPost,
         createPostInput,
         createdBlog.body.id,
