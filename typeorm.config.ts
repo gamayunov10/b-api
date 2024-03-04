@@ -21,6 +21,7 @@ import { BlogBan } from './src/features/blogs/domain/blog-ban.entity';
 import { BlogMainImage } from './src/features/blogs/domain/blog-main-image.entity';
 import { BlogWallpaperImage } from './src/features/blogs/domain/blog-wallpaper-image.entity';
 import { PostMainImage } from './src/features/posts/domain/post-main-image.entity';
+import { TgBlogSubscriber } from './src/features/integrations/telegram/domain/tg.blog.subscriber.entity';
 
 config();
 
@@ -52,5 +53,6 @@ export default new DataSource({
     BlogMainImage,
     BlogWallpaperImage,
     PostMainImage,
+    TgBlogSubscriber,
   ],
 });

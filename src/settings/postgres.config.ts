@@ -20,6 +20,7 @@ import { BlogBan } from '../features/blogs/domain/blog-ban.entity';
 import { BlogMainImage } from '../features/blogs/domain/blog-main-image.entity';
 import { BlogWallpaperImage } from '../features/blogs/domain/blog-wallpaper-image.entity';
 import { PostMainImage } from '../features/posts/domain/post-main-image.entity';
+import { TgBlogSubscriber } from '../features/integrations/telegram/domain/tg.blog.subscriber.entity';
 
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -52,11 +53,12 @@ export const postgresConfig: TypeOrmModuleOptions = {
     BlogMainImage,
     BlogWallpaperImage,
     PostMainImage,
+    TgBlogSubscriber,
   ],
-  ssl: true,
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  // ssl: true,
+  // extra: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
 };
