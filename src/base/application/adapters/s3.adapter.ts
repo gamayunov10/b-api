@@ -20,7 +20,11 @@ export class S3Adapter {
     });
   }
 
-  async uploadImage(key: string, buffer: Buffer, mimetype: string) {
+  async uploadImage(
+    key: string,
+    buffer: Buffer,
+    mimetype: string,
+  ): Promise<boolean> {
     const bucketParams = {
       Bucket: process.env.BUCKET_NAME,
       Key: key,
@@ -31,10 +35,13 @@ export class S3Adapter {
     const command = new PutObjectCommand(bucketParams);
     try {
       await this.s3Client.send(command);
+      return true;
     } catch (e) {
       if (this.configService.get('ENV') === 'DEVELOPMENT') {
         this.logger.error(e);
       }
+
+      return false;
     }
   }
 }
