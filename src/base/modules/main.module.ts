@@ -11,7 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { Repository } from 'typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { QuestionCreateUseCase } from '../../features/quiz/applications/usecases/question-create.usecase';
 import { QuestionsRepository } from '../../features/quiz/infrastructure/questions.repository';
@@ -238,6 +238,9 @@ const strategies = [
     CqrsModule,
     PassportModule,
     EventEmitterModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
   ],
   controllers: [...controllers],
   providers: [
