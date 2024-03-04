@@ -14,6 +14,7 @@ import { IFindBlogsWithBanInfoSelect } from '../api/models/select/find-blogs-wit
 import { IBlogsSelect } from '../api/models/select/blogs.select';
 import { BlogImagesViewModel } from '../api/models/output/blog-images-view.model';
 import { BlogWallpaperImage } from '../domain/blog-wallpaper-image.entity';
+import { BlogMainImage } from '../domain/blog-main-image.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -35,13 +36,30 @@ export class BlogsQueryRepository {
     const queryBuilder = this.blogsRepository
       .createQueryBuilder('b')
       .select([
-        'b.id',
-        'b.name',
-        'b.description',
-        'b.websiteUrl',
-        'b.createdAt',
-        'b.isMembership',
+        'b.id as id',
+        'b.name as name',
+        'b.description as description',
+        'b.websiteUrl as "websiteUrl"',
+        'b.createdAt as "createdAt"',
+        'b.isMembership as "isMembership"',
       ])
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select(`url, width, height, size`)
+                .from(BlogMainImage, 'bmi')
+                .where('bmi.blogId = b.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
+      .leftJoinAndSelect('b.blogWallpaperImage', 'bwi')
       .leftJoin('b.blogBan', 'bb')
       .where('b.name ILIKE :name', { name: filter.name })
       .andWhere('bb.isBanned = false')
@@ -54,20 +72,17 @@ export class BlogsQueryRepository {
       .limit(+query.pageSize)
       .offset((+query.pageNumber - 1) * +query.pageSize);
 
-    const blogs = await queryBuilder.getMany();
-    const totalCount = await queryBuilder.getCount();
+    const blogs = await queryBuilder.getRawMany();
 
     return Paginator.paginate({
       pageNumber: +query.pageNumber,
       pageSize: +query.pageSize,
-      totalCount: totalCount,
+      totalCount: blogs.length,
       items: await this.blogsMapping(blogs),
     });
   }
 
-  async findBlogsWithBanInfo(
-    query: BlogQueryModel,
-  ): Promise<Paginator<BlogViewModel[]>> {
+  async findBlogsWithBanInfo(query: BlogQueryModel) {
     const sortDirection = query.sortDirection.toUpperCase();
 
     const queryBuilder = this.blogsRepository
@@ -105,23 +120,40 @@ export class BlogsQueryRepository {
     const blog = await this.blogsRepository
       .createQueryBuilder('b')
       .select([
-        'b.id',
-        'b.name',
-        'b.description',
-        'b.websiteUrl',
-        'b.createdAt',
-        'b.isMembership',
+        'b.id as id',
+        'b.name as name',
+        'b.description as description',
+        'b.websiteUrl as "websiteUrl"',
+        'b.createdAt as "createdAt"',
+        'b.isMembership as "isMembership"',
       ])
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select('url, width, height, size')
+                .from(BlogMainImage, 'bmi')
+                .where('bmi.blogId = b.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
       .leftJoin('b.blogBan', 'bb')
+      .leftJoinAndSelect('b.blogWallpaperImage', 'bwi')
       .where('b.id = :blogId', { blogId })
       .andWhere('bb.isBanned = false')
-      .getOne();
+      .getRawMany();
 
     if (!blog) {
       return null;
     }
 
-    const mappedBlog = await this.blogsMapping([blog]);
+    const mappedBlog = await this.blogsMapping(blog);
 
     return mappedBlog[0];
   }
@@ -129,13 +161,38 @@ export class BlogsQueryRepository {
     const filter = blogsFilter(query.searchNameTerm);
     const sortDirection = query.sortDirection.toUpperCase();
 
-    const blogs = await this.blogsRepository
+    const queryBuilder = this.blogsRepository
       .createQueryBuilder('b')
+      .select([
+        'b.id as id',
+        'b.name as name',
+        'b.description as description',
+        'b.websiteUrl as "websiteUrl"',
+        'b.createdAt as "createdAt"',
+        'b.isMembership as "isMembership"',
+      ])
+      .addSelect(
+        (qb) =>
+          qb
+            .select(
+              `jsonb_agg(json_build_object('url', agg.url, 'width', agg.width, 'height', agg.height, 'size', agg.size)
+                 )`,
+            )
+            .from((qb) => {
+              return qb
+                .select(`url, width, height, size`)
+                .from(BlogMainImage, 'bmi')
+                .where('bmi.blogId = b.id');
+            }, 'agg'),
+
+        'mainImages',
+      )
       .where('b.name ILIKE :name', { name: filter.name })
       .andWhere(`u.id = :userId`, {
         userId,
       })
       .leftJoin('b.user', 'u')
+      .leftJoinAndSelect('b.blogWallpaperImage', 'bwi')
       .orderBy(
         `b."${query.sortBy}" ${
           query.sortBy.toLowerCase() !== 'createdat' ? 'COLLATE "C"' : ''
@@ -143,19 +200,10 @@ export class BlogsQueryRepository {
         sortDirection as 'ASC' | 'DESC',
       )
       .limit(+query.pageSize)
-      .offset((+query.pageNumber - 1) * +query.pageSize)
-      .getMany();
+      .offset((+query.pageNumber - 1) * +query.pageSize);
 
-    const totalCount = await this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from(Blog, 'b')
-      .where('b.name ILIKE :name', { name: filter.name })
-      .andWhere(`u.id = :userId`, {
-        userId,
-      })
-      .leftJoin('b.user', 'u')
-      .getCount();
+    const blogs = await queryBuilder.getRawMany();
+    const totalCount = await queryBuilder.getCount();
 
     return Paginator.paginate({
       pageNumber: +query.pageNumber,
@@ -223,13 +271,12 @@ export class BlogsQueryRepository {
     }
   }
 
-  async findBlogMainImages(
-    blogId: number,
-  ): Promise<BlogImagesViewModel | boolean> {
+  async findBlogMainImages(blogId: number) {
     try {
       const blogs = await this.blogsRepository
         .createQueryBuilder('b')
         .leftJoinAndSelect('b.blogMainImages', 'bmi')
+        .leftJoinAndSelect('b.blogWallpaperImage', 'bwi')
         .where(`b.id = :blogId`, {
           blogId,
         })
@@ -269,7 +316,8 @@ export class BlogsQueryRepository {
   private async blogImagesMapping(blogs: Blog[]) {
     return blogs.map((b) => {
       const wallpaperImage = {
-        url: process.env.S3_DOMAIN + b.blogWallpaperImage.url,
+        url:
+          process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + b.blogWallpaperImage.url,
         width: Number(b.blogWallpaperImage.width),
         height: Number(b.blogWallpaperImage.height),
         fileSize: Number(b.blogWallpaperImage.size),
@@ -279,7 +327,7 @@ export class BlogsQueryRepository {
         wallpaper: wallpaperImage,
         main: b.blogMainImages.map((bmi) => {
           return {
-            url: process.env.S3_DOMAIN + bmi.url,
+            url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + bmi.url,
             width: Number(bmi.width),
             height: Number(bmi.height),
             fileSize: Number(bmi.size),
@@ -289,23 +337,65 @@ export class BlogsQueryRepository {
     });
   }
 
-  private async blogMainImagesMapping(blogs: Blog[]) {
+  private async blogMainImagesMapping(blogs) {
     return blogs.map((b) => {
-      return {
-        main: b.blogMainImages.map((bmi) => {
+      let wallpaperImage = null;
+      let mainImages = [];
+
+      if (b?.blogWallpaperImage) {
+        wallpaperImage = {
+          url:
+            process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN +
+            b.blogWallpaperImage.url,
+          width: Number(b.blogWallpaperImage.width),
+          height: Number(b.blogWallpaperImage.height),
+          fileSize: Number(b.blogWallpaperImage.size),
+        };
+      }
+
+      if (b?.blogMainImages) {
+        mainImages = b.blogMainImages.map((bmi) => {
           return {
-            url: process.env.S3_DOMAIN + bmi.url,
+            url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + bmi.url,
             width: Number(bmi.width),
             height: Number(bmi.height),
             fileSize: Number(bmi.size),
           };
-        }),
+        });
+      }
+
+      return {
+        wallpaper: wallpaperImage,
+        main: mainImages,
       };
     });
   }
 
-  private async blogsMapping(array: IBlogsSelect[]): Promise<BlogViewModel[]> {
+  private async blogsMapping(array): Promise<BlogViewModel[]> {
     return array.map((b: IBlogsSelect) => {
+      let wallpaperImage = null;
+      let mainImages = [];
+
+      if (b?.bwi_url) {
+        wallpaperImage = {
+          url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + b.bwi_url,
+          width: Number(b.bwi_width),
+          height: Number(b.bwi_height),
+          fileSize: Number(b.bwi_size),
+        };
+      }
+
+      if (b?.mainImages) {
+        mainImages = b.mainImages.map((bmi) => {
+          return {
+            url: process.env.S3_BUCKET_NAME_PLUS_S3_DOMAIN + bmi.url,
+            width: Number(bmi.width),
+            height: Number(bmi.height),
+            fileSize: Number(bmi.size),
+          };
+        });
+      }
+
       return {
         id: b.id.toString(),
         name: b.name,
@@ -313,13 +403,15 @@ export class BlogsQueryRepository {
         websiteUrl: b.websiteUrl,
         createdAt: b.createdAt,
         isMembership: b.isMembership,
+        images: {
+          wallpaper: wallpaperImage,
+          main: mainImages,
+        },
       };
     });
   }
 
-  private async SABlogsMapping(
-    array: IFindBlogsWithBanInfoSelect[],
-  ): Promise<BlogViewModel[]> {
+  private async SABlogsMapping(array: IFindBlogsWithBanInfoSelect[]) {
     return array.map((b: IFindBlogsWithBanInfoSelect) => {
       return {
         id: b.id.toString(),
