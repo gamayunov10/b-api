@@ -14,4 +14,16 @@ export class PostOutputModel {
     myStatus: LikeStatus;
     newestLikes: [];
   };
+  images: {
+    main:
+      | [
+          {
+            url: string;
+            width: number;
+            height: number;
+            fileSize: number;
+          },
+        ]
+      | [];
+  };
 }
