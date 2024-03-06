@@ -110,7 +110,7 @@ describe('Users: POST sa/users', () => {
         .get(`/sa/users/`)
         .auth(basicAuthLogin, basicAuthPassword)
         .expect(200);
-      console.log(result.body);
+
       expectFirstBannedPaginatedUser(
         result,
         1,
@@ -664,7 +664,6 @@ describe('Users: POST sa/users', () => {
         .set('Authorization', `Bearer ${userToken1}`)
         .send(createPostInput)
         .expect(201);
-      console.log(createdPost.body);
 
       expectCreatedPost(
         createdPost,
