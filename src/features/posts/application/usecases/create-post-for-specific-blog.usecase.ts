@@ -14,6 +14,9 @@ import {
 } from '../../../../base/constants/constants';
 import { Role } from '../../../../base/enums/roles.enum';
 import { UsersQueryRepository } from '../../../users/infrastructure/users.query.repository';
+import { TgBlogSubscribersQueryRepository } from '../../../integrations/telegram/infrastructure/tg.blog.subscribers.query.repository';
+import { TelegramAdapter } from '../../../integrations/telegram/adapters/telegram.adapter';
+import { TgBlogSubscriber } from '../../../integrations/telegram/domain/tg.blog.subscriber.entity';
 
 export class PostCreatePostForSpecificBlogCommand {
   constructor(
@@ -32,6 +35,8 @@ export class PostCreatePostForSpecificBlogUseCase
     private readonly postsRepository: PostsRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly tgBlogSubscribersQueryRepository: TgBlogSubscribersQueryRepository,
+    private readonly telegramAdapter: TelegramAdapter,
   ) {}
 
   async execute(
@@ -88,10 +93,31 @@ export class PostCreatePostForSpecificBlogUseCase
       blogName,
     );
 
+    await this.sendTelegramNotification(+command.blogId, blog.name);
+
     return {
       data: true,
       code: ResultCode.Success,
       response: postId,
     };
+  }
+
+  private async sendTelegramNotification(blogId: number, blogName: string) {
+    const recipients: TgBlogSubscriber[] =
+      await this.tgBlogSubscribersQueryRepository.findSubscribersForTelegramNotification(
+        blogId,
+      );
+
+    if (recipients?.length === 0) {
+      return null;
+    }
+
+    const message = `New post published for blog ${blogName}`;
+
+    recipients.forEach((s: TgBlogSubscriber) => {
+      return this.telegramAdapter.sendMessage(message, s.telegramId);
+    });
+
+    return recipients;
   }
 }
