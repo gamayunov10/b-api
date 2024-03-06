@@ -55,10 +55,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
     PostMainImage,
     TgBlogSubscriber,
   ],
-  // ssl: true,
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 };
