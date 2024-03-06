@@ -1,3 +1,5 @@
+import { SubscribeStatus } from '../../../../../base/enums/SubscribeStatus.enum';
+
 export interface IBlogsSelect {
   id: number;
   name: string;
