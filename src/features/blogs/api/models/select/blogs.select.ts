@@ -11,6 +11,8 @@ export interface IBlogsSelect {
   bwi_width: number | null;
   bwi_height: number | null;
   bwi_size: number | null;
+  subscribeStatus: SubscribeStatus;
+  subscribeCount: number;
   mainImages:
     | [
         {
