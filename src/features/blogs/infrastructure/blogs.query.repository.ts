@@ -15,6 +15,8 @@ import { IBlogsSelect } from '../api/models/select/blogs.select';
 import { BlogImagesViewModel } from '../api/models/output/blog-images-view.model';
 import { BlogWallpaperImage } from '../domain/blog-wallpaper-image.entity';
 import { BlogMainImage } from '../domain/blog-main-image.entity';
+import { TgBlogSubscriber } from '../../integrations/telegram/domain/tg.blog.subscriber.entity';
+import { SubscribeStatus } from '../../../base/enums/SubscribeStatus.enum';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -29,7 +31,7 @@ export class BlogsQueryRepository {
     this.configService = configService;
   }
 
-  async findBlogs(query: BlogQueryModel) {
+  async findBlogs(query: BlogQueryModel, userId?: string) {
     const filter = blogsFilter(query.searchNameTerm);
     const sortDirection = query.sortDirection.toUpperCase();
 
@@ -43,6 +45,24 @@ export class BlogsQueryRepository {
         'b.createdAt as "createdAt"',
         'b.isMembership as "isMembership"',
       ])
+      .addSelect(
+        (qb) =>
+          qb
+            .select(`COUNT(*)`)
+            .from(TgBlogSubscriber, 'bs')
+            .where('bs.blogId = b.id')
+            .andWhere(`bs.subscribeStatus = 'Subscribed'`),
+        'subscribeCount',
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select('bs.subscribeStatus')
+            .from(TgBlogSubscriber, 'bs')
+            .where('bs.blogId = b.id')
+            .andWhere('bs.userId = :userId', { userId }),
+        'subscribeStatus',
+      )
       .addSelect(
         (qb) =>
           qb
@@ -116,7 +136,10 @@ export class BlogsQueryRepository {
     });
   }
 
-  async findBlogById(blogId: number): Promise<BlogViewModel | null> {
+  async findBlogById(
+    blogId: number,
+    userId?: number,
+  ): Promise<BlogViewModel | null> {
     const blog = await this.blogsRepository
       .createQueryBuilder('b')
       .select([
@@ -127,6 +150,24 @@ export class BlogsQueryRepository {
         'b.createdAt as "createdAt"',
         'b.isMembership as "isMembership"',
       ])
+      .addSelect(
+        (qb) =>
+          qb
+            .select(`COUNT(*)`)
+            .from(TgBlogSubscriber, 'bs')
+            .where('bs.blogId = b.id')
+            .andWhere(`bs.subscribeStatus = 'Subscribed'`),
+        'subscribeCount',
+      )
+      .addSelect(
+        (qb) =>
+          qb
+            .select('bs.subscribeStatus')
+            .from(TgBlogSubscriber, 'bs')
+            .where('bs.blogId = b.id')
+            .andWhere('bs.userId = :userId', { userId }),
+        'subscribeStatus',
+      )
       .addSelect(
         (qb) =>
           qb
@@ -375,6 +416,7 @@ export class BlogsQueryRepository {
     return array.map((b: IBlogsSelect) => {
       let wallpaperImage = null;
       let mainImages = [];
+      let subscribeStatus = SubscribeStatus.NONE;
 
       if (b?.bwi_url) {
         wallpaperImage = {
@@ -396,6 +438,10 @@ export class BlogsQueryRepository {
         });
       }
 
+      if (b.subscribeStatus) {
+        subscribeStatus = b.subscribeStatus;
+      }
+
       return {
         id: b.id.toString(),
         name: b.name,
@@ -407,6 +453,8 @@ export class BlogsQueryRepository {
           wallpaper: wallpaperImage,
           main: mainImages,
         },
+        currentUserSubscriptionStatus: subscribeStatus,
+        subscribersCount: +b.subscribeCount,
       };
     });
   }
