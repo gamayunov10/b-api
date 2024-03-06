@@ -11,6 +11,7 @@ import { CommentLike } from '../../features/comments/domain/comment-like.entity'
 import { Post } from '../../features/posts/domain/post.entity';
 import { PostLike } from '../../features/posts/domain/post-like.entity';
 import { DeviceAuthSessions } from '../../features/devices/domain/device.entity';
+import { TgBlogSubscriber } from '../../features/integrations/telegram/domain/tg.blog.subscriber.entity';
 
 export type TypeOrmEntity =
   | QuizPlayer
@@ -25,4 +26,5 @@ export type TypeOrmEntity =
   | CommentLike
   | Post
   | PostLike
-  | DeviceAuthSessions;
+  | DeviceAuthSessions
+  | TgBlogSubscriber;
