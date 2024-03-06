@@ -1,9 +1,13 @@
 import {
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
+  Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
@@ -19,6 +23,10 @@ import { UsersQueryRepository } from '../../users/infrastructure/users.query.rep
 import { SwaggerOptions } from '../../../infrastructure/decorators/swagger';
 import { BlogSchema } from '../../../base/schemas/blog-schema';
 import { PostSchema } from '../../../base/schemas/post-schema';
+import { JwtBearerGuard } from '../../auth/guards/jwt-bearer.guard';
+import { UserIdFromGuard } from '../../auth/decorators/user-id-from-guard.guard.decorator';
+import { BlogSubscribeCommand } from '../application/usecases/blog-subscribe.usecase';
+import { BlogUnsubscribeCommand } from '../application/usecases/blog-unsubscribe.usecase';
 
 import { SABlogQueryModel } from './models/input/sa-blog.query.model';
 import { BlogQueryModel } from './models/input/blog.query.model';
@@ -49,8 +57,18 @@ export class BlogsController {
     false,
     false,
   )
-  async findBlogs(@Query() query: BlogQueryModel) {
-    return this.blogsQueryRepository.findBlogs(query);
+  async findBlogs(
+    @Query() query: BlogQueryModel,
+    @UserIdFromHeaders('id') userId: string,
+  ) {
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    return this.blogsQueryRepository.findBlogs(query, checkedUserId);
   }
 
   @Get(':blogId/posts')
@@ -112,15 +130,96 @@ export class BlogsController {
     true,
     false,
   )
-  async findBlogById(@Param('blogId') blogId: string) {
+  async findBlogById(
+    @Param('blogId') blogId: string,
+    @UserIdFromHeaders('id') userId: string,
+  ) {
     if (isNaN(+blogId)) {
       throw new NotFoundException();
     }
 
-    const result = await this.blogsQueryRepository.findBlogById(+blogId);
+    const user = await this.usersQueryRepository.findUserByIdBool(+userId);
+
+    let checkedUserId = null;
+    if (user) {
+      checkedUserId = +userId;
+    }
+
+    const result = await this.blogsQueryRepository.findBlogById(
+      +blogId,
+      checkedUserId,
+    );
 
     if (!result) {
       return exceptionHandler(ResultCode.NotFound, blogNotFound, blogIdField);
+    }
+
+    return result;
+  }
+
+  @Post(':blogId/subscription')
+  @SwaggerOptions(
+    'Subscribe user to blog. Notifications about new posts will be send to Telegram Bot',
+    true,
+    false,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+  )
+  @HttpCode(204)
+  @UseGuards(JwtBearerGuard)
+  async subscription(
+    @Param('blogId') blogId: string,
+    @UserIdFromGuard() userId: string,
+  ) {
+    if (isNaN(+blogId)) {
+      throw new NotFoundException();
+    }
+
+    const result = await this.commandBus.execute(
+      new BlogSubscribeCommand(blogId, userId),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
+    }
+
+    return result;
+  }
+
+  @Delete(':id/subscription')
+  @SwaggerOptions(
+    'Unsubscribe user from blog. Notifications about new posts will not be send to Telegram Bot',
+    true,
+    false,
+    204,
+    'No Content',
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    false,
+  )
+  @UseGuards(JwtBearerGuard)
+  @HttpCode(204)
+  async unsubscribeFromBlog(
+    @Param('id') blogId: string,
+    @UserIdFromGuard() userId: string,
+  ) {
+    const result = await this.commandBus.execute(
+      new BlogUnsubscribeCommand(blogId, userId),
+    );
+
+    if (result.code !== ResultCode.Success) {
+      return exceptionHandler(result.code, result.message, result.field);
     }
 
     return result;
