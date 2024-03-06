@@ -36,7 +36,7 @@ export class TestingController {
         DELETE FROM public.blog_bans;
         DELETE FROM public.blog_wallpaper_images;
         DELETE FROM public.blog_main_images;
-        DELETE FROM public.post_main_images;
+        DELETE FROM public.tg_blog_subscribers;
         DELETE FROM public.user_password_recovery;
         DELETE FROM public.users; 
         DELETE FROM public.device_auth_sessions;
