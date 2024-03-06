@@ -107,6 +107,16 @@ import { S3Adapter } from '../application/adapters/s3.adapter';
 import { TransactionHelper } from '../transactions/transaction.helper';
 import { BlogAddWallpaperImageUseCase } from '../../features/blogs/application/usecases/blog-add-wallpaper-image.usecase';
 import { PostAddMainImageUseCase } from '../../features/blogs/application/usecases/post-add-main-image.usecase';
+import { IntegrationTelegramController } from '../../features/integrations/telegram/api/integration.telegram.controller';
+import { TgBotGetAuthLinkQueryUseCase } from '../../features/integrations/telegram/application/usecases/tg-bot-get-auth-link-query.usecase';
+import { TgBlogSubscribersRepository } from '../../features/integrations/telegram/infrastructure/tg.blog.subscribers.repository';
+import { TgBlogSubscribersQueryRepository } from '../../features/integrations/telegram/infrastructure/tg.blog.subscribers.query.repository';
+import { TgBlogSubscriber } from '../../features/integrations/telegram/domain/tg.blog.subscriber.entity';
+import { TelegramAdapter } from '../../features/integrations/telegram/adapters/telegram.adapter';
+import { TgAddToNotificationsWhitelistUseCase } from '../../features/integrations/telegram/application/usecases/tg-add-to-notifications.usecase';
+import { BlogSubscribeUseCase } from '../../features/blogs/application/usecases/blog-subscribe.usecase';
+import { BlogUnsubscribeUseCase } from '../../features/blogs/application/usecases/blog-unsubscribe.usecase';
+import { DataSourceRepository } from '../infrastructure/data-source.repository';
 
 const controllers = [
   SAUsersController,
@@ -121,6 +131,7 @@ const controllers = [
   QuizController,
   BloggerBlogsController,
   BloggerUsersController,
+  IntegrationTelegramController,
 ];
 
 const services = [JwtService, AuthService];
@@ -139,6 +150,7 @@ const entities = [
   QuizGame,
   QuizPlayer,
   QuizQuestion,
+  TgBlogSubscriber,
 ];
 
 const typeORMRepositories = [
@@ -190,6 +202,10 @@ const useCases = [
   BlogAddMainImageUseCase,
   BlogAddWallpaperImageUseCase,
   PostAddMainImageUseCase,
+  TgBotGetAuthLinkQueryUseCase,
+  TgAddToNotificationsWhitelistUseCase,
+  BlogSubscribeUseCase,
+  BlogUnsubscribeUseCase,
 ];
 
 const repositories = [
@@ -201,6 +217,8 @@ const repositories = [
   QuestionsRepository,
   GameRepository,
   TransactionsRepository,
+  TgBlogSubscribersRepository,
+  DataSourceRepository,
 ];
 
 const queryRepositories = [
@@ -211,6 +229,7 @@ const queryRepositories = [
   CommentsQueryRepository,
   QuestionsQueryRepository,
   GameQueryRepository,
+  TgBlogSubscribersQueryRepository,
 ];
 
 const constraints = [
@@ -218,7 +237,7 @@ const constraints = [
   IsLoginAlreadyExistConstraint,
 ];
 
-const adapters = [S3Adapter];
+const adapters = [S3Adapter, TelegramAdapter];
 const helpers = [TransactionHelper];
 
 const strategies = [
@@ -271,6 +290,9 @@ export class MainModule implements NestModule {
         { path: 'blogs/:id/posts', method: RequestMethod.GET },
         { path: 'posts/:id/comments', method: RequestMethod.GET },
         { path: 'comments/:id', method: RequestMethod.GET },
+        { path: 'blogs/:id', method: RequestMethod.GET },
+        { path: 'blogs', method: RequestMethod.GET },
+        { path: 'blogs/:id/subscription', method: RequestMethod.DELETE },
       );
   }
 }

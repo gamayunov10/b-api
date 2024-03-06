@@ -18,7 +18,6 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
 
 import { BlogsQueryRepository } from '../infrastructure/blogs.query.repository';
 import { BlogCreateCommand } from '../application/usecases/create-blog.usecase';

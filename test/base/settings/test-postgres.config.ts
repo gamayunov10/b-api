@@ -17,7 +17,7 @@ import { QuizQuestion } from '../../../src/features/quiz/domain/quiz-question.en
 import { UserBanInfo } from '../../../src/features/users/domain/user-ban.entity';
 import { UserBanByBlogger } from '../../../src/features/users/domain/user-ban-by-blogger.entity';
 import { BlogBan } from '../../../src/features/blogs/domain/blog-ban.entity';
-import { BlogMainImage } from '../../../src/features/blogs/domain/blog-main-image';
+import { BlogMainImage } from '../../../src/features/blogs/domain/blog-main-image.entity';
 
 export const testPostgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -49,10 +49,10 @@ export const testPostgresConfig: TypeOrmModuleOptions = {
     BlogBan,
     BlogMainImage,
   ],
-  // ssl: true,
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 };
