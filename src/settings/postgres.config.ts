@@ -1,5 +1,4 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as process from 'process';
 
 import { User } from '../features/users/domain/user.entity';
 import { Blog } from '../features/blogs/domain/blog.entity';
@@ -22,13 +21,15 @@ import { BlogWallpaperImage } from '../features/blogs/domain/blog-wallpaper-imag
 import { PostMainImage } from '../features/posts/domain/post-main-image.entity';
 import { TgBlogSubscriber } from '../features/integrations/telegram/domain/tg.blog.subscriber.entity';
 
+import { envConfig } from './env.config';
+
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: process.env.POSTGRES_HOST,
+  host: envConfig.DB.POSTGRES.HOST,
   port: 5432,
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
+  username: envConfig.DB.POSTGRES.USER,
+  password: envConfig.DB.POSTGRES.PASSWORD,
+  database: envConfig.DB.POSTGRES.DATABASE_NAME,
   autoLoadEntities: false,
   synchronize: false,
   logging: 'all',
