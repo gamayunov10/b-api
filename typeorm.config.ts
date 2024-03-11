@@ -1,6 +1,5 @@
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
-import process from 'process';
 
 import { User } from './src/features/users/domain/user.entity';
 import { Blog } from './src/features/blogs/domain/blog.entity';
@@ -22,16 +21,17 @@ import { BlogMainImage } from './src/features/blogs/domain/blog-main-image.entit
 import { BlogWallpaperImage } from './src/features/blogs/domain/blog-wallpaper-image.entity';
 import { PostMainImage } from './src/features/posts/domain/post-main-image.entity';
 import { TgBlogSubscriber } from './src/features/integrations/telegram/domain/tg.blog.subscriber.entity';
+import { envConfig } from './src/settings/env.config';
 
 config();
 
 export default new DataSource({
   type: 'postgres',
-  host: process.env.POSTGRES_HOST,
+  host: envConfig.DB.POSTGRES.HOST,
   port: 5432,
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
+  username: envConfig.DB.POSTGRES.USER,
+  password: envConfig.DB.POSTGRES.PASSWORD,
+  database: envConfig.DB.POSTGRES.DATABASE_NAME,
   migrations: ['migrations/*.ts'],
   entities: [
     User,
