@@ -59,6 +59,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "sharp": "^0.33.2",
+    "stripe": "^14.20.0",
     "typeorm": "^0.3.17"
   },
   "devDependencies": {
