@@ -10,10 +10,6 @@ const PORT = envConfig.PORT || 5000;
 
 const hookUrl = envConfig.NGROK.URL;
 
-// async function connectToNgrok() {
-//   return ngrok.connect(5000);
-// }
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger();
@@ -27,10 +23,6 @@ async function bootstrap() {
   });
 
   const telegramAdapter = await app.resolve(TelegramAdapter);
-
-  // if (process.env.ENV === 'DEVELOPMENT') {
-  //   hookUrl = await connectToNgrok();
-  // }
 
   await telegramAdapter.setWebhook(hookUrl + 'integrations/telegram/webhook');
 }
