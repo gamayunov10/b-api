@@ -8,11 +8,11 @@ import { expectCreatedBlog } from '../../base/utils/functions/expect/blogs/expec
 import { testing_allData_uri } from '../../base/utils/constants/routes';
 import { expectFoundBlog } from '../../base/utils/functions/expect/blogs/expectFoundBlog';
 import { SubscribeStatus } from '../../../src/base/enums/SubscribeStatus.enum';
-import { telegramBotPayload } from '../../base/utils/constants/telegram.constants';
 import { createPostInput } from '../../base/utils/constants/posts.constants';
 import { expectCreatedPostForBlog } from '../../base/utils/functions/expect/blogs/expectCreatedPostForBlog';
 import { waitForIt } from '../../../src/base/utils/wait';
 import { TelegramAdapter } from '../../../src/features/integrations/telegram/adapters/telegram.adapter';
+import { telegramBotPayload } from '../../base/utils/constants/telegram.constant';
 
 describe('Telegram: v1', () => {
   let app: INestApplication;
