@@ -2,7 +2,7 @@
 
 ## Documentation
 
-<a href="https://b-api-z5iz.onrender.com/swagger" ><img src="https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=008FC7"/></a>
+<a href="https://b-api-1.onrender.com/swagger" ><img src="https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=008FC7"/></a>
 
 
 
