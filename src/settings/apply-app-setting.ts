@@ -34,14 +34,15 @@ const setSwagger = (app: INestApplication) => {
     const swaggerPath = APP_PREFIX + '/swagger';
 
     const config = new DocumentBuilder()
-      .setTitle('BLOGGER API')
+      .setTitle('Bloggers Platform')
       .addBearerAuth()
+      .addBasicAuth()
       .setVersion('1.0')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup(swaggerPath, app, document, {
-      customSiteTitle: 'Blogger Swagger',
+      customSiteTitle: 'Bloggers Platform Documentation',
     });
   }
 };
