@@ -1,20 +1,20 @@
-import { envConfig } from '../../../../src/settings/env.config';
+import process from 'process';
 
 export const telegramBotPayload = {
   update_id: 136940201,
   message: {
     message_id: 17,
     from: {
-      id: envConfig.TELEGRAM.ID,
+      id: process.env.TELEGRAM_ID,
       is_bot: false,
       first_name: 'Денис',
-      username: envConfig.TELEGRAM.USERNAME,
+      username: process.env.TELEGRAM_USERNAME,
       language_code: 'en',
     },
     chat: {
-      id: envConfig.TELEGRAM.ID,
+      id: process.env.TELEGRAM_ID,
       first_name: 'Денис',
-      username: envConfig.TELEGRAM.USERNAME,
+      username: process.env.TELEGRAM_USERNAME,
       type: 'private',
     },
     date: 1709641804,
