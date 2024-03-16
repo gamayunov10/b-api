@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
+import process from 'process';
 
-import { envConfig } from './src/settings/env.config';
 import { User } from './src/features/users/domain/user.entity';
 import { Blog } from './src/features/blogs/domain/blog.entity';
 import { CommentLike } from './src/features/comments/domain/comment-like.entity';
@@ -27,11 +27,11 @@ config();
 
 export default new DataSource({
   type: 'postgres',
-  host: envConfig.DB.POSTGRES.HOST,
+  host: process.env.POSTGRES_HOST,
   port: 5432,
-  username: envConfig.DB.POSTGRES.USER,
-  password: envConfig.DB.POSTGRES.PASSWORD,
-  database: envConfig.DB.POSTGRES.DATABASE_NAME,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DATABASE,
   migrations: ['migrations/*.ts'],
   entities: [
     User,
